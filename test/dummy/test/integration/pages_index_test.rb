@@ -64,6 +64,8 @@ class PagesIndexTest < ActionDispatch::IntegrationTest
         parent_recording: root_recording
       ).recording
 
+    RecordingStudioAccessible.bootstrap_owner_access!(recording: root_recording, actor: @user)
+
     title = "Created Page #{SecureRandom.hex(4)}"
 
     assert_difference -> { Page.count }, 1 do
@@ -76,5 +78,8 @@ class PagesIndexTest < ActionDispatch::IntegrationTest
     assert_equal folder_recording, recording.parent_recording
     assert recording.downloadable?
     assert_redirected_to recording_studio_attachable.recording_attachment_upload_path(recording)
+
+    follow_redirect!
+    assert_response :success
   end
 end
