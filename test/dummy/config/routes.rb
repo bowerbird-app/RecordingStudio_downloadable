@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   get "/recording_studio", to: redirect("/"), as: nil
   mount RecordingStudio::Engine, at: "/recording_studio"
   mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
+  mount RecordingStudioAttachable::Engine, at: "/recording_studio_attachable"
+  mount RecordingStudioDownloadable::Engine, at: "/recording_studio_downloadable"
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -23,6 +25,7 @@ Rails.application.routes.draw do
   get "docs/recordings_tree", to: "docs#recordings_tree", as: :docs_recordings_tree
   get "docs/gem_views", to: "docs#gem_views", as: :docs_gem_views
   get "docs/methods", to: "docs#methods", as: :docs_methods
+  resources :pages, only: [ :index, :new, :create ]
 
   # Defines the root path route ("/")
   root "home#index"

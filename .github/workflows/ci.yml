@@ -29,6 +29,8 @@ jobs:
         with:
           ruby-version: .ruby-version
           bundler-cache: true
+        env:
+          BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
 
       - name: Prepare RuboCop cache
         uses: actions/cache@v5
@@ -53,7 +55,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: gem_template_test
+          POSTGRES_DB: recording_studio_downloadable_test
         ports:
           - 5432:5432
         options: >-
@@ -77,6 +79,8 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
           cache-version: ${{ hashFiles('test/dummy/Gemfile.lock') }}
+        env:
+          BUNDLE_GITHUB__COM: x-access-token:${{ secrets.BOWERBIRD_ORG_CI_TOKEN }}
 
       - name: Install dummy app dependencies
         run: bundle install
@@ -91,4 +95,4 @@ jobs:
       - name: Run tests
         run: bundle exec rake test:all
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/gem_template_test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/recording_studio_downloadable_test

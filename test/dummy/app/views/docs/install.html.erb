@@ -3,19 +3,88 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Install",
-    subtitle: "Host-app setup for the mounted GemTemplate engine and its sample migrations.",
+    subtitle: "Add Downloadable to a host app. Installing the gem does not enable the capability.",
     variant: :h1
   ) %>
 
   <%= render FlatPack::SectionTitle::Component.new(
-    title: "Step 1",
-    subtitle: "Provide one section title for each step",
+    title: "Depends on Accessible and Attachable",
+    subtitle: "ZIP archives are built from Attachable original files. Accessible decides whether the actor may download the owner recording."
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+    Downloadable does not change Accessible. It does not upload, replace, or preview individual files — that stays in Attachable.
+    Active Storage must already be installed so package archives can be stored.
+  </p>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Add the gem",
+    subtitle: "Pin Recording Studio, Accessible, and Attachable the same way this dummy does, then bundle."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.2.2"
+      gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.11.0"
+      gem "recording_studio_attachable", github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.0"
+      gem "recording_studio_downloadable", github: "bowerbird-app/RecordingStudio_downloadable"
+    CODE
   ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :bash,
     code: <<~CODE
-      # Put the step instruction here.
+      bundle install
     CODE
   ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Run the generators",
+    subtitle: "Install mounts the engine and copies the initializer. Migrations create recording_studio_downloadable_packages."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :bash,
+    code: <<~CODE
+      bin/rails generate recording_studio_downloadable:install
+      bin/rails generate recording_studio_downloadable:migrations
+      bin/rails db:migrate
+    CODE
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+    The install generator mounts <code>RecordingStudioDownloadable::Engine</code> at
+    <code>/recording_studio_downloadable</code> by default (<code>--mount_path</code> to change it).
+    It can also add optional <code>config/recording_studio_downloadable.yml</code> and Tailwind <code>@source</code> lines.
+  </p>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Opt a recordable in",
+    subtitle: "Installing does not enable :downloadable. Host models include Downloadable.to."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      class Workspace < ApplicationRecord
+        recording_studio_recordable label: "Workspace", root: true
+        RecordingStudio.enable_capability(:accessible, on: self)
+
+        include RecordingStudio::Capabilities::Attachable.to(
+          allowed_content_types: ["*/*"],
+          max_file_size: 25.megabytes
+        )
+        include RecordingStudio::Capabilities::Downloadable.to(
+          source: :attachments,
+          format: :zip
+        )
+      end
+    CODE
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+    V1 only supports <code>source: :attachments</code> and <code>format: :zip</code>.
+    <code>Downloadable.to</code> with no arguments uses those defaults.
+  </p>
 </div>

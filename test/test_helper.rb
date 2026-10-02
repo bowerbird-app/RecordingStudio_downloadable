@@ -11,6 +11,8 @@ rescue LoadError
   # bundle does not load that gem; only the gem suite stubs methods.
 end
 require "rails"
+require "active_record"
+require "active_job"
 require "active_support/time"
 Time.zone ||= "UTC"
-require "gem_template"
+require "recording_studio_downloadable"

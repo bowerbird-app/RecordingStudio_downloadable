@@ -3,30 +3,89 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Methods",
-    subtitle: "Document the public methods your addon exposes.",
+    subtitle: "Public recording API from RecordingStudio::Capabilities::Downloadable::RecordingMethods.",
     variant: :h1
   ) %>
 
+  <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+    Installing the gem does not enable Downloadable. These methods are on recordings whose recordable type
+    included <code>Downloadable.to</code>. Direct Attachable children only (original blobs, not variants).
+    Trashed attachments are skipped. Empty file sets never produce a ZIP. Accessible gates the download route.
+  </p>
+
   <%= render FlatPack::SectionTitle::Component.new(
-    title: "Example method",
-    subtitle: "recordingstudio_addon.example_method",
+    title: "Opt-in and files",
+    subtitle: "downloadable?, downloadable_files, downloadable_empty?"
   ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
-    code: <<~'CODE'
-      # Explain what this method does before the example.
-      result = RecordingstudioAddon.example_method(
-        # Replace with the real arguments this method accepts.
-        input: "demo value"
-      )
-
-      # Show what the method returns or what side effect it creates.
-      puts result
+    code: <<~CODE
+      recording = RecordingStudio.root_recording_for(workspace)
+      recording.downloadable?        # true when :downloadable is enabled for this recordable type
+      recording.downloadable_files   # Array of DownloadFile (filename, content_type, byte_size, …)
+      recording.downloadable_empty?  # true when there are no direct Attachable originals
     CODE
   ) %>
 
-  <p class="text-sm text-(--body-muted-content-color)">
-    Provide one section title and codeblock for each method
-  </p>
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Generate a ZIP",
+    subtitle: "recording.downloadable_generate!"
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      package = recording.downloadable_generate!
+      # Enqueues GeneratePackageJob. Returns nil when downloadable_empty?.
+      # Reuses a ready/pending/processing package when the source fingerprint matches.
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Package state",
+    subtitle: "downloadable_package, downloadable_ready?"
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      recording.downloadable_package  # Package row for this recording + format, or nil
+      recording.downloadable_ready?
+      recording.downloadable_stale?
+      # ready? is false when sources changed after the last ZIP (stale fingerprint).
+      # Download then regenerates; GET /package never 404s a stale archive.
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Download URL",
+    subtitle: "recording.downloadable_download_path"
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      recording.downloadable_download_path
+      # Engine GET recording_package_path(recording)
+      # Controller authorizes :download via Accessible (default role :view),
+      # then redirects to a short-lived signed blob URL so the ZIP streams
+      # from storage (R2/S3 or Disk) instead of blob.download in Rails.
+      # After POST generate, the button polls GET recording_package_status_path
+      # until ready, then starts that GET so the ZIP downloads in the browser.
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Source and format",
+    subtitle: "Values stored from Downloadable.to on this recordable type."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      recording.downloadable_source   # :attachments
+      recording.downloadable_format   # :zip
+    CODE
+  ) %>
 </div>

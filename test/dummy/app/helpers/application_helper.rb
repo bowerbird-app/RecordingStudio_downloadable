@@ -1,4 +1,15 @@
+# frozen_string_literal: true
+
 module ApplicationHelper
+  def dummy_sidebar_item(text:, href:, icon:)
+    render FlatPack::Sidebar::Item::Component.new(
+      text: text,
+      href: href,
+      icon: icon,
+      active: current_page?(href)
+    )
+  end
+
   def dummy_page_nav(title:, back_url: nil, back_label: "Home")
     recording_studio_page_nav(
       title: title,
@@ -18,5 +29,20 @@ module ApplicationHelper
         )
       )
     end
+  end
+
+  def dummy_page_row_actions(recording)
+    return "No recording" unless recording
+
+    parts = [
+      link_to("Upload", recording_studio_attachable.recording_attachment_upload_path(recording), class: "underline"),
+      link_to("Attachments", recording_studio_attachable.recording_attachments_path(recording), class: "underline")
+    ]
+
+    if recording.downloadable?
+      parts << recording_studio_downloadable_button(recording, style: :ghost, size: :sm)
+    end
+
+    safe_join(parts, " · ".html_safe)
   end
 end

@@ -1,0 +1,37 @@
+# frozen_string_literal: true
+
+require "recording_studio"
+require "recording_studio_accessible"
+
+module RecordingStudioDownloadable
+  class Error < StandardError; end
+  class UnsupportedOptionError < Error; end
+  class EmptySourceError < Error; end
+  class SourceMissingError < Error; end
+  class GenerationError < Error; end
+
+  # blob.url rejects expires_in of 0 or less. Fall back when the host sets
+  # ActiveStorage.urls_expire_in to 0/nil (Rails' usual default is 5 minutes).
+  SIGNED_URL_EXPIRES_IN = 5.minutes
+
+  class << self
+    def configuration
+      @configuration ||= Configuration.new
+    end
+
+    def configure
+      yield(configuration) if block_given?
+    end
+  end
+end
+
+require "recording_studio_downloadable/version"
+require "recording_studio_downloadable/configuration"
+require "recording_studio_downloadable/download_file"
+require "recording_studio_downloadable/filename"
+require "recording_studio_downloadable/fingerprint"
+require "recording_studio_downloadable/zip_builder"
+require "recording_studio_downloadable/authorization"
+require "recording_studio_downloadable/sources/attachments"
+require "recording_studio_downloadable/engine"
+require "recording_studio/capabilities/downloadable"

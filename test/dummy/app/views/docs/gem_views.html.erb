@@ -3,14 +3,86 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Gem Views",
-    subtitle: "These are the view templates currently shipped by the gem.",
+    subtitle: "Downloadable does not ship host ERB pages. The engine serves the ZIP route and a view helper.",
     variant: :h1
   ) %>
 
-  <% view_rows = Array(@engine_views).map { |view_path| { path: view_path, source: "Gem engine" } } %>
+  <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+    There is no library UI, no attachment editor, and no engine home template.
+    Attachable owns file CRUD. This addon packages those originals and streams the archive.
+  </p>
 
-  <%= render FlatPack::Table::Component.new(data: view_rows, class: "text-sm") do |table| %>
-    <% table.column(title: "View path") { |view| view[:path] } %>
-    <% table.column(title: "Source") { |view| view[:source] } %>
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Engine routes",
+    subtitle: "Mounted in this dummy at /recording_studio_downloadable (install default)."
+  ) %>
+
+  <% route_rows = [
+    {
+      helper: "recording_package_path(recording)",
+      method: "GET",
+      path: "/recording_studio_downloadable/recordings/:recording_id/package",
+      purpose: "Authorize :download, then 302 to a short-lived signed Active Storage URL for the ZIP (R2/S3 or Disk). Does not buffer the archive in Rails. 404 when empty or not ready."
+    },
+    {
+      helper: "recording_package_path(recording)",
+      method: "POST",
+      path: "/recording_studio_downloadable/recordings/:recording_id/package",
+      purpose: "Enqueue ZIP generation, then redirect. Empty sets notice “Nothing to package.”"
+    },
+    {
+      helper: "recording_package_status_path(recording)",
+      method: "GET",
+      path: "/recording_studio_downloadable/recordings/:recording_id/package/status",
+      purpose: "JSON package state for the Stimulus poll. Same Accessible :download gate. Does not send the ZIP."
+    }
+  ] %>
+
+  <%= render FlatPack::Table::Component.new(data: route_rows, class: "text-sm") do |table| %>
+    <% table.column(title: "HTTP", html: ->(row) { row[:method] }) %>
+    <% table.column(title: "Helper", html: ->(row) { row[:helper] }) %>
+    <% table.column(title: "Path", html: ->(row) { row[:path] }) %>
+    <% table.column(title: "What it does", html: ->(row) { row[:purpose] }) %>
+  <% end %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Recording helper",
+    subtitle: "recording.downloadable_download_path is the same package show URL via engine url_helpers."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      recording.downloadable_download_path
+      # => /recording_studio_downloadable/recordings/:id/package
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "View helper",
+    subtitle: "recording_studio_downloadable_button is mixed into Action View. It is not an ERB template."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      recording_studio_downloadable_button(recording)
+      # Ready: GET Download (data-turbo=false).
+      # Pending/processing: Preparing… plus Stimulus poll of GET package/status,
+      # then authorized GET package so the ZIP starts without a manual refresh.
+      # Failed: Retry download (POST). Else: POST Download.
+    CODE
+  ) %>
+
+  <% if Array(@engine_views).any? %>
+    <%= render FlatPack::SectionTitle::Component.new(
+      title: "Engine ERB",
+      subtitle: "Templates currently shipped under app/views in the gem."
+    ) %>
+    <% view_rows = Array(@engine_views).map { |view_path| { path: view_path, source: "Gem engine" } } %>
+    <%= render FlatPack::Table::Component.new(data: view_rows, class: "text-sm") do |table| %>
+      <% table.column(title: "View path") { |view| view[:path] } %>
+      <% table.column(title: "Source") { |view| view[:source] } %>
+    <% end %>
   <% end %>
 </div>

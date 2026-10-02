@@ -27,7 +27,9 @@ workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
 accessible_workspace = Workspace.find_or_create_by!(name: "Client Workspace")
 private_workspace = Workspace.find_or_create_by!(name: "Private Workspace")
 folder = Folder.find_or_create_by!(name: "Product Docs")
-page = Page.find_or_create_by!(title: "Getting Started")
+  page = Page.find_or_create_by!(title: "Getting Started") do |record|
+    record.description = "Seeded dummy page for Attachable upload and Downloadable ZIP smoke."
+  end
 
 previous_actor = Current.actor
 Current.actor = user
@@ -41,6 +43,10 @@ begin
   folder_recording = find_or_record_child.call(folder, root_recording, root_recording)
 
   find_or_record_child.call(page, root_recording, folder_recording)
+
+  [root_recording, accessible_root_recording, private_root_recording].each do |recording|
+    RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
+  end
 ensure
   Current.actor = previous_actor
 end

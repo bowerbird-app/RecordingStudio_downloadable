@@ -1,0 +1,38 @@
+<% dummy_page_nav(title: "New page", back_url: pages_path, back_label: "Pages") %>
+
+<div class="flex w-full max-w-xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "New page",
+    subtitle: "Creates a Page under Product Docs (or Studio Workspace). After save you upload files with Attachable.",
+    variant: :h1
+  ) %>
+
+  <%= form_with model: @page, url: pages_path, class: "flex flex-col gap-4" do %>
+    <%= render FlatPack::TextInput::Component.new(
+      name: "page[title]",
+      label: "Title",
+      value: @page.title,
+      required: true,
+      error: @page.errors[:title].presence&.to_sentence
+    ) %>
+
+    <%= render FlatPack::TextArea::Component.new(
+      name: "page[description]",
+      label: "Description",
+      value: @page.description,
+      rows: 4,
+      error: @page.errors[:description].presence&.to_sentence
+    ) %>
+
+    <p class="text-sm text-(--surface-muted-content-color)">
+      Attachment upload is the next step, on this page’s recording (direct upload to Active Storage).
+    </p>
+
+    <%= render FlatPack::Button::Component.new(
+      text: "Create page",
+      style: :primary,
+      size: :md,
+      type: "submit"
+    ) %>
+  <% end %>
+</div>

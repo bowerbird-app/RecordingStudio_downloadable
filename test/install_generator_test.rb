@@ -3,11 +3,11 @@
 require "test_helper"
 require "fileutils"
 require "tmpdir"
-require "generators/gem_template/install/install_generator"
+require "generators/recording_studio_downloadable/install/install_generator"
 
 class InstallGeneratorTest < Minitest::Test
   INSTALL_TEMPLATE_PATH = File.expand_path(
-    "../lib/generators/gem_template/install/templates/INSTALL.md",
+    "../lib/generators/recording_studio_downloadable/install/templates/INSTALL.md",
     __dir__
   )
 
@@ -19,7 +19,7 @@ class InstallGeneratorTest < Minitest::Test
   end
 
   def build_generator(destination_root, options = {})
-    GemTemplate::Generators::InstallGenerator.new(
+    RecordingStudioDownloadable::Generators::InstallGenerator.new(
       [],
       options,
       destination_root: destination_root
@@ -34,7 +34,7 @@ class InstallGeneratorTest < Minitest::Test
       generator.mount_engine
     end
 
-    assert_equal ["mount GemTemplate::Engine, at: \"/addons/recording\""], routes
+    assert_equal ["mount RecordingStudioDownloadable::Engine, at: \"/addons/recording\""], routes
   end
 
   def test_add_tailwind_source_injects_engine_and_flatpack_sources
@@ -60,8 +60,8 @@ class InstallGeneratorTest < Minitest::Test
       css_path = File.join(dir, "app/assets/tailwind/application.css")
       File.write(css_path, <<~CSS)
         @import "tailwindcss";
-        @source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";
-        @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";
+        @source "../../vendor/bundle/**/recording_studio_downloadable/app/views/**/*.erb";
+        @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_downloadable-*/app/views/**/*.erb";
         @source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";
         @source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";
       CSS
@@ -135,13 +135,41 @@ class InstallGeneratorTest < Minitest::Test
     assert_equal ["INSTALL.md"], shown_templates
   end
 
+  def test_add_javascript_pins_appends_importmap_and_stimulus_loader
+    with_temp_app do |dir|
+      FileUtils.mkdir_p(File.join(dir, "config"))
+      FileUtils.mkdir_p(File.join(dir, "app/javascript/controllers"))
+      importmap_path = File.join(dir, "config/importmap.rb")
+      index_path = File.join(dir, "app/javascript/controllers/index.js")
+      File.write(importmap_path, "pin \"application\"\n")
+      File.write(index_path, "lazyLoadControllersFrom(\"controllers\", application)\n")
+
+      generator = build_generator(dir)
+      Rails.stub(:root, Pathname.new(dir)) do
+        generator.stub(:append_to_file, lambda { |path, *args, &block|
+          File.open(path, "a") { |file| file.write(block ? block.call : args.first) }
+        }) do
+          generator.add_javascript_pins
+        end
+      end
+
+      importmap = File.read(importmap_path)
+      index = File.read(index_path)
+      assert_includes importmap, "controllers/recording_studio_downloadable"
+      assert_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
+    end
+  end
+
   def test_install_guide_includes_migration_and_host_setup_steps
     install_guide = File.read(INSTALL_TEMPLATE_PATH)
 
-    assert_includes install_guide, "bin/rails generate gem_template:migrations"
+    assert_includes install_guide, "bin/rails generate recording_studio_downloadable:migrations"
     assert_includes install_guide, "bin/rails db:migrate"
     assert_includes install_guide, "auth, layout, and current actor integration"
     assert_includes install_guide, "recording_studio_recordable"
+    assert_includes install_guide, "GET …/package/status"
+    assert_includes install_guide, "lazyLoadControllersFrom"
+    assert_includes install_guide, "blob.url"
     refute_includes install_guide, "RecordingStudio v3"
   end
 
@@ -161,8 +189,9 @@ class InstallGeneratorTest < Minitest::Test
 
   def tailwind_source_lines
     [
-      '@source "../../vendor/bundle/**/gem_template/app/views/**/*.erb";',
-      '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/gem_template-*/app/views/**/*.erb";',
+      '@source "../../vendor/bundle/**/recording_studio_downloadable/app/views/**/*.erb";',
+      '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+      'recording_studio_downloadable-*/app/views/**/*.erb";',
       '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
       '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
     ]
