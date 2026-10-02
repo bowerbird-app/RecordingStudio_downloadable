@@ -112,9 +112,9 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes controller_source, '"flat_pack_sidebar"'
     assert_includes sidebar_layout, "FlatPack::SidebarLayout::Component"
     assert_includes sidebar_layout, 'storage_key: "flat-pack-sidebar-layout"'
-    assert_includes sidebar, "docs_install_path"
-    assert_includes sidebar, "docs_methods_path"
-    assert_includes sidebar, "root_path"
+    assert_includes sidebar, "main_app.docs_install_path"
+    assert_includes sidebar, "main_app.docs_methods_path"
+    assert_includes sidebar, "main_app.root_path"
   end
 
   def test_dummy_login_layout_keeps_flatpack_assets_without_tight_main_offset
