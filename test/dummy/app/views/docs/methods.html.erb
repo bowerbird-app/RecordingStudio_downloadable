@@ -68,6 +68,8 @@
       recording.downloadable_download_path
       # Engine GET recording_package_path(recording)
       # Controller authorizes :download via Accessible (default role :view)
+      # After POST generate, the button polls GET recording_package_status_path
+      # until ready, then starts that GET so the ZIP downloads in the browser.
     CODE
   ) %>
 

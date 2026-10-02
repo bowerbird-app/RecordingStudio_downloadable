@@ -10,4 +10,8 @@ Next steps:
    Installing this gem does not enable `:downloadable`.
 6. Mount routes are added at the configured mount path. Adjust auth, layout, and current actor integration
    to match your host app. Keep `recording_studio_recordable` declarations on host types.
+7. Pin the Stimulus package controller so “Preparing…” polls `GET …/package/status` (Accessible `:download`)
+   and starts the authorized `GET …/package` ZIP when the package is `ready`. Failed packages show Retry
+   instead of spinning forever. The installer adds the importmap pin and `lazyLoadControllersFrom` when
+   those host files exist.
 

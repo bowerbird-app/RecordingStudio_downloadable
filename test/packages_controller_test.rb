@@ -68,4 +68,49 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :redirect
   end
+
+  test "status returns json for an authorized actor and forbids others" do
+    get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+
+    assert_response :success
+    payload = response.parsed_body
+    assert_equal "missing", payload["state"]
+    assert_equal false, payload["ready"]
+    assert_equal false, payload["failed"]
+    assert_nil payload["download_url"]
+
+    perform_enqueued_jobs { @recording.downloadable_generate! }
+
+    get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+
+    assert_response :success
+    payload = response.parsed_body
+    assert_equal "ready", payload["state"]
+    assert_equal true, payload["ready"]
+    assert_equal recording_studio_downloadable.recording_package_path(@recording), payload["download_url"]
+
+    sign_in @other
+    get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+
+    assert_response :forbidden
+  end
+
+  test "status reports failed packages without sending a zip" do
+    package = RecordingStudioDownloadable::Package.create!(
+      recording: @recording,
+      format: "zip",
+      state: "failed",
+      failure_message: "Source set is empty"
+    )
+
+    get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+
+    assert_response :success
+    payload = response.parsed_body
+    assert_equal package.state, payload["state"]
+    assert_equal true, payload["failed"]
+    assert_equal "Source set is empty", payload["failure_message"]
+    assert_equal false, payload["ready"]
+    assert_nil payload["download_url"]
+  end
 end

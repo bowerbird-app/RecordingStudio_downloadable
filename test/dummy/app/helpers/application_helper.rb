@@ -40,9 +40,7 @@ module ApplicationHelper
     ]
 
     if recording.downloadable?
-      download_options = { class: "underline" }
-      download_options[:data] = { turbo_method: :post } unless recording.downloadable_ready?
-      parts << link_to("Download", recording.downloadable_download_path, download_options)
+      parts << recording_studio_downloadable_button(recording, style: :ghost, size: :sm)
     end
 
     safe_join(parts, " · ".html_safe)

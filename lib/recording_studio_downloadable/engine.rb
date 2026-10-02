@@ -118,6 +118,12 @@ module RecordingStudioDownloadable
       end
     end
 
+    initializer "recording_studio_downloadable.assets" do |app|
+      next unless app.config.respond_to?(:assets)
+
+      app.config.assets.paths << root.join("app/javascript")
+    end
+
     initializer "recording_studio_downloadable.action_view_helpers" do
       ActiveSupport.on_load(:action_view) do
         include RecordingStudioDownloadable::ApplicationHelper

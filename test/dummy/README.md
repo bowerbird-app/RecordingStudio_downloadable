@@ -34,6 +34,7 @@ Then open the app and sign in with:
 - `/users/sign_in` - Devise sign-in page
 - `/docs/install`, `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` - dummy-only starter pages
 - `/pages` - dummy table of Page recordables; `/pages/new` creates a page then opens Attachable upload
+- Download on home or Pages `POST`s ZIP generation. Stimulus polls `/recording_studio_downloadable/recordings/:id/package/status` until `ready`, then starts the authorized GET so the ZIP downloads without a manual refresh.
 - `/up` - Rails health check
 
 ## Active Storage / Cloudflare R2

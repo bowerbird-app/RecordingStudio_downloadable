@@ -104,6 +104,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_select "table", minimum: 1
     assert_includes response.body, "does not ship host ERB pages"
     assert_includes response.body, "recording_package_path"
+    assert_includes response.body, "recording_package_status_path"
     assert_includes response.body, "recording_studio_downloadable_button"
     refute_includes response.body, "app/views/recording_studio_downloadable/home/index.html.erb"
   end
@@ -121,6 +122,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "recording.downloadable_package"
     assert_includes response.body, "recording.downloadable_ready?"
     assert_includes response.body, "recording.downloadable_download_path"
+    assert_includes response.body, "recording_package_status_path"
     assert_includes response.body, "Installing the gem does not enable Downloadable."
     assert_includes response.body, "Direct Attachable children only"
   end

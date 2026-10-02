@@ -29,14 +29,20 @@
       method: "POST",
       path: "/recording_studio_downloadable/recordings/:recording_id/package",
       purpose: "Enqueue ZIP generation, then redirect. Empty sets notice “Nothing to package.”"
+    },
+    {
+      helper: "recording_package_status_path(recording)",
+      method: "GET",
+      path: "/recording_studio_downloadable/recordings/:recording_id/package/status",
+      purpose: "JSON package state for the Stimulus poll. Same Accessible :download gate. Does not send the ZIP."
     }
   ] %>
 
   <%= render FlatPack::Table::Component.new(data: route_rows, class: "text-sm") do |table| %>
-    <% table.column(title: "HTTP") { |row| row[:method] } %>
-    <% table.column(title: "Helper") { |row| row[:helper] } %>
-    <% table.column(title: "Path") { |row| row[:path] } %>
-    <% table.column(title: "What it does") { |row| row[:purpose] } %>
+    <% table.column(title: "HTTP", html: ->(row) { row[:method] }) %>
+    <% table.column(title: "Helper", html: ->(row) { row[:helper] }) %>
+    <% table.column(title: "Path", html: ->(row) { row[:path] }) %>
+    <% table.column(title: "What it does", html: ->(row) { row[:purpose] }) %>
   <% end %>
 
   <%= render FlatPack::SectionTitle::Component.new(
@@ -61,7 +67,10 @@
     language: :ruby,
     code: <<~CODE
       recording_studio_downloadable_button(recording)
-      # Ready: GET Download. Pending/processing: Preparing…. Else: POST Download.
+      # Ready: GET Download (data-turbo=false).
+      # Pending/processing: Preparing… plus Stimulus poll of GET package/status,
+      # then authorized GET package so the ZIP starts without a manual refresh.
+      # Failed: Retry download (POST). Else: POST Download.
     CODE
   ) %>
 

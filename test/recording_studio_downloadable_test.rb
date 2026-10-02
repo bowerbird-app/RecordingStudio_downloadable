@@ -117,6 +117,19 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes sidebar, "main_app.root_path"
   end
 
+  def test_dummy_pins_downloadable_package_stimulus_controller
+    importmap = File.read(File.expand_path("dummy/config/importmap.rb", __dir__))
+    index = File.read(File.expand_path("dummy/app/javascript/controllers/index.js", __dir__))
+    controller = File.read(
+      File.expand_path("../app/javascript/controllers/recording_studio_downloadable/package_controller.js", __dir__)
+    )
+
+    assert_includes importmap, "controllers/recording_studio_downloadable"
+    assert_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable"'
+    assert_includes controller, "package/status"
+    assert_includes controller, "triggerDownload"
+  end
+
   def test_dummy_login_layout_keeps_flatpack_assets_without_tight_main_offset
     application_layout = File.read(File.expand_path("dummy/app/views/layouts/application.html.erb", __dir__))
 

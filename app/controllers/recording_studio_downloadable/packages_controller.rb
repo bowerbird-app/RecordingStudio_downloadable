@@ -25,7 +25,23 @@ module RecordingStudioDownloadable
       authorize_download!(recording)
 
       recording.downloadable_generate!
+      recording.reload
+      flash[:recording_studio_downloadable_autostart] = recording.id
       redirect_back_or_to fallback_location, notice: generate_notice(recording)
+    end
+
+    def status
+      recording = find_recording
+      authorize_download!(recording)
+
+      package = recording.downloadable_package
+      render json: {
+        state: package&.state || "missing",
+        ready: recording.downloadable_ready?,
+        failed: package&.failed? || false,
+        failure_message: package&.failure_message,
+        download_url: recording.downloadable_ready? ? recording.downloadable_download_path : nil
+      }
     end
 
     private

@@ -2,6 +2,8 @@
 
 RecordingStudioDownloadable::Engine.routes.draw do
   resources :recordings, only: [] do
-    resource :package, only: %i[show create]
+    resource :package, only: %i[show create] do
+      get :status
+    end
   end
 end

@@ -32,6 +32,11 @@ module RecordingStudioDownloadable
         template "recording_studio_downloadable.yml", "config/recording_studio_downloadable.yml"
       end
 
+      def add_javascript_pins
+        add_importmap_pin
+        add_stimulus_lazy_load
+      end
+
       def add_tailwind_source
         tailwind_css_path = Rails.root.join("app/assets/tailwind/application.css")
         return show_missing_tailwind_notice unless File.exist?(tailwind_css_path)
@@ -103,6 +108,35 @@ module RecordingStudioDownloadable
           '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
         ]
+      end
+
+      def add_importmap_pin
+        path = Rails.root.join("config/importmap.rb")
+        return unless File.exist?(path)
+
+        marker = "controllers/recording_studio_downloadable"
+        content = File.read(path)
+        return if content.include?(marker)
+
+        append_to_file path do
+          <<~RUBY
+
+            pin_all_from RecordingStudioDownloadable::Engine.root.join("app/javascript/controllers/recording_studio_downloadable"),
+              under: "controllers/recording_studio_downloadable",
+              to: "controllers/recording_studio_downloadable"
+          RUBY
+        end
+      end
+
+      def add_stimulus_lazy_load
+        path = Rails.root.join("app/javascript/controllers/index.js")
+        return unless File.exist?(path)
+
+        line = 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
+        content = File.read(path)
+        return if content.include?(line)
+
+        append_to_file path, "\n#{line}\n"
       end
     end
   end

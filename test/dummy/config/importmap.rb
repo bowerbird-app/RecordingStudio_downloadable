@@ -9,6 +9,9 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 pin_all_from RecordingStudioAttachable::Engine.root.join("app/javascript/controllers/recording_studio_attachable"),
   under: "controllers/recording_studio_attachable",
   to: "controllers/recording_studio_attachable"
+pin_all_from RecordingStudioDownloadable::Engine.root.join("app/javascript/controllers/recording_studio_downloadable"),
+  under: "controllers/recording_studio_downloadable",
+  to: "controllers/recording_studio_downloadable"
 
 # Pin FlatPack controllers
 pin_all_from FlatPack::Engine.root.join("app/javascript/flat_pack/controllers"), under: "controllers/flat_pack", to: "flat_pack/controllers", preload: false

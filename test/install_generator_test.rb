@@ -135,6 +135,31 @@ class InstallGeneratorTest < Minitest::Test
     assert_equal ["INSTALL.md"], shown_templates
   end
 
+  def test_add_javascript_pins_appends_importmap_and_stimulus_loader
+    with_temp_app do |dir|
+      FileUtils.mkdir_p(File.join(dir, "config"))
+      FileUtils.mkdir_p(File.join(dir, "app/javascript/controllers"))
+      importmap_path = File.join(dir, "config/importmap.rb")
+      index_path = File.join(dir, "app/javascript/controllers/index.js")
+      File.write(importmap_path, "pin \"application\"\n")
+      File.write(index_path, "lazyLoadControllersFrom(\"controllers\", application)\n")
+
+      generator = build_generator(dir)
+      Rails.stub(:root, Pathname.new(dir)) do
+        generator.stub(:append_to_file, lambda { |path, *args, &block|
+          File.open(path, "a") { |file| file.write(block ? block.call : args.first) }
+        }) do
+          generator.add_javascript_pins
+        end
+      end
+
+      importmap = File.read(importmap_path)
+      index = File.read(index_path)
+      assert_includes importmap, "controllers/recording_studio_downloadable"
+      assert_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
+    end
+  end
+
   def test_install_guide_includes_migration_and_host_setup_steps
     install_guide = File.read(INSTALL_TEMPLATE_PATH)
 
@@ -142,6 +167,8 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes install_guide, "bin/rails db:migrate"
     assert_includes install_guide, "auth, layout, and current actor integration"
     assert_includes install_guide, "recording_studio_recordable"
+    assert_includes install_guide, "GET …/package/status"
+    assert_includes install_guide, "lazyLoadControllersFrom"
     refute_includes install_guide, "RecordingStudio v3"
   end
 
