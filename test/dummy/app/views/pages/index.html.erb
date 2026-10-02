@@ -1,45 +1,54 @@
 <% dummy_page_nav(title: "Pages", back_url: root_path) %>
 
 <div class="flex w-full flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Pages",
-    subtitle: "Page recordables in this dummy. Downloadable is opted in on Workspace, not Page — use Home for the ZIP control.",
-    variant: :h1
-  ) %>
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <%= render FlatPack::PageTitle::Component.new(
+      title: "Pages",
+      subtitle: "Page recordables in this dummy. New pages are recorded under Product Docs (or Studio Workspace), then open Attachable upload.",
+      variant: :h1,
+      class: "mb-0 pb-0"
+    ) %>
+    <%= render FlatPack::Button::Component.new(
+      text: "New",
+      style: :primary,
+      size: :md,
+      href: new_page_path
+    ) %>
+  </div>
 
-  <% if @pages.any? %>
-    <%= render FlatPack::List::Component.new(divider: true) do %>
-      <% @pages.each do |page| %>
-        <% recording = RecordingStudio::Recording.find_by(recordable: page, trashed_at: nil) %>
-        <% parent = recording&.parent_recording&.recordable %>
-        <%= render FlatPack::List::Item.new(icon: :type) do %>
-          <div class="flex flex-col gap-1">
-            <span><%= page.title.presence || "Untitled page" %></span>
-            <span class="text-sm text-(--surface-muted-content-color)">
-              <% if recording %>
-                Recording <%= recording.id %>
-                <% if parent %>
-                  • under <%= parent.try(:name).presence || parent.try(:title).presence || parent.class.name %>
-                <% end %>
-                • Downloadable: <%= recording.downloadable? %>
-              <% else %>
-                No recording yet
-              <% end %>
-            </span>
-            <span class="text-sm">
-              <%= link_to "Recordings tree", docs_recordings_tree_path, class: "underline" %>
-              <% if recording && defined?(recording_studio_attachable) %>
-                · <%= link_to "Attachments", recording_studio_attachable.recording_attachments_path(recording), class: "underline" %>
-              <% end %>
-              · <%= link_to "Workspace ZIP", root_path, class: "underline" %>
-            </span>
-          </div>
-        <% end %>
+  <% if @page_rows.any? %>
+    <%= render FlatPack::Table::Component.new(data: @page_rows, class: "text-sm") do |table| %>
+      <% table.column(title: "Title") { |row| row[:title] } %>
+      <% table.column(title: "Description") { |row| row[:description] } %>
+      <% table.column(title: "Downloadable") { |row| row[:downloadable] ? "yes" : "no" } %>
+      <% table.column(title: "Actions") do |row| %>
+        <% recording = row[:recording] %>
+        <span class="flex flex-wrap gap-2">
+          <% if recording %>
+            <%= render FlatPack::Button::Component.new(
+              text: "Upload",
+              style: :primary,
+              size: :sm,
+              href: recording_studio_attachable.recording_attachment_upload_path(recording)
+            ) %>
+            <%= render FlatPack::Button::Component.new(
+              text: "Attachments",
+              style: :secondary,
+              size: :sm,
+              href: recording_studio_attachable.recording_attachments_path(recording)
+            ) %>
+            <% if recording.downloadable? %>
+              <%= recording_studio_downloadable_button(recording, style: :ghost, size: :sm) %>
+            <% end %>
+          <% else %>
+            <span class="text-(--surface-muted-content-color)">No recording</span>
+          <% end %>
+        </span>
       <% end %>
     <% end %>
   <% else %>
     <p class="text-sm text-(--surface-muted-content-color)">
-      No pages yet. Seed the dummy app to create “Getting Started”.
+      No pages yet. Use New, or seed the dummy app to create “Getting Started”.
     </p>
   <% end %>
 </div>

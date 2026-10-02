@@ -175,6 +175,19 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme_source, "/recording_studio"
     assert_includes readme_source, "redirects to `/`"
     assert_includes readme_source, "flat_pack_sidebar"
+    assert_includes readme_source, "DUMMY_ACTIVE_STORAGE_SERVICE"
+    assert_includes readme_source, "DUMMY_AWS_ACCESS_KEY_ID"
+  end
+
+  def test_dummy_storage_yml_wires_r2_from_env_without_secrets
+    storage = File.read(File.expand_path("dummy/config/storage.yml", __dir__))
+
+    assert_includes storage, "cloudflare_r2:"
+    assert_includes storage, "ENV[\"DUMMY_AWS_ACCESS_KEY_ID\"]"
+    assert_includes storage, "ENV[\"DUMMY_AWS_SECRET_ACCESS_KEY\"]"
+    assert_includes storage, "force_path_style: true"
+    refute_includes storage, "AKIA"
+    refute_includes storage, "cfut"
   end
 
   def test_product_readme_is_the_template_guide

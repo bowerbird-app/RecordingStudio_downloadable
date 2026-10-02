@@ -79,8 +79,10 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     refute RecordingStudio.capability_enabled?(:accessible, for: Folder)
     assert RecordingStudio.capability_enabled?(:attachable, for: Folder)
     refute RecordingStudio.capability_enabled?(:downloadable, for: Folder)
-    refute RecordingStudio.capability_enabled?(:downloadable, for: Page)
-    assert_equal [ "Workspace" ], RecordingStudio.configuration.enabled_recordable_types_for(:downloadable)
+    assert RecordingStudio.capability_enabled?(:attachable, for: Page)
+    assert RecordingStudio.capability_enabled?(:downloadable, for: Page)
+    assert_includes RecordingStudio.configuration.enabled_recordable_types_for(:downloadable), "Workspace"
+    assert_includes RecordingStudio.configuration.enabled_recordable_types_for(:downloadable), "Page"
     assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
   end
 end

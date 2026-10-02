@@ -33,8 +33,23 @@ Then open the app and sign in with:
 - `/recording_studio` - redirects to `/` while the mounted Recording Studio engine stays available under that prefix for non-root routes
 - `/users/sign_in` - Devise sign-in page
 - `/docs/install`, `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` - dummy-only starter pages
-- `/pages` - dummy index of Page recordables for smoke testing
+- `/pages` - dummy table of Page recordables; `/pages/new` creates a page then opens Attachable upload
 - `/up` - Rails health check
+
+## Active Storage / Cloudflare R2
+
+Uploads use Disk (`local`) unless you point the dummy at R2. Set these in the environment (never commit secrets):
+
+```bash
+export DUMMY_ACTIVE_STORAGE_SERVICE=cloudflare_r2   # or amazon
+export DUMMY_AWS_ACCESS_KEY_ID=...
+export DUMMY_AWS_SECRET_ACCESS_KEY=...
+export DUMMY_AWS_REGION=auto
+export DUMMY_AWS_BUCKET=attachable-test
+# optional: export DUMMY_AWS_ENDPOINT=https://<accountid>.r2.cloudflarestorage.com
+```
+
+`config/storage.yml` reads those variables. The default endpoint is the attachable-test R2 account. Restart `bin/rails server` after changing env. Bucket CORS is configured on R2 (including the ngrok host), not in this repo.
 
 ## Why This App Exists
 

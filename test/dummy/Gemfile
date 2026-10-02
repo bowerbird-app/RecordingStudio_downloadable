@@ -62,6 +62,8 @@ gem "thruster", require: false
 # require: false so the app boots on hosts that have not installed libvips yet.
 gem "image_processing", "~> 2.2"
 gem "ruby-vips", require: false
+# S3-compatible client for Cloudflare R2 when DUMMY_ACTIVE_STORAGE_SERVICE is set.
+gem "aws-sdk-s3", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
