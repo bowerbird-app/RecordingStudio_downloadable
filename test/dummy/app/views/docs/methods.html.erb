@@ -67,7 +67,9 @@
     code: <<~CODE
       recording.downloadable_download_path
       # Engine GET recording_package_path(recording)
-      # Controller authorizes :download via Accessible (default role :view)
+      # Controller authorizes :download via Accessible (default role :view),
+      # then redirects to a short-lived signed blob URL so the ZIP streams
+      # from storage (R2/S3 or Disk) instead of blob.download in Rails.
       # After POST generate, the button polls GET recording_package_status_path
       # until ready, then starts that GET so the ZIP downloads in the browser.
     CODE

@@ -130,6 +130,16 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes controller, "triggerDownload"
   end
 
+  def test_packages_show_redirects_to_signed_blob_url_instead_of_buffering
+    controller = File.expand_path("../app/controllers/recording_studio_downloadable/packages_controller.rb", __dir__)
+    source = File.read(controller)
+
+    assert_includes source, "blob.url("
+    assert_includes source, "expires_in: ActiveStorage.urls_expire_in"
+    refute_includes source, "blob.download"
+    refute_includes source, "send_data"
+  end
+
   def test_dummy_login_layout_keeps_flatpack_assets_without_tight_main_offset
     application_layout = File.read(File.expand_path("dummy/app/views/layouts/application.html.erb", __dir__))
 
@@ -219,6 +229,8 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute_includes readme, "RecordingStudio v3"
     refute_includes readme, "ExampleService"
     refute_includes readme, "recording_studio/v3.0.0"
+    assert_includes readme, "blob.url"
+    assert_includes readme, "does not call `blob.download`"
   end
 
   def test_dummy_home_page_uses_demo_title_only

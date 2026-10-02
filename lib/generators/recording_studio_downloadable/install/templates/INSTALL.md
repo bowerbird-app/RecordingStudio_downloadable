@@ -14,4 +14,6 @@ Next steps:
    and starts the authorized `GET …/package` ZIP when the package is `ready`. Failed packages show Retry
    instead of spinning forever. The installer adds the importmap pin and `lazyLoadControllersFrom` when
    those host files exist.
+8. Large ZIP downloads: authorized `GET …/package` redirects to a short-lived signed Active Storage URL
+   (`blob.url`). Bytes stream from Disk or R2/S3. The app does not buffer the archive with `blob.download`.
 

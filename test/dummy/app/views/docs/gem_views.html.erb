@@ -22,7 +22,7 @@
       helper: "recording_package_path(recording)",
       method: "GET",
       path: "/recording_studio_downloadable/recordings/:recording_id/package",
-      purpose: "Download the ready ZIP. 404 when empty or not ready. Requires Accessible for mapped :download role."
+      purpose: "Authorize :download, then 302 to a short-lived signed Active Storage URL for the ZIP (R2/S3 or Disk). Does not buffer the archive in Rails. 404 when empty or not ready."
     },
     {
       helper: "recording_package_path(recording)",

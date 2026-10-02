@@ -9,15 +9,7 @@ module RecordingStudioDownloadable
       package = recording.downloadable_package
       raise ActiveRecord::RecordNotFound unless recording.downloadable_ready? && package&.archive&.attached?
 
-      blob = package.archive.blob
-      filename = download_filename(recording)
-
-      send_data(
-        blob.download,
-        filename: filename,
-        type: "application/zip",
-        disposition: "attachment"
-      )
+      redirect_to_archive_url!(package.archive.blob, filename: download_filename(recording))
     end
 
     def create
@@ -50,6 +42,21 @@ module RecordingStudioDownloadable
       recordable = recording.recordable
       base = recordable.try(:name).presence || recordable.try(:title).presence || recording.id
       "#{Filename.sanitize(base)}.zip"
+    end
+
+    def redirect_to_archive_url!(blob, filename:)
+      ActiveStorage::Current.url_options ||= {
+        protocol: request.protocol,
+        host: request.host,
+        port: request.port
+      }
+
+      redirect_to blob.url(
+        expires_in: ActiveStorage.urls_expire_in,
+        disposition: :attachment,
+        filename: ActiveStorage::Filename.new(filename),
+        content_type: "application/zip"
+      ), allow_other_host: true
     end
 
     def generate_notice(recording)

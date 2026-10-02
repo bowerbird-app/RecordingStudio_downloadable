@@ -18,17 +18,22 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
   end
 
-  test "download serves a ready zip with attachment disposition" do
+  test "authorized download redirects to a short-lived blob url without buffering the zip" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
 
     get recording_studio_downloadable.recording_package_path(@recording)
 
+    assert_response :redirect
+    location = response.redirect_url
+    assert_predicate location, :present?
+    refute_match(%r{/recording_studio_downloadable/recordings/.+/package\z}, URI.parse(location).path)
+    assert_match(%r{attachment|rails/active_storage|X-Amz-Signature|response-content-disposition}i, location)
+
+    follow_redirect!
+
     assert_response :success
-    assert_equal "application/zip", response.media_type
     assert_match(/attachment/, response.headers["Content-Disposition"].to_s)
     assert_match(/\.zip/, response.headers["Content-Disposition"].to_s)
-    refute_match(%r{/rails/active_storage}, response.headers["Location"].to_s)
-    refute_match(%r{/rails/active_storage}, response.body.to_s)
 
     entries = {}
     Zip::File.open_buffer(response.body) do |zip|
@@ -50,6 +55,7 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     get recording_studio_downloadable.recording_package_path(@recording)
 
     assert_response :forbidden
+    assert_nil response.redirect_url
   end
 
   test "empty recording download is not found" do

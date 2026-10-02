@@ -85,3 +85,9 @@ dummy GitHub tag `v4.2.2`, dummy GitHub tag `v0.11.0`, dummy GitHub tag `v0.5.1`
 Sign in at `/users/sign_in` (`admin@admin.com` / `Password`). The home page and `/pages` show a Download control.
 
 Clicking Download `POST`s generation, then Stimulus polls `GET …/package/status` until the package is `ready` (or `failed`). When ready, the authorized `GET …/package` starts so the ZIP downloads without a manual refresh. Accessible still gates `:download`.
+
+## Serving large ZIPs
+
+`GET …/package` checks Accessible `:download`, then **redirects** to a short-lived signed Active Storage URL (`blob.url`, `expires_in: ActiveStorage.urls_expire_in`). The browser (or R2) streams bytes from storage. The app does not call `blob.download` or `send_data` on the archive.
+
+On S3/R2 the signed GET includes `response-content-disposition` so the filename stays `Something.zip`. Disk service uses the authenticated `/rails/active_storage/disk/...` URL with the same disposition in the signed token.
