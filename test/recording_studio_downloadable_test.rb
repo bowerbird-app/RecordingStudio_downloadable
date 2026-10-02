@@ -135,7 +135,8 @@ class RecordingStudioDownloadableTest < Minitest::Test
     source = File.read(controller)
 
     assert_includes source, "blob.url("
-    assert_includes source, "expires_in: ActiveStorage.urls_expire_in"
+    assert_includes source, "expires_in: archive_url_expires_in"
+    assert_includes source, "SIGNED_URL_EXPIRES_IN"
     refute_includes source, "blob.download"
     refute_includes source, "send_data"
   end

@@ -62,11 +62,19 @@ module RecordingStudioDownloadable
       }
 
       redirect_to blob.url(
-        expires_in: ActiveStorage.urls_expire_in,
+        expires_in: archive_url_expires_in,
         disposition: :attachment,
         filename: ActiveStorage::Filename.new(filename),
         content_type: "application/zip"
       ), allow_other_host: true
+    end
+
+    def archive_url_expires_in
+      configured = ActiveStorage.urls_expire_in
+      seconds = configured.respond_to?(:to_i) ? configured.to_i : 0
+      return configured if seconds.positive?
+
+      RecordingStudioDownloadable::SIGNED_URL_EXPIRES_IN
     end
 
     def respond_not_ready(recording)

@@ -42,6 +42,31 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "packed", entries["pack.txt"]
   end
 
+  test "authorized download still redirects when urls_expire_in is 0" do
+    perform_enqueued_jobs { @recording.downloadable_generate! }
+    previous = ActiveStorage.urls_expire_in
+    ActiveStorage.urls_expire_in = 0
+
+    get recording_studio_downloadable.recording_package_path(@recording)
+
+    assert_response :redirect
+    location = response.redirect_url
+    assert_predicate location, :present?
+    refute_match(%r{/recording_studio_downloadable/recordings/.+/package\z}, URI.parse(location).path)
+    assert_match(%r{attachment|rails/active_storage|X-Amz-Signature|response-content-disposition}i, location)
+
+    follow_redirect!
+
+    assert_response :success
+    entries = {}
+    Zip::File.open_buffer(response.body) do |zip|
+      zip.each { |entry| entries[entry.name] = entry.get_input_stream.read }
+    end
+    assert_equal "packed", entries["pack.txt"]
+  ensure
+    ActiveStorage.urls_expire_in = previous
+  end
+
   test "download is not found when the recording has no files" do
     empty = create_workspace_recording
     grant_download_access!(empty, @user)

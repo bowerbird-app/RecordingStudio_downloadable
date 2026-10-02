@@ -88,6 +88,6 @@ Clicking Download `POST`s generation, then Stimulus polls `GET …/package/statu
 
 ## Serving large ZIPs
 
-`GET …/package` checks Accessible `:download`, then **redirects** to a short-lived signed Active Storage URL (`blob.url`, `expires_in: ActiveStorage.urls_expire_in`). The browser (or R2) streams bytes from storage. The app does not call `blob.download` or `send_data` on the archive.
+`GET …/package` checks Accessible `:download`, then **redirects** to a short-lived signed Active Storage URL (`blob.url`). Expiry uses `ActiveStorage.urls_expire_in` when it is a positive duration; if that config is `0` or blank, the gem uses `SIGNED_URL_EXPIRES_IN` (5 minutes) so signing never raises. The browser (or R2) streams bytes from storage. The app does not call `blob.download` or `send_data` on the archive.
 
 On S3/R2 the signed GET includes `response-content-disposition` so the filename stays `Something.zip`. Disk service uses the authenticated `/rails/active_storage/disk/...` URL with the same disposition in the signed token.

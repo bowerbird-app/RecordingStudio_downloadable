@@ -10,6 +10,10 @@ module RecordingStudioDownloadable
   class SourceMissingError < Error; end
   class GenerationError < Error; end
 
+  # blob.url rejects expires_in of 0 or less. Fall back when the host sets
+  # ActiveStorage.urls_expire_in to 0/nil (Rails' usual default is 5 minutes).
+  SIGNED_URL_EXPIRES_IN = 5.minutes
+
   class << self
     def configuration
       @configuration ||= Configuration.new
