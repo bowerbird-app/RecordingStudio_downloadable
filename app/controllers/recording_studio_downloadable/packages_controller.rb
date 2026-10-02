@@ -6,9 +6,7 @@ module RecordingStudioDownloadable
       recording = find_recording
       authorize_download!(recording)
 
-      if recording.downloadable_empty?
-        raise ActiveRecord::RecordNotFound
-      end
+      raise ActiveRecord::RecordNotFound if recording.downloadable_empty?
 
       unless recording.downloadable_ready?
         recording.downloadable_generate!

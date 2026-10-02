@@ -12,43 +12,52 @@ module RecordingStudioDownloadable
       pending = downloadable_pending?(recording)
       auto_download = downloadable_autostart?(recording) && recording.downloadable_ready?
 
+      control_options = button_options.merge(path: path, style: style, size: size, pending: pending)
       tag.span(data: downloadable_package_poll_data(recording, poll: pending, auto_download: auto_download)) do
-        if pending
-          render FlatPack::Button::Component.new(
-            text: button_options.fetch(:preparing_text, "Preparing…"),
-            style: button_options.fetch(:style, :secondary),
-            size: size
-          )
-        elsif recording.downloadable_package&.failed?
-          render FlatPack::Button::Component.new(
-            text: button_options.fetch(:retry_text, "Retry download"),
-            style: style,
-            size: size,
-            href: path,
-            title: recording.downloadable_package.failure_message.presence,
-            data: { turbo_method: :post }
-          )
-        elsif recording.downloadable_ready?
-          render FlatPack::Button::Component.new(
-            text: button_options.fetch(:ready_text, "Download"),
-            style: style,
-            size: size,
-            href: path,
-            data: { turbo: false }
-          )
-        else
-          render FlatPack::Button::Component.new(
-            text: button_options.fetch(:generate_text, "Download"),
-            style: style,
-            size: size,
-            href: path,
-            data: { turbo_method: :post }
-          )
-        end
+        downloadable_button_control(recording, control_options)
       end
     end
 
     private
+
+    def downloadable_button_control(recording, options)
+      path = options.fetch(:path)
+      style = options.fetch(:style)
+      size = options.fetch(:size)
+
+      if options.fetch(:pending)
+        render FlatPack::Button::Component.new(
+          text: options.fetch(:preparing_text, "Preparing…"),
+          style: options.fetch(:style, :secondary),
+          size: size
+        )
+      elsif recording.downloadable_package&.failed?
+        render FlatPack::Button::Component.new(
+          text: options.fetch(:retry_text, "Retry download"),
+          style: style,
+          size: size,
+          href: path,
+          title: recording.downloadable_package.failure_message.presence,
+          data: { turbo_method: :post }
+        )
+      elsif recording.downloadable_ready?
+        render FlatPack::Button::Component.new(
+          text: options.fetch(:ready_text, "Download"),
+          style: style,
+          size: size,
+          href: path,
+          data: { turbo: false }
+        )
+      else
+        render FlatPack::Button::Component.new(
+          text: options.fetch(:generate_text, "Download"),
+          style: style,
+          size: size,
+          href: path,
+          data: { turbo_method: :post }
+        )
+      end
+    end
 
     def downloadable_pending?(recording)
       recording.downloadable_package&.processing? || recording.downloadable_package&.pending?
