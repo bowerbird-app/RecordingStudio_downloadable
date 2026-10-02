@@ -16,7 +16,8 @@ module RecordingStudioDownloadable
       Dir.mktmpdir("rs-downloadable-") do |dir|
         zip_path = File.join(dir, "archive.zip")
         write_archive(zip_path)
-        File.open(zip_path, "rb") { |io| yield io }
+        payload = File.binread(zip_path)
+        yield StringIO.new(payload)
       end
     end
 

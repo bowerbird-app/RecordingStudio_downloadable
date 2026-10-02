@@ -6,6 +6,7 @@ module RecordingStudioDownloadable
 
     rescue_from RecordingStudioDownloadable::Authorization::NotAuthorizedError, with: :handle_not_authorized
     rescue_from ActiveRecord::RecordNotFound, with: :handle_record_not_found
+    rescue_from ActiveStorage::FileNotFoundError, with: :handle_record_not_found
 
     private
 

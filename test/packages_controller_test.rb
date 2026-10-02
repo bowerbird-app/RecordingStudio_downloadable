@@ -8,8 +8,10 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
   setup do
-    @user = User.create!(email: "dl-#{SecureRandom.hex(4)}@example.com", password: "Password", password_confirmation: "Password")
-    @other = User.create!(email: "other-#{SecureRandom.hex(4)}@example.com", password: "Password", password_confirmation: "Password")
+    @user = User.create!(email: "dl-#{SecureRandom.hex(4)}@example.com", password: "Password",
+                         password_confirmation: "Password")
+    @other = User.create!(email: "other-#{SecureRandom.hex(4)}@example.com", password: "Password",
+                          password_confirmation: "Password")
     @recording = create_workspace_recording
     grant_download_access!(@recording, @user)
     attach_file!(@recording, filename: "pack.txt", contents: "packed", actor: @user)

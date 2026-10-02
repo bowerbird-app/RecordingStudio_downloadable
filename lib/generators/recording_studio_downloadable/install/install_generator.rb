@@ -25,7 +25,9 @@ module RecordingStudioDownloadable
       end
 
       def add_yaml_config
-        return unless yes?("Would you like to add `config/recording_studio_downloadable.yml` for environment-specific settings? [y/N]")
+        prompt = "Would you like to add `config/recording_studio_downloadable.yml` " \
+                 "for environment-specific settings? [y/N]"
+        return unless yes?(prompt)
 
         template "recording_studio_downloadable.yml", "config/recording_studio_downloadable.yml"
       end
@@ -96,7 +98,8 @@ module RecordingStudioDownloadable
       def tailwind_source_lines
         [
           '@source "../../vendor/bundle/**/recording_studio_downloadable/app/views/**/*.erb";',
-          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/recording_studio_downloadable-*/app/views/**/*.erb";',
+          '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/' \
+          'recording_studio_downloadable-*/app/views/**/*.erb";',
           '@source "../../vendor/bundle/**/flatpack/app/components/**/*.{rb,erb}";',
           '@source "../../../../../../usr/local/bundle/ruby/**/bundler/gems/flatpack-*/app/components/**/*.{rb,erb}";'
         ]

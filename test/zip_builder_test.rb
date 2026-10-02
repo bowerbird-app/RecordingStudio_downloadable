@@ -67,7 +67,7 @@ class ZipBuilderTest < Minitest::Test
       byte_size: 1,
       checksum: "x",
       identity: "1",
-      io_factory: ->(&block) { raise Errno::ENOENT }
+      io_factory: -> { raise Errno::ENOENT }
     )
 
     assert_raises(RecordingStudioDownloadable::SourceMissingError) do
@@ -77,14 +77,14 @@ class ZipBuilderTest < Minitest::Test
 
   def test_cleans_up_temp_directory
     files = [download_file("a.txt", "a")]
-    leftover = nil
+    before = Dir.glob(File.join(Dir.tmpdir, "rs-downloadable-*"))
 
-    RecordingStudioDownloadable::ZipBuilder.new(files).write do |io|
-      leftover = File.dirname(io.path)
-      assert File.directory?(leftover)
+    RecordingStudioDownloadable::ZipBuilder.new(files).write do |_io|
+      assert Dir.glob(File.join(Dir.tmpdir, "rs-downloadable-*")).size > before.size
     end
 
-    refute File.exist?(leftover)
+    leftover = Dir.glob(File.join(Dir.tmpdir, "rs-downloadable-*")) - before
+    assert_empty leftover
   end
 
   private
@@ -103,6 +103,7 @@ class ZipBuilderTest < Minitest::Test
   def zip_entries(files)
     entries = {}
     RecordingStudioDownloadable::ZipBuilder.new(files).write do |io|
+      io.rewind
       Zip::File.open_buffer(io.read) do |zip|
         zip.each { |entry| entries[entry.name] = entry.get_input_stream.read }
       end

@@ -6,14 +6,16 @@ class FileDiscoveryTest < ActiveSupport::TestCase
   include DownloadableTestHelper
 
   setup do
-    @actor = User.create!(email: "discovery-#{SecureRandom.hex(4)}@example.com", password: "Password", password_confirmation: "Password")
+    @actor = User.create!(email: "discovery-#{SecureRandom.hex(4)}@example.com", password: "Password",
+                          password_confirmation: "Password")
     @recording = create_workspace_recording
     grant_download_access!(@recording, @actor)
   end
 
   test "collects direct attachments of arbitrary types" do
     attach_file!(@recording, filename: "notes.txt", contents: "txt", content_type: "text/plain", actor: @actor)
-    attach_file!(@recording, filename: "doc.docx", contents: "docx", content_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", actor: @actor)
+    attach_file!(@recording, filename: "doc.docx", contents: "docx", actor: @actor,
+                             content_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
     attach_file!(@recording, filename: "clip.mp4", contents: "mp4", content_type: "video/mp4", actor: @actor)
     attach_file!(@recording, filename: "nested.zip", contents: "zip", content_type: "application/zip", actor: @actor)
 

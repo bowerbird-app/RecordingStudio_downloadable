@@ -12,45 +12,49 @@ module RecordingStudioDownloadable
       attr_reader :package
 
       def perform
-        package.with_lock do
-          recording = package.recording
-          files = CollectFiles.call(recording: recording).value!
+        recording = package.recording
+        files = CollectFiles.call(recording: recording).value!
 
-          if files.empty?
+        if files.empty?
+          package.with_lock do
             package.archive.purge if package.archive.attached?
             package.mark_failed!("Source set is empty")
-            return failure(EmptySourceError.new("Source set is empty"))
           end
+          return failure(EmptySourceError.new("Source set is empty"))
+        end
 
-          fingerprint = Fingerprint.call(files)
-          if package.ready? && !package.stale_for?(fingerprint) && package.archive.attached?
-            return success(package)
-          end
+        fingerprint = Fingerprint.call(files)
+        package.with_lock do
+          return success(package) if package.ready? && !package.stale_for?(fingerprint) && package.archive.attached?
+        end
 
+        blob = upload_archive!(files)
+        package.with_lock do
           package.mark_processing!
-          attach_archive!(files, fingerprint)
+          package.archive.purge if package.archive.attached?
+          package.archive.attach(blob)
+          raise GenerationError, "Failed to store archive" unless package.archive.attached?
+
+          package.mark_ready!(fingerprint: fingerprint)
           success(package.reload)
         end
-      rescue EmptySourceError, SourceMissingError, UnsupportedOptionError, GenerationError => error
-        fail_package!(error)
-        failure(error)
-      rescue StandardError => error
-        fail_package!(error)
-        failure(GenerationError.new(error.message))
+      rescue EmptySourceError, SourceMissingError, UnsupportedOptionError, GenerationError => e
+        fail_package!(e)
+        failure(e)
+      rescue StandardError => e
+        fail_package!(e)
+        failure(GenerationError.new(e.message))
       end
 
-      def attach_archive!(files, fingerprint)
+      def upload_archive!(files)
         ZipBuilder.new(files).write do |io|
-          package.archive.attach(
+          io.rewind
+          ActiveStorage::Blob.create_and_upload!(
             io: io,
             filename: archive_filename,
             content_type: "application/zip"
           )
         end
-
-        raise GenerationError, "Failed to store archive" unless package.archive.attached?
-
-        package.mark_ready!(fingerprint: fingerprint)
       end
 
       def archive_filename

@@ -7,7 +7,7 @@ module RecordingStudioDownloadable
     def sanitize(filename)
       name = File.basename(filename.to_s.tr("\\", "/"))
       name = name.gsub(/[\x00-\x1f\x7f]/, "")
-      name = name.gsub(%r{[<>:"|?*]}, "_").strip
+      name = name.gsub(/[<>:"|?*]/, "_").strip
       name = "file" if name.blank? || name == "." || name == ".."
       name
     end

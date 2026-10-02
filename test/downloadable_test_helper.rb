@@ -18,23 +18,16 @@ module DownloadableTestHelper
     RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: actor)
   end
 
-  def attach_file!(parent_recording, filename:, contents:, content_type: "text/plain", actor:)
+  def attach_file!(parent_recording, filename:, contents:, actor:, content_type: "text/plain")
     blob = ActiveStorage::Blob.create_and_upload!(
       io: StringIO.new(contents),
       filename: filename,
       content_type: content_type
     )
-    attachment = RecordingStudioAttachable::Attachment.build_from_blob(
-      blob: blob,
-      root_recording: parent_recording.root_recording || parent_recording
+    parent_recording.record_attachment_upload(
+      signed_blob_id: blob.signed_id,
+      actor: actor,
+      name: File.basename(filename, ".*").presence || filename
     )
-    attachment.save!
-    RecordingStudio.record!(
-      action: "attachment_uploaded",
-      recordable: attachment,
-      root_recording: parent_recording.root_recording || parent_recording,
-      parent_recording: parent_recording,
-      actor: actor
-    ).recording
   end
 end

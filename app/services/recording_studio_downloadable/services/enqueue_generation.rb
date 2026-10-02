@@ -24,9 +24,7 @@ module RecordingStudioDownloadable
             format: recording.downloadable_format.to_s
           )
 
-          if reusable?(package, fingerprint)
-            next
-          end
+          next if reusable?(package, fingerprint)
 
           package.assign_attributes(
             state: "pending",

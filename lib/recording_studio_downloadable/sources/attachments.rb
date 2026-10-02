@@ -33,9 +33,7 @@ module RecordingStudioDownloadable
           parent_id: recording.id
         )
         relation = relation.where(trashed_at: nil) if relation.respond_to?(:where)
-        if relation.respond_to?(:includes)
-          relation = relation.includes(recordable: { file_attachment: :blob })
-        end
+        relation = relation.includes(recordable: { file_attachment: :blob }) if relation.respond_to?(:includes)
         relation.respond_to?(:to_a) ? relation.to_a : Array(relation)
       end
 

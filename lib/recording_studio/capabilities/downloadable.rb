@@ -17,7 +17,7 @@ module RecordingStudio
         unknown = options.keys - DEFAULTS.keys
         unless unknown.empty?
           raise ArgumentError,
-                "unknown Downloadable option(s): #{unknown.map { |key| "#{key}:" }.join(", ")}. " \
+                "unknown Downloadable option(s): #{unknown.map { |key| "#{key}:" }.join(', ')}. " \
                 "Use source: and format:."
         end
 
@@ -27,14 +27,14 @@ module RecordingStudio
         unless SUPPORTED_SOURCES.include?(source)
           raise RecordingStudioDownloadable::UnsupportedOptionError,
                 "Unsupported Downloadable source: #{source.inspect}. " \
-                "V1 supports #{SUPPORTED_SOURCES.join(", ")}."
+                "V1 supports #{SUPPORTED_SOURCES.join(', ')}."
         end
 
         return if SUPPORTED_FORMATS.include?(format)
 
         raise RecordingStudioDownloadable::UnsupportedOptionError,
               "Unsupported Downloadable format: #{format.inspect}. " \
-              "V1 supports #{SUPPORTED_FORMATS.join(", ")}."
+              "V1 supports #{SUPPORTED_FORMATS.join(', ')}."
       end
       private_class_method :validate_options!
 

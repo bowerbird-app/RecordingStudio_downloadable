@@ -7,7 +7,8 @@ class PackageLifecycleTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   setup do
-    @actor = User.create!(email: "pkg-#{SecureRandom.hex(4)}@example.com", password: "Password", password_confirmation: "Password")
+    @actor = User.create!(email: "pkg-#{SecureRandom.hex(4)}@example.com", password: "Password",
+                          password_confirmation: "Password")
     @recording = create_workspace_recording
     grant_download_access!(@recording, @actor)
     attach_file!(@recording, filename: "a.txt", contents: "aaa", actor: @actor)
@@ -60,13 +61,12 @@ class PackageLifecycleTest < ActiveSupport::TestCase
   test "failed generation stores the failure message" do
     package = @recording.downloadable_generate!
     package.update!(state: "processing")
+    ActiveStorage::Blob.find_each { |blob| blob.service.delete(blob.key) }
 
-    RecordingStudioDownloadable::Services::CollectFiles.stub :call, ->(*) { raise RecordingStudioDownloadable::SourceMissingError, "blob gone" } do
-      result = RecordingStudioDownloadable::Services::GeneratePackage.call(package: package.reload)
-      assert result.failure?
-    end
+    result = RecordingStudioDownloadable::Services::GeneratePackage.call(package: package.reload)
 
+    assert result.failure?
     assert package.reload.failed?
-    assert_includes package.failure_message, "blob gone"
+    assert_includes package.failure_message.downcase, "missing"
   end
 end

@@ -7,20 +7,17 @@ module RecordingStudioDownloadable
       authorize_download!(recording)
 
       package = recording.downloadable_package
-      unless recording.downloadable_ready? && package&.archive&.attached?
-        raise ActiveRecord::RecordNotFound
-      end
+      raise ActiveRecord::RecordNotFound unless recording.downloadable_ready? && package&.archive&.attached?
 
       blob = package.archive.blob
       filename = download_filename(recording)
 
-      send_stream(
+      send_data(
+        blob.download,
         filename: filename,
         type: "application/zip",
         disposition: "attachment"
-      ) do |stream|
-        blob.download { |chunk| stream.write(chunk) }
-      end
+      )
     end
 
     def create
