@@ -21,6 +21,7 @@ Metrics/ClassLength:
     - 'test/**/*'
     - 'lib/recording_studio_downloadable/engine.rb'
     - 'lib/recording_studio/capabilities/downloadable.rb'
+    - 'lib/generators/**/*'
 
 Metrics/ModuleLength:
   Exclude:
