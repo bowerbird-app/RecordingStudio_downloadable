@@ -89,8 +89,8 @@ class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
     refute RecordingStudio.capability_enabled?(:accessible, for: "Folder")
     assert RecordingStudio.capability_enabled?(:attachable, for: "Folder")
     refute RecordingStudio.capability_enabled?(:downloadable, for: "Folder")
-    refute RecordingStudio.capability_enabled?(:downloadable, for: "Page")
-    refute RecordingStudio.capability_enabled?(:attachable, for: "Page")
+    assert RecordingStudio.capability_enabled?(:attachable, for: "Page")
+    assert RecordingStudio.capability_enabled?(:downloadable, for: "Page")
     assert_equal({ source: :attachments, format: :zip },
                  RecordingStudio.capability_options(:downloadable, for: "Workspace"))
   end
