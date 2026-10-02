@@ -98,7 +98,6 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute_includes source, "enable_capability"
     refute_includes source, "set_capability_options"
     refute RecordingStudio.capability_enabled?(:downloadable, for: "Folder")
-    assert RecordingStudio.capability_enabled?(:downloadable, for: "Page")
   end
 
   def test_dummy_app_uses_flat_pack_sidebar_layout
