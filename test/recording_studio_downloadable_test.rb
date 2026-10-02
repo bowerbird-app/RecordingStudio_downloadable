@@ -101,16 +101,20 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute RecordingStudio.capability_enabled?(:downloadable, for: "Page")
   end
 
-  def test_dummy_app_uses_recording_studio_default_layout
+  def test_dummy_app_uses_flat_pack_sidebar_layout
     application_controller_path = File.expand_path("dummy/app/controllers/application_controller.rb", __dir__)
     controller_source = File.read(application_controller_path)
+    sidebar_layout = File.read(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
+    sidebar = File.read(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
 
     assert_includes controller_source, "include RecordingStudio::UsesDefaultLayout"
-    assert_includes controller_source, '"recording_studio/default_layout"'
     assert_includes controller_source, "devise_controller? ? \"application\""
-    refute_includes controller_source, "flat_pack_sidebar"
-    refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
-    refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
+    assert_includes controller_source, '"flat_pack_sidebar"'
+    assert_includes sidebar_layout, "FlatPack::SidebarLayout::Component"
+    assert_includes sidebar_layout, 'storage_key: "flat-pack-sidebar-layout"'
+    assert_includes sidebar, "docs_install_path"
+    assert_includes sidebar, "docs_methods_path"
+    assert_includes sidebar, "root_path"
   end
 
   def test_dummy_login_layout_keeps_flatpack_assets_without_tight_main_offset
@@ -169,7 +173,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme_source, "This Rails app exists to validate the Recording Studio addon template"
     assert_includes readme_source, "/recording_studio"
     assert_includes readme_source, "redirects to `/`"
-    refute_includes readme_source, "flat_pack_sidebar"
+    assert_includes readme_source, "flat_pack_sidebar"
   end
 
   def test_product_readme_is_the_template_guide

@@ -1,4 +1,13 @@
 module ApplicationHelper
+  def dummy_sidebar_item(text:, href:, icon:)
+    render FlatPack::Sidebar::Item::Component.new(
+      text: text,
+      href: href,
+      icon: icon,
+      active: current_page?(href)
+    )
+  end
+
   def dummy_page_nav(title:, back_url: nil, back_label: "Home")
     recording_studio_page_nav(
       title: title,

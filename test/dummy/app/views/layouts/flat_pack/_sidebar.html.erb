@@ -1,0 +1,33 @@
+<%= render FlatPack::Sidebar::Component.new(side: sidebar_side) do |sidebar| %>
+  <% sidebar.header do %>
+    <%= render FlatPack::Sidebar::Header::Component.new(
+      brand_abbr: "RS",
+      title: "Downloadable",
+      subtitle: "Recording Studio"
+    ) %>
+  <% end %>
+
+  <% sidebar.items do %>
+    <nav class="py-4 space-y-1" aria-label="Main navigation">
+      <%= dummy_sidebar_item(text: "Home", href: root_path, icon: :home) %>
+      <%= dummy_sidebar_item(text: "Install", href: docs_install_path, icon: :file) %>
+      <%= dummy_sidebar_item(text: "Config", href: docs_config_path, icon: :cog) %>
+      <%= dummy_sidebar_item(text: "Recordable types", href: docs_recordable_types_path, icon: :dashboard) %>
+      <%= dummy_sidebar_item(text: "Recordings tree", href: docs_recordings_tree_path, icon: :menu) %>
+      <%= dummy_sidebar_item(text: "Gem views", href: docs_gem_views_path, icon: :table) %>
+      <%= dummy_sidebar_item(text: "Methods", href: docs_methods_path, icon: :github) %>
+    </nav>
+  <% end %>
+
+  <% sidebar.footer do %>
+    <%= render FlatPack::Sidebar::Footer::Component.new(class: "text-sm text-[var(--surface-muted-content-color)]") do %>
+      <%= render FlatPack::Sidebar::Item::Component.new(
+        text: "Sign out",
+        href: main_app.destroy_user_session_path,
+        icon: :lock,
+        class: "mx-0",
+        data: { turbo_method: :delete }
+      ) %>
+    <% end %>
+  <% end %>
+<% end %>
