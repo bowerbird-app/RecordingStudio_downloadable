@@ -3,30 +3,27 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Methods",
-    subtitle: "Document the public methods your addon exposes.",
+    subtitle: "Public recording methods from Downloadable.",
     variant: :h1
   ) %>
 
   <%= render FlatPack::SectionTitle::Component.new(
-    title: "Example method",
-    subtitle: "recordingstudio_addon.example_method",
+    title: "Generate a ZIP",
+    subtitle: "recording.downloadable_generate!",
   ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
     code: <<~'CODE'
-      # Explain what this method does before the example.
-      result = RecordingstudioAddon.example_method(
-        # Replace with the real arguments this method accepts.
-        input: "demo value"
-      )
-
-      # Show what the method returns or what side effect it creates.
-      puts result
+      recording = RecordingStudio.root_recording_for(workspace)
+      recording.downloadable_files
+      recording.downloadable_generate!
+      recording.downloadable_ready?
+      recording.downloadable_download_path
     CODE
   ) %>
 
   <p class="text-sm text-(--body-muted-content-color)">
-    Provide one section title and codeblock for each method
+    Installing the gem does not enable Downloadable. Host recordables opt in with Downloadable.to.
   </p>
 </div>

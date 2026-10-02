@@ -1,0 +1,7 @@
+development:
+  auth_roles:
+    download: view
+
+production:
+  auth_roles:
+    download: view

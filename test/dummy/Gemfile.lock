@@ -16,6 +16,16 @@ GIT
       recording_studio (~> 4.2)
 
 GIT
+  remote: https://github.com/bowerbird-app/RecordingStudio_attachable.git
+  revision: b79b3caf285c5de5d6befc0b7e627796412f708d
+  tag: v0.6.1
+  specs:
+    recording_studio_attachable (0.6.1)
+      flat_pack (>= 0.1.135)
+      rails (~> 8.1.0)
+      recording_studio (~> 4.2)
+
+GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_root_switchable.git
   revision: 86c5216493899b5f578c26801b8cbb07a4344515
   tag: v0.5.1
@@ -40,9 +50,12 @@ GIT
 PATH
   remote: ../..
   specs:
-    gem_template (0.2.3)
+    recording_studio_downloadable (0.1.0)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
+      recording_studio_accessible
+      recording_studio_attachable
+      rubyzip (>= 2.3)
 
 GEM
   remote: https://rubygems.org/
@@ -360,6 +373,7 @@ GEM
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
+    rubyzip (3.7.0)
     securerandom (0.4.1)
     sin_lru_redux (2.5.3)
     solid_cable (4.1.0)
@@ -451,7 +465,6 @@ DEPENDENCIES
   debug
   devise
   flat_pack!
-  gem_template!
   image_processing (~> 2.2)
   importmap-rails
   jbuilder
@@ -462,6 +475,8 @@ DEPENDENCIES
   rails (~> 8.1.1)
   recording_studio!
   recording_studio_accessible!
+  recording_studio_attachable!
+  recording_studio_downloadable!
   recording_studio_root_switchable!
   rubocop-rails-omakase
   ruby-vips
@@ -522,7 +537,6 @@ CHECKSUMS
   ffi (1.17.4-x86_64-linux-musl) sha256=3fdf9888483de005f8ef8d1cf2d3b20d86626af206cbf780f6a6a12439a9c49e
   flat_pack (0.1.196)
   fugit (1.14.0) sha256=e311a9cc85a54bb67649df45060e721282a1e2c8ebad40e41874a3a7d576f37e
-  gem_template (0.2.3)
   globalid (1.4.0) sha256=037f12fbf1d9d7a014d501c2d5c77356fd4ddd96d7a7991d6700bba96706f427
   i18n (1.15.2) sha256=00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5
   image_processing (2.2.0) sha256=e0cb9892a4395ac2b7bb2fac5c6f5bc63361f2f18ed08773e21fce5b111c6974
@@ -590,6 +604,8 @@ CHECKSUMS
   rdoc (8.1.0) sha256=befc37880a5cfd36dcb176c748b5fd5ee39dd3536a75e81824e4972ce230f60a
   recording_studio (4.2.1)
   recording_studio_accessible (0.10.1)
+  recording_studio_attachable (0.6.1)
+  recording_studio_downloadable (0.1.0)
   recording_studio_root_switchable (0.5.1)
   regexp_parser (2.13.1) sha256=5aedb6b7c35688f51e86eef17a15374dfd287c83f4ca644b2c5f3ec50a33b44b
   reline (0.7.0) sha256=5b012d8e55dbf9d450f12bde2cf7d15ff546ae80b3f8f3b30e570d431815583d
@@ -601,6 +617,7 @@ CHECKSUMS
   rubocop-rails-omakase (1.1.0) sha256=2af73ac8ee5852de2919abbd2618af9c15c19b512c4cfc1f9a5d3b6ef009109d
   ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
   ruby-vips (2.3.0) sha256=e685ec02c13969912debbd98019e50492e12989282da5f37d05f5471442f5374
+  rubyzip (3.7.0) sha256=65c19294da75297a939006f3516deacc33185fbd721ff1954f7a231db6d3e121
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
   sin_lru_redux (2.5.3) sha256=d9bcc184537cb0781cccfb283a18d36c5b820cf811b2637b398b55e98f4cecbd
   solid_cable (4.1.0) sha256=828e3d509207b82b4f05f4e9c85f696994710679b52d511aa7f97ebd212d3226
