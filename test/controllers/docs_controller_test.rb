@@ -25,19 +25,23 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     get docs_install_path
     assert_response :success
     assert_select "h1", text: "Install"
-    assert_includes response.body, "Step 1"
-    assert_includes response.body, "Provide one section title for each step"
-    assert_includes response.body, "# Put the step instruction here."
+    assert_includes response.body, "Installing the gem does not enable the capability"
+    assert_includes response.body, "bin/rails generate recording_studio_downloadable:install"
+    assert_includes response.body, "bin/rails generate recording_studio_downloadable:migrations"
+    assert_includes response.body, "Downloadable.to"
+    assert_includes response.body, "source: :attachments"
+    assert_includes response.body, "format: :zip"
   end
 
   test "config page renders successfully" do
     get docs_config_path
     assert_response :success
     assert_select "h1", text: "Config"
-    expected_placeholder = "Replace this placeholder with the configuration settings your generated gem exposes."
-
-    assert_includes response.body, expected_placeholder
-    assert_includes response.body, "# Add the config settings for the gem here."
+    assert_includes response.body, "config.auth_roles"
+    assert_includes response.body, "download: :view"
+    assert_includes response.body, "RecordingStudioAccessible::Authorization.allowed?"
+    assert_includes response.body, "source: :attachments"
+    refute_includes response.body, "Replace this placeholder"
   end
 
   test "recordable types page renders configured recordables dynamically" do
@@ -98,6 +102,9 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: "Gem Views"
     assert_select "table", minimum: 1
+    assert_includes response.body, "does not ship host ERB pages"
+    assert_includes response.body, "recording_package_path"
+    assert_includes response.body, "recording_studio_downloadable_button"
     refute_includes response.body, "app/views/recording_studio_downloadable/home/index.html.erb"
   end
 
@@ -105,11 +112,17 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     get docs_methods_path
     assert_response :success
     assert_select "h1", text: "Methods"
-    assert_includes response.body, "Public recording methods from Downloadable."
+    assert_includes response.body, "Public recording API from RecordingStudio::Capabilities::Downloadable::RecordingMethods."
     assert_includes response.body, "Generate a ZIP"
+    assert_includes response.body, "recording.downloadable?"
+    assert_includes response.body, "recording.downloadable_files"
+    assert_includes response.body, "recording.downloadable_empty?"
     assert_includes response.body, "recording.downloadable_generate!"
+    assert_includes response.body, "recording.downloadable_package"
+    assert_includes response.body, "recording.downloadable_ready?"
     assert_includes response.body, "recording.downloadable_download_path"
     assert_includes response.body, "Installing the gem does not enable Downloadable."
+    assert_includes response.body, "Direct Attachable children only"
   end
 
   test "authenticated docs pages use the dummy FlatPack sidebar layout" do

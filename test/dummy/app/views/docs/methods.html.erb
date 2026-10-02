@@ -3,27 +3,84 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Methods",
-    subtitle: "Public recording methods from Downloadable.",
+    subtitle: "Public recording API from RecordingStudio::Capabilities::Downloadable::RecordingMethods.",
     variant: :h1
   ) %>
 
+  <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+    Installing the gem does not enable Downloadable. These methods are on recordings whose recordable type
+    included <code>Downloadable.to</code>. Direct Attachable children only (original blobs, not variants).
+    Trashed attachments are skipped. Empty file sets never produce a ZIP. Accessible gates the download route.
+  </p>
+
   <%= render FlatPack::SectionTitle::Component.new(
-    title: "Generate a ZIP",
-    subtitle: "recording.downloadable_generate!",
+    title: "Opt-in and files",
+    subtitle: "downloadable?, downloadable_files, downloadable_empty?"
   ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
-    code: <<~'CODE'
+    code: <<~CODE
       recording = RecordingStudio.root_recording_for(workspace)
-      recording.downloadable_files
-      recording.downloadable_generate!
-      recording.downloadable_ready?
-      recording.downloadable_download_path
+      recording.downloadable?        # true when :downloadable is enabled for this recordable type
+      recording.downloadable_files   # Array of DownloadFile (filename, content_type, byte_size, …)
+      recording.downloadable_empty?  # true when there are no direct Attachable originals
     CODE
   ) %>
 
-  <p class="text-sm text-(--body-muted-content-color)">
-    Installing the gem does not enable Downloadable. Host recordables opt in with Downloadable.to.
-  </p>
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Generate a ZIP",
+    subtitle: "recording.downloadable_generate!"
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      package = recording.downloadable_generate!
+      # Enqueues GeneratePackageJob. Returns nil when downloadable_empty?.
+      # Reuses a ready/pending/processing package when the source fingerprint matches.
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Package state",
+    subtitle: "downloadable_package, downloadable_ready?"
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      recording.downloadable_package  # Package row for this recording + format, or nil
+      recording.downloadable_ready?
+      # true when the package is ready, the archive blob is attached,
+      # and the stored fingerprint still matches downloadable_files
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Download URL",
+    subtitle: "recording.downloadable_download_path"
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      recording.downloadable_download_path
+      # Engine GET recording_package_path(recording)
+      # Controller authorizes :download via Accessible (default role :view)
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Source and format",
+    subtitle: "Values stored from Downloadable.to on this recordable type."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      recording.downloadable_source   # :attachments
+      recording.downloadable_format   # :zip
+    CODE
+  ) %>
 </div>

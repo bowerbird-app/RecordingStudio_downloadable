@@ -3,14 +3,80 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Config",
-    subtitle: "Replace this placeholder with the configuration settings your generated gem exposes.",
+    subtitle: "Capability options on Downloadable.to and the host initializer. There are no extra V1 knobs.",
     variant: :h1
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Downloadable.to",
+    subtitle: "These are the only options .to accepts. Anything else raises ArgumentError."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      include RecordingStudio::Capabilities::Downloadable.to(
+        source: :attachments, # V1 floor — only :attachments
+        format: :zip          # V1 floor — only :zip
+      )
+    CODE
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+    Do not pass <code>auth_roles:</code> into <code>.to</code>. Role mapping lives on the gem configuration below.
+  </p>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Initializer",
+    subtitle: "config/initializers/recording_studio_downloadable.rb from the install generator."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      RecordingStudioDownloadable.configure do |config|
+        # Maps Downloadable action :download to an Accessible role.
+        # Default is download: :view. Accessible is not modified by this gem.
+        config.auth_roles = { download: :view }
+
+        # Optional. Must respond to call(action:, actor:, recording:, role:).
+        # When unset, Downloadable calls:
+        # RecordingStudioAccessible::Authorization.allowed?(actor:, recording:, role:)
+        # config.authorize_with = nil
+      end
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Authorization mapping",
+    subtitle: "Accessible has no :download role. Downloadable maps the action, then asks Accessible for a role."
+  ) %>
+
+  <p class="text-sm leading-6 text-(--surface-muted-content-color)">
+    Default Accessible names are <code>view</code>, <code>edit</code>, and <code>admin</code>.
+    Aliases <code>viewer</code>/<code>viewing</code> and <code>editor</code>/<code>editing</code> normalize to
+    <code>:view</code> and <code>:edit</code>. This gem never invents an Accessible download role.
+  </p>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      # Require edit instead of view to download:
+      config.auth_roles = { download: :edit }
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Optional YAML",
+    subtitle: "The install generator can add config/recording_studio_downloadable.yml. Keys merge into the same Configuration."
   ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
     code: <<~'CODE'
-      # Add the config settings for the gem here.
+      development:
+        auth_roles:
+          download: view
     CODE
   ) %>
 </div>
