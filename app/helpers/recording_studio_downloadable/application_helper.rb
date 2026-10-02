@@ -62,7 +62,13 @@ module RecordingStudioDownloadable
     end
 
     def downloadable_autostart?(recording)
-      flash[:recording_studio_downloadable_autostart].to_s == recording.id.to_s
+      return false unless respond_to?(:session)
+
+      id = session[:recording_studio_downloadable_autostart]
+      return false unless id.to_s == recording.id.to_s
+
+      session.delete(:recording_studio_downloadable_autostart)
+      true
     end
 
     def downloadable_package_poll_data(recording, poll:, auto_download:)

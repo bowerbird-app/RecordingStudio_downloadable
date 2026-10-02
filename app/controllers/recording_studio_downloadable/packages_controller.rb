@@ -26,7 +26,7 @@ module RecordingStudioDownloadable
 
       recording.downloadable_generate!
       recording.reload
-      flash[:recording_studio_downloadable_autostart] = recording.id
+      session[:recording_studio_downloadable_autostart] = recording.id
       redirect_back_or_to fallback_location, notice: generate_notice(recording)
     end
 
@@ -58,7 +58,7 @@ module RecordingStudioDownloadable
       elsif recording.downloadable_ready?
         "Download is ready."
       else
-        "Preparing download…"
+        "Building ZIP. The download starts automatically when it is ready."
       end
     end
 
