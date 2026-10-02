@@ -1,8 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
 
-// After POST /package the helper renders Preparing… and this controller.
-// It polls GET /package/status (Accessible :download). When ready, it starts
-// the authorized GET /package download so the ZIP lands without a manual refresh.
+// Download clicks never navigate the top window to GET /package.
+// Status is polled until a current (non-stale) archive is ready, then the
+// authorized GET runs in a hidden iframe so a 302 to the signed blob URL
+// does not replace the Pages UI. Stale/missing packages POST generate first.
 export default class extends Controller {
   static values = {
     statusUrl: String,
@@ -28,6 +29,27 @@ export default class extends Controller {
     this.stopPolling()
   }
 
+  startDownload(event) {
+    if (this.pollValue) return
+
+    event.preventDefault()
+    this.beginDownload()
+  }
+
+  async beginDownload() {
+    const data = await this.fetchStatus()
+    if (data?.ready && data.download_url) {
+      this.triggerDownload(data.download_url)
+      this.showReady()
+      return
+    }
+
+    await this.enqueueGenerate()
+    this.pollValue = true
+    this.showPreparing()
+    this.startPolling()
+  }
+
   startPolling() {
     this.poll()
     this.timer = window.setInterval(() => this.poll(), this.intervalValue)
@@ -44,10 +66,36 @@ export default class extends Controller {
     this.attempts += 1
     if (this.attempts > this.maxAttempts) {
       this.stopPolling()
+      this.pollValue = false
       this.showFailure("Download is taking too long. Retry.")
       return
     }
 
+    const data = await this.fetchStatus()
+    if (!data) return
+
+    if (data.ready && data.download_url) {
+      this.stopPolling()
+      this.pollValue = false
+      this.triggerDownload(data.download_url)
+      this.showReady()
+      return
+    }
+
+    if (data.failed) {
+      this.stopPolling()
+      this.pollValue = false
+      this.showFailure(data.failure_message || "Download failed. Retry.")
+      return
+    }
+
+    if ((data.stale || data.state === "missing") && !this.requeued) {
+      this.requeued = true
+      await this.enqueueGenerate()
+    }
+  }
+
+  async fetchStatus() {
     let response
     try {
       response = await fetch(this.statusUrlValue, {
@@ -55,26 +103,34 @@ export default class extends Controller {
         credentials: "same-origin"
       })
     } catch (_error) {
-      return
+      return null
     }
 
     if (response.status === 401 || response.status === 403) {
       this.stopPolling()
-      return
+      this.pollValue = false
+      return null
     }
-    if (!response.ok) return
+    if (!response.ok) return null
 
-    const data = await response.json()
-    if (data.ready && data.download_url) {
-      this.stopPolling()
-      this.triggerDownload(data.download_url)
-      this.showReady(data.download_url)
-      return
-    }
+    return response.json()
+  }
 
-    if (data.failed) {
-      this.stopPolling()
-      this.showFailure(data.failure_message || "Download failed. Retry.")
+  async enqueueGenerate() {
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
+    try {
+      await fetch(this.downloadUrlValue, {
+        method: "POST",
+        headers: {
+          Accept: "text/html",
+          "X-CSRF-Token": csrf || "",
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        credentials: "same-origin",
+        redirect: "manual"
+      })
+    } catch (_error) {
+      // Polling will retry status; user can click Download again.
     }
   }
 
@@ -87,13 +143,22 @@ export default class extends Controller {
     window.setTimeout(() => iframe.remove(), 60_000)
   }
 
-  showReady(url) {
+  showReady() {
     const link = document.createElement("a")
-    link.href = url
+    link.href = this.downloadUrlValue
     link.dataset.turbo = "false"
     link.className = this.linkClassName()
     link.textContent = "Download"
     this.element.replaceChildren(link)
+  }
+
+  showPreparing() {
+    const button = document.createElement("button")
+    button.type = "button"
+    button.disabled = true
+    button.className = this.linkClassName()
+    button.textContent = "Preparing…"
+    this.element.replaceChildren(button)
   }
 
   showFailure(message) {

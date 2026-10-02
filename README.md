@@ -84,7 +84,7 @@ dummy GitHub tag `v4.2.2`, dummy GitHub tag `v0.11.0`, dummy GitHub tag `v0.5.1`
 
 Sign in at `/users/sign_in` (`admin@admin.com` / `Password`). The home page and `/pages` show a Download control.
 
-Clicking Download `POST`s generation, then Stimulus polls `GET …/package/status` until the package is `ready` (or `failed`). When ready, the authorized `GET …/package` starts so the ZIP downloads without a manual refresh. Accessible still gates `:download`.
+Clicking Download `POST`s generation, then Stimulus polls `GET …/package/status` until the package is `ready` (or `failed`). When ready, the authorized `GET …/package` starts in a hidden iframe so the ZIP downloads without replacing the page. If attachments changed since the last ZIP, the package is **stale**: Download regenerates instead of 404ing. Accessible still gates `:download`.
 
 ## Serving large ZIPs
 

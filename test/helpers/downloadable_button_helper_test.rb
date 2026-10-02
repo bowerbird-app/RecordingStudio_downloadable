@@ -45,7 +45,20 @@ class DownloadableButtonHelperTest < ActionView::TestCase
 
     assert_includes html, "Download"
     assert_includes html, "data-turbo=\"false\""
+    assert_includes html, "recording-studio-downloadable--package"
+    assert_includes html, "startDownload"
     refute_includes html, "Preparing"
-    refute_includes html, "package-poll-value"
+    refute_includes html, "package-poll-value=\"true\""
+  end
+
+  test "stale ready-state package uses generate post not a raw zip get" do
+    perform_enqueued_jobs { @recording.downloadable_generate! }
+    attach_file!(@recording, filename: "extra.txt", contents: "more", actor: @actor)
+    html = recording_studio_downloadable_button(@recording.reload)
+
+    assert_includes html, "Download"
+    assert_includes html, "turbo-method"
+    assert_includes html, "startDownload"
+    refute_includes html, "Preparing"
   end
 end

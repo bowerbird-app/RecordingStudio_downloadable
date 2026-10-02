@@ -6,10 +6,21 @@ module RecordingStudioDownloadable
       recording = find_recording
       authorize_download!(recording)
 
-      package = recording.downloadable_package
-      raise ActiveRecord::RecordNotFound unless recording.downloadable_ready? && package&.archive&.attached?
+      if recording.downloadable_empty?
+        raise ActiveRecord::RecordNotFound
+      end
 
-      redirect_to_archive_url!(package.archive.blob, filename: download_filename(recording))
+      unless recording.downloadable_ready?
+        recording.downloadable_generate!
+        recording.reload
+      end
+
+      if recording.downloadable_ready?
+        package = recording.downloadable_package
+        redirect_to_archive_url!(package.archive.blob, filename: download_filename(recording))
+      else
+        respond_not_ready(recording)
+      end
     end
 
     def create
@@ -28,8 +39,9 @@ module RecordingStudioDownloadable
 
       package = recording.downloadable_package
       render json: {
-        state: package&.state || "missing",
+        state: status_state(recording, package),
         ready: recording.downloadable_ready?,
+        stale: recording.downloadable_stale?,
         failed: package&.failed? || false,
         failure_message: package&.failure_message,
         download_url: recording.downloadable_ready? ? recording.downloadable_download_path : nil
@@ -57,6 +69,28 @@ module RecordingStudioDownloadable
         filename: ActiveStorage::Filename.new(filename),
         content_type: "application/zip"
       ), allow_other_host: true
+    end
+
+    def respond_not_ready(recording)
+      session[:recording_studio_downloadable_autostart] = recording.id
+
+      if iframe_or_async_download_request?
+        head :accepted
+      else
+        redirect_back_or_to fallback_location, notice: generate_notice(recording)
+      end
+    end
+
+    def iframe_or_async_download_request?
+      request.headers["Sec-Fetch-Dest"] == "iframe" ||
+        request.xhr? ||
+        request.format.json?
+    end
+
+    def status_state(recording, package)
+      return "stale" if recording.downloadable_stale? && !package&.pending? && !package&.processing?
+
+      package&.state || "missing"
     end
 
     def generate_notice(recording)

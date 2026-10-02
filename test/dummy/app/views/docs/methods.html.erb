@@ -52,8 +52,9 @@
     code: <<~CODE
       recording.downloadable_package  # Package row for this recording + format, or nil
       recording.downloadable_ready?
-      # true when the package is ready, the archive blob is attached,
-      # and the stored fingerprint still matches downloadable_files
+      recording.downloadable_stale?
+      # ready? is false when sources changed after the last ZIP (stale fingerprint).
+      # Download then regenerates; GET /package never 404s a stale archive.
     CODE
   ) %>
 

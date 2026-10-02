@@ -66,7 +66,12 @@ module RecordingStudio
 
         def downloadable_ready?
           package = downloadable_package
-          package.present? && package.ready? && !downloadable_stale?(package) && package.archive.attached?
+          package.present? && package.ready? && !stale_package?(package) && package.archive.attached?
+        end
+
+        def downloadable_stale?
+          package = downloadable_package
+          package.present? && stale_package?(package)
         end
 
         def downloadable_generate!
@@ -105,7 +110,7 @@ module RecordingStudio
           RecordingStudio.capability_options(:downloadable, for: recordable_type) || {}
         end
 
-        def downloadable_stale?(package)
+        def stale_package?(package)
           package.source_fingerprint != downloadable_source_fingerprint
         end
       end

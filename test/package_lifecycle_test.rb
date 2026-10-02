@@ -42,9 +42,13 @@ class PackageLifecycleTest < ActiveSupport::TestCase
     perform_enqueued_jobs { @recording.downloadable_generate! }
     attach_file!(@recording, filename: "b.txt", contents: "bbb", actor: @actor)
 
+    assert @recording.downloadable_stale?
+    refute @recording.downloadable_ready?
+
     perform_enqueued_jobs do
       package = @recording.downloadable_generate!
       assert @recording.reload.downloadable_ready?
+      refute @recording.downloadable_stale?
       assert_equal RecordingStudioDownloadable::Fingerprint.call(@recording.downloadable_files),
                    package.reload.source_fingerprint
     end

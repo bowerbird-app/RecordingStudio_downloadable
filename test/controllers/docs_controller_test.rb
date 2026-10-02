@@ -122,6 +122,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "recording.downloadable_generate!"
     assert_includes response.body, "recording.downloadable_package"
     assert_includes response.body, "recording.downloadable_ready?"
+    assert_includes response.body, "recording.downloadable_stale?"
     assert_includes response.body, "recording.downloadable_download_path"
     assert_includes response.body, "recording_package_status_path"
     assert_includes response.body, "signed blob URL"
