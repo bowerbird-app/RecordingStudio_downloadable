@@ -71,7 +71,7 @@ module RecordingStudio
 
         def downloadable_stale?
           package = downloadable_package
-          package.present? && stale_package?(package)
+          package.present? && package.ready? && stale_package?(package)
         end
 
         def downloadable_generate!

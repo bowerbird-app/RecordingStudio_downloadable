@@ -1,9 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Download clicks never navigate the top window to GET /package.
-// Status is polled until a current (non-stale) archive is ready, then the
-// authorized GET runs in a hidden iframe so a 302 to the signed blob URL
-// does not replace the Pages UI. Stale/missing packages POST generate first.
+// Status is polled at package/status until a current (non-stale) archive is
+// ready, then the authorized GET runs in a hidden iframe so a 302 to the
+// signed blob URL does not replace the Pages UI. Stale/missing packages POST
+// generate first.
 export default class extends Controller {
   static values = {
     statusUrl: String,

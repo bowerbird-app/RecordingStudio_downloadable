@@ -88,7 +88,7 @@ module RecordingStudioDownloadable
     end
 
     def status_state(recording, package)
-      return "stale" if recording.downloadable_stale? && !package&.pending? && !package&.processing?
+      return "stale" if recording.downloadable_stale?
 
       package&.state || "missing"
     end
