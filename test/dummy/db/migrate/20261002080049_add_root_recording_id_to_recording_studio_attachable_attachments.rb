@@ -69,7 +69,7 @@ class AddRootRecordingIdToRecordingStudioAttachableAttachments < ActiveRecord::M
     connection.select_all(candidates_sql).each { |row| keep_better_candidate(picks, row) }
     picks.filter_map do |attachment_id, pick|
       root_id = pick[:root_recording_id]
-      [attachment_id, root_id] if root_id.present?
+      [ attachment_id, root_id ] if root_id.present?
     end
   end
 
