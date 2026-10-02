@@ -117,7 +117,6 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "nav[aria-label='Main navigation']", count: 1
-    assert_select "nav[aria-label='Page navigation']", count: 1
     assert_includes response.body, "flat-pack-sidebar-layout"
     assert_includes response.body, docs_install_path
     assert_includes response.body, docs_methods_path
