@@ -31,9 +31,12 @@ class PagesIndexTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: "Pages"
     assert_select "table", minimum: 1
-    assert_includes response.body, "Smoke Page"
-    assert_includes response.body, "A short description for the table snippet."
+    assert_select "table td", text: "Smoke Page"
+    assert_select "table td", text: "A short description for the table snippet."
+    assert_select "table td", text: "yes"
     assert_includes response.body, new_page_path
+    assert_includes response.body, "Upload"
+    assert_includes response.body, "Attachments"
     assert_includes response.body, "flat-pack-sidebar-layout"
     assert_select "nav[aria-label='Main navigation']", count: 1
     assert_includes response.body, pages_path

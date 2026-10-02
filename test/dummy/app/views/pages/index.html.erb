@@ -18,33 +18,10 @@
 
   <% if @page_rows.any? %>
     <%= render FlatPack::Table::Component.new(data: @page_rows, class: "text-sm") do |table| %>
-      <% table.column(title: "Title") { |row| row[:title] } %>
-      <% table.column(title: "Description") { |row| row[:description] } %>
-      <% table.column(title: "Downloadable") { |row| row[:downloadable] ? "yes" : "no" } %>
-      <% table.column(title: "Actions") do |row| %>
-        <% recording = row[:recording] %>
-        <span class="flex flex-wrap gap-2">
-          <% if recording %>
-            <%= render FlatPack::Button::Component.new(
-              text: "Upload",
-              style: :primary,
-              size: :sm,
-              href: recording_studio_attachable.recording_attachment_upload_path(recording)
-            ) %>
-            <%= render FlatPack::Button::Component.new(
-              text: "Attachments",
-              style: :secondary,
-              size: :sm,
-              href: recording_studio_attachable.recording_attachments_path(recording)
-            ) %>
-            <% if recording.downloadable? %>
-              <%= recording_studio_downloadable_button(recording, style: :ghost, size: :sm) %>
-            <% end %>
-          <% else %>
-            <span class="text-(--surface-muted-content-color)">No recording</span>
-          <% end %>
-        </span>
-      <% end %>
+      <% table.column(title: "Title", html: ->(row) { row[:title] }) %>
+      <% table.column(title: "Description", html: ->(row) { row[:description] }) %>
+      <% table.column(title: "Downloadable", html: ->(row) { row[:downloadable] ? "yes" : "no" }) %>
+      <% table.column(title: "Actions", html: ->(row) { dummy_page_row_actions(row[:recording]) }) %>
     <% end %>
   <% else %>
     <p class="text-sm text-(--surface-muted-content-color)">

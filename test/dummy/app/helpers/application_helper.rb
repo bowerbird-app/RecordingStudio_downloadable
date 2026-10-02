@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ApplicationHelper
   def dummy_sidebar_item(text:, href:, icon:)
     render FlatPack::Sidebar::Item::Component.new(
@@ -27,5 +29,22 @@ module ApplicationHelper
         )
       )
     end
+  end
+
+  def dummy_page_row_actions(recording)
+    return "No recording" unless recording
+
+    parts = [
+      link_to("Upload", recording_studio_attachable.recording_attachment_upload_path(recording), class: "underline"),
+      link_to("Attachments", recording_studio_attachable.recording_attachments_path(recording), class: "underline")
+    ]
+
+    if recording.downloadable?
+      download_options = { class: "underline" }
+      download_options[:data] = { turbo_method: :post } unless recording.downloadable_ready?
+      parts << link_to("Download", recording.downloadable_download_path, download_options)
+    end
+
+    safe_join(parts, " · ".html_safe)
   end
 end
