@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_02_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_02_080050) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -81,7 +81,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_02_000004) do
     t.string "actor_type", null: false
     t.datetime "created_at", null: false
     t.uuid "depends_on_recording_id"
-    t.integer "role", default: 0, null: false
+    t.string "role", default: "view", null: false
     t.index ["actor_type", "actor_id", "role"], name: "index_recording_studio_accesses_on_actor_and_role"
     t.index ["actor_type", "actor_id"], name: "index_recording_studio_accesses_on_actor"
     t.index ["depends_on_recording_id"], name: "index_recording_studio_accesses_on_depends_on_recording_id"
@@ -95,6 +95,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_02_000004) do
     t.string "content_type", null: false
     t.bigint "byte_size", null: false
     t.uuid "root_recording_id"
+    t.text "caption"
+    t.text "credit"
+    t.text "alt_text"
     t.index ["attachment_kind", "content_type"], name: "idx_rs_attachable_kind_type"
     t.index ["attachment_kind"], name: "idx_on_attachment_kind_d683071625"
     t.index ["root_recording_id"], name: "index_rs_attachable_attachments_on_root_recording_id"

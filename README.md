@@ -29,7 +29,7 @@ Accessible has no first-class `:download` role in the current published release 
 
 ### Accessible gap (do not patch Accessible from this gem)
 
-Published Accessible (`v0.10.1` as pinned by sibling dummies) exposes:
+Published Accessible (`v0.11.0` as pinned by this dummy) exposes:
 
 - `RecordingStudioAccessible::Authorization.allowed?(actor:, recording:, role:)`
 - roles `view` / `edit` / `admin`
@@ -78,7 +78,7 @@ Direct attachments only. Original blobs, not image variants. Inactive/trashed at
 4. `bin/rails db:migrate`
 5. Opt each recordable in with `.to`.
 
-dummy GitHub tag `v4.2.1`, dummy GitHub tag `v0.10.1`, dummy GitHub tag `v0.5.1`, dummy GitHub tag `v0.1.196`, Attachable `v0.6.1`.
+dummy GitHub tag `v4.2.2`, dummy GitHub tag `v0.11.0`, dummy GitHub tag `v0.5.1`, dummy GitHub tag `v0.1.198`, Attachable `v0.7.0`.
 
 ## Dummy app
 

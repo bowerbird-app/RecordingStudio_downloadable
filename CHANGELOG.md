@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Dummy and root GitHub pins: Recording Studio `v4.2.2`, Accessible `v0.11.0`, Attachable `v0.7.0`, FlatPack `v0.1.198`. Dummy Accessible role column is a string; Attachable attachments gain `caption`, `credit`, and `alt_text`.
+
 ## [0.1.0] - 2026-10-02
 
 ### Added
