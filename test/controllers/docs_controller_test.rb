@@ -133,6 +133,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "flat-pack-sidebar-layout"
     assert_includes response.body, docs_install_path
     assert_includes response.body, docs_methods_path
+    assert_includes response.body, pages_path
   end
 
   private

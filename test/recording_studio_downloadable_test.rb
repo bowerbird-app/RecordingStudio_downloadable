@@ -114,6 +114,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes sidebar_layout, 'storage_key: "flat-pack-sidebar-layout"'
     assert_includes sidebar, "main_app.docs_install_path"
     assert_includes sidebar, "main_app.docs_methods_path"
+    assert_includes sidebar, "main_app.pages_path"
     assert_includes sidebar, "main_app.root_path"
   end
 
