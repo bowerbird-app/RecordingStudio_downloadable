@@ -59,9 +59,9 @@
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
-    code: <<~'CODE'
-      <%= recording_studio_downloadable_button(@recording) %>
-      <%# Ready: GET Download. Pending/processing: Preparing…. Else: POST Download. %>
+    code: <<~CODE
+      recording_studio_downloadable_button(recording)
+      # Ready: GET Download. Pending/processing: Preparing…. Else: POST Download.
     CODE
   ) %>
 
