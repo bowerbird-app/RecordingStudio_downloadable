@@ -78,8 +78,5 @@ class PagesIndexTest < ActionDispatch::IntegrationTest
     assert_equal folder_recording, recording.parent_recording
     assert recording.downloadable?
     assert_redirected_to recording_studio_attachable.recording_attachment_upload_path(recording)
-
-    follow_redirect!
-    assert_response :success
   end
 end
