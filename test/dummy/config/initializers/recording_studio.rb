@@ -2,7 +2,13 @@
 
 RecordingStudio.configure do |config|
   # Registered delegated_type recordables (strings or classes)
-  config.recordable_types = [ "Workspace", "Folder", "Page", "RecordingStudioAttachable::Attachment" ]
+  config.recordable_types = [
+    "Workspace",
+    "Folder",
+    "Page",
+    "PressKit",
+    "RecordingStudioAttachable::Attachment"
+  ]
 
   # Require each configured ActiveRecord type to call recording_studio_recordable.
   config.require_recordable_declarations = true

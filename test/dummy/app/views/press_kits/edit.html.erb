@@ -1,0 +1,26 @@
+<% dummy_page_nav(title: "Edit description", back_url: press_kits_path, back_label: "Press kits") %>
+
+<div class="flex w-full max-w-xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Edit description",
+    subtitle: "Change this and the ZIP goes stale until it rebuilds.",
+    variant: :h1
+  ) %>
+
+  <%= form_with model: @press_kit, url: press_kit_path(@press_kit), method: :patch, class: "flex flex-col gap-4" do %>
+    <%= render FlatPack::TextArea::Component.new(
+      name: "press_kit[description]",
+      label: "Description",
+      value: @press_kit.description,
+      rows: 6,
+      error: @press_kit.errors[:description].presence&.to_sentence
+    ) %>
+
+    <%= render FlatPack::Button::Component.new(
+      text: "Save",
+      style: :primary,
+      size: :md,
+      type: "submit"
+    ) %>
+  <% end %>
+</div>

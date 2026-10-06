@@ -45,4 +45,25 @@ module ApplicationHelper
 
     safe_join(parts, " · ".html_safe)
   end
+
+  def dummy_press_kit_row_actions(press_kit, recording)
+    parts = []
+    if recording
+      parts << link_to(
+        "Upload",
+        recording_studio_attachable.recording_attachment_upload_path(recording),
+        class: "underline"
+      )
+      parts << link_to(
+        "Attachments",
+        recording_studio_attachable.recording_attachments_path(recording),
+        class: "underline"
+      )
+      if recording.downloadable?
+        parts << recording_studio_downloadable_button(recording, style: :ghost, size: :sm)
+      end
+    end
+    parts << link_to("Edit", edit_press_kit_path(press_kit), class: "underline")
+    safe_join(parts, " · ".html_safe)
+  end
 end

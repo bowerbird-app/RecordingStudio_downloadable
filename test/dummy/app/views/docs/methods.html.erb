@@ -9,8 +9,9 @@
 
   <p class="text-sm leading-6 text-(--surface-muted-content-color)">
     Installing the gem does not enable Downloadable. These methods are on recordings whose recordable type
-    included <code>Downloadable.to</code>. Direct Attachable children only (original blobs, not variants).
-    Trashed attachments are skipped. Empty file sets never produce a ZIP. Accessible gates the download route.
+    included <code>Downloadable.to</code>. <code>source: :attachments</code> uses direct Attachable children
+    (original blobs, not variants; trashed attachments skipped). <code>source: :manifest</code> uses
+    <code>#downloadable_manifest</code>. Empty file sets never produce a ZIP. Accessible gates the download route.
   </p>
 
   <%= render FlatPack::SectionTitle::Component.new(
@@ -24,7 +25,7 @@
       recording = RecordingStudio.root_recording_for(workspace)
       recording.downloadable?        # true when :downloadable is enabled for this recordable type
       recording.downloadable_files   # Array of DownloadFile (filename, content_type, byte_size, …)
-      recording.downloadable_empty?  # true when there are no direct Attachable originals
+      recording.downloadable_empty?  # true when the chosen source has no files
     CODE
   ) %>
 
@@ -84,7 +85,7 @@
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
     code: <<~CODE
-      recording.downloadable_source   # :attachments
+      recording.downloadable_source   # :attachments or :manifest
       recording.downloadable_format   # :zip
     CODE
   ) %>

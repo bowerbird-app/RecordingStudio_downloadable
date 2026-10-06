@@ -30,6 +30,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "bin/rails generate recording_studio_downloadable:migrations"
     assert_includes response.body, "Downloadable.to"
     assert_includes response.body, "source: :attachments"
+    assert_includes response.body, "source: :manifest"
     assert_includes response.body, "format: :zip"
   end
 
@@ -41,6 +42,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "download: :view"
     assert_includes response.body, "RecordingStudioAccessible::Authorization.allowed?"
     assert_includes response.body, "source: :attachments"
+    assert_includes response.body, ":manifest"
     refute_includes response.body, "Replace this placeholder"
   end
 
@@ -59,6 +61,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Workspace"
     assert_includes response.body, "Folder"
     assert_includes response.body, "Page"
+    assert_includes response.body, "Press kit"
     assert_includes response_text, "Root recordable"
     assert_includes response_text, "Child recordable"
     assert_includes response_text, "Allowed parents: Workspace, Folder"
@@ -73,6 +76,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Workspace"
     assert_includes response.body, "Folder"
     assert_includes response.body, "Page"
+    assert_includes response.body, "Press kit"
   end
 
   test "recordings tree page renders successfully" do
@@ -127,7 +131,8 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "recording_package_status_path"
     assert_includes response.body, "signed blob URL"
     assert_includes response.body, "Installing the gem does not enable Downloadable."
-    assert_includes response.body, "Direct Attachable children only"
+    assert_includes response.body, "source: :manifest"
+    assert_includes response.body, "downloadable_manifest"
   end
 
   test "authenticated docs pages use the dummy FlatPack sidebar layout" do
@@ -139,6 +144,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, docs_install_path
     assert_includes response.body, docs_methods_path
     assert_includes response.body, pages_path
+    assert_includes response.body, press_kits_path
   end
 
   private

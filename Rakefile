@@ -7,6 +7,7 @@ DUMMY_TEST_FILES = [
   File.expand_path("test/controllers/docs_controller_test.rb", __dir__),
   File.expand_path("test/recording_studio_declarations_test.rb", __dir__),
   File.expand_path("test/file_discovery_test.rb", __dir__),
+  File.expand_path("test/manifest_source_test.rb", __dir__),
   File.expand_path("test/package_lifecycle_test.rb", __dir__),
   File.expand_path("test/packages_controller_test.rb", __dir__),
   File.expand_path("test/helpers/downloadable_button_helper_test.rb", __dir__)
@@ -19,6 +20,7 @@ ROOT_TEST_EXCLUSIONS = %w[
   test/dummy/**/*_test.rb
   test/recording_studio_declarations_test.rb
   test/file_discovery_test.rb
+  test/manifest_source_test.rb
   test/package_lifecycle_test.rb
   test/packages_controller_test.rb
   test/helpers/downloadable_button_helper_test.rb

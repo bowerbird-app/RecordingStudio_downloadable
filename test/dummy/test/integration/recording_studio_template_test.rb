@@ -40,6 +40,12 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     private_root_recording = RecordingStudio::Recording.find_by!(recordable: private_workspace)
     folder_recording = RecordingStudio::Recording.find_by!(recordable: folder)
     page_recording = RecordingStudio::Recording.find_by!(recordable: page)
+    press_kit_recording = RecordingStudio::Recording.find_by!(
+      recordable_type: "PressKit",
+      parent_recording: root_recording,
+      trashed_at: nil
+    )
+    press_kit = press_kit_recording.recordable
 
     assert_nil Current.actor
     assert_nil root_recording.parent_recording_id
@@ -49,6 +55,11 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     assert_equal root_recording, folder_recording.root_recording
     assert_equal folder_recording, page_recording.parent_recording
     assert_equal root_recording, page_recording.root_recording
+    assert_equal root_recording, press_kit_recording.parent_recording
+    assert_equal root_recording, press_kit_recording.root_recording
+    assert_equal :manifest, press_kit_recording.downloadable_source
+    assert_equal "Launch Press Kit", press_kit.name
+    assert_includes press_kit_recording.downloadable_files.map(&:filename), "logo.txt"
     assert Workspace.exists?(name: "Studio Workspace")
     assert Workspace.exists?(name: "Client Workspace")
     assert Workspace.exists?(name: "Private Workspace")
@@ -83,6 +94,9 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     assert RecordingStudio.capability_enabled?(:downloadable, for: Page)
     assert_includes RecordingStudio.configuration.enabled_recordable_types_for(:downloadable), "Workspace"
     assert_includes RecordingStudio.configuration.enabled_recordable_types_for(:downloadable), "Page"
+    assert_includes RecordingStudio.configuration.enabled_recordable_types_for(:downloadable), "PressKit"
+    assert_equal({ source: :manifest, format: :zip },
+                 RecordingStudio.capability_options(:downloadable, for: "PressKit"))
     assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
   end
 end

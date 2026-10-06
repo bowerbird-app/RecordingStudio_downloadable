@@ -6,7 +6,7 @@ This Rails app exists to validate the Recording Studio addon template in a real 
 
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
-- Root workspace plus seeded folder and page recordables
+- Root workspace plus seeded folder, page, and press kit recordables
 - Recording Studio helpers plus a dummy-only FlatPack left sidebar layout, assets, and Tailwind source scanning
 - Mounted `RecordingStudio::Engine` route behavior inside a host app
 - Dummy-only `/docs/*` pages for gem-specific onboarding
@@ -36,6 +36,7 @@ Then open the app and sign in with:
 - `/users/sign_in` - Devise sign-in page
 - `/docs/install`, `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` - dummy-only starter pages
 - `/pages` - dummy table of Page recordables; `/pages/new` creates a page then opens Attachable upload
+- `/press_kits` - dummy Press Kit list (`source: :manifest` ZIP of uploads plus generated files); `/press_kits/:id/edit` changes the description
 - Download on home or Pages `POST`s ZIP generation. Stimulus polls `/recording_studio_downloadable/recordings/:id/package/status` until `ready`, then starts the authorized GET. That GET redirects to a short-lived signed Active Storage URL so the ZIP streams from Disk/R2 instead of Rails memory.
 - `/up` - Rails health check
 
