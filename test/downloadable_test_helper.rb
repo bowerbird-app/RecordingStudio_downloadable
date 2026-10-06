@@ -35,6 +35,20 @@ module DownloadableTestHelper
     RecordingStudio.set_capability_options(:downloadable, on: recordable_class, **restore)
   end
 
+  def install_workspace_manifest!(*files)
+    Thread.current[:recording_studio_downloadable_manifest] = files
+    return if Workspace.method_defined?(:downloadable_manifest)
+
+    Workspace.define_method(:downloadable_manifest) do
+      Thread.current[:recording_studio_downloadable_manifest]
+    end
+  end
+
+  def uninstall_workspace_manifest!
+    Thread.current[:recording_studio_downloadable_manifest] = nil
+    Workspace.remove_method(:downloadable_manifest) if Workspace.method_defined?(:downloadable_manifest)
+  end
+
   def zip_entries_from(io_or_string)
     payload = io_or_string.respond_to?(:read) ? io_or_string.tap(&:rewind).read : io_or_string
     entries = {}

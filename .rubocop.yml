@@ -79,6 +79,10 @@ Metrics/PerceivedComplexity:
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
     - 'app/services/recording_studio_downloadable/services/**/*'
 
+Style/ArgumentsForwarding:
+  Exclude:
+    - "test/**/*"
+
 # Allow empty blocks in tests (common for stubs/mocks)
 Lint/EmptyBlock:
   Exclude:

@@ -58,6 +58,14 @@ class SourcesTest < Minitest::Test
     assert_includes error.message, "does not fall back to attachments"
   end
 
+  def test_manifest_raises_when_the_recording_has_no_recordable
+    error = assert_raises(RecordingStudioDownloadable::ManifestMissingError) do
+      RecordingStudioDownloadable::Sources::Manifest.call(Object.new)
+    end
+
+    assert_includes error.message, "downloadable_manifest"
+  end
+
   def test_manifest_accepts_the_method_on_the_recording
     file = RecordingStudioDownloadable::DownloadFile.from_string(filename: "a.txt", content: "a")
     recording = RecordingWithManifest.new([file])

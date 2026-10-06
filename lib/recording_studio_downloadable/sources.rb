@@ -14,9 +14,7 @@ module RecordingStudioDownloadable
 
     def collect(source, recording)
       collector = COLLECTORS[source.to_sym]
-      unless collector
-        raise UnsupportedOptionError, "Unsupported Downloadable source: #{source.inspect}"
-      end
+      raise UnsupportedOptionError, "Unsupported Downloadable source: #{source.inspect}" unless collector
 
       collector.call(recording)
     end

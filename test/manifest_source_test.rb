@@ -13,6 +13,10 @@ class ManifestSourceTest < ActiveSupport::TestCase
     grant_download_access!(@recording, @actor)
   end
 
+  teardown do
+    uninstall_workspace_manifest!
+  end
+
   test "source attachments still collects only direct originals" do
     attach_file!(@recording, filename: "direct.txt", contents: "direct", actor: @actor)
 
@@ -23,30 +27,24 @@ class ManifestSourceTest < ActiveSupport::TestCase
   end
 
   test "manifest source calls downloadable_manifest on the recordable" do
-    called = false
     blob = create_blob!(filename: "hero.jpg", contents: "hero-bytes", content_type: "image/jpeg")
     description = "Hello"
     credits = "Jane Doe"
     json = JSON.pretty_generate({ name: "Kit" })
-
-    @recording.recordable.define_singleton_method(:downloadable_manifest) do
-      called = true
-      [
-        RecordingStudioDownloadable::DownloadFile.from_blob(blob, filename: "hero.jpg"),
-        RecordingStudioDownloadable::DownloadFile.from_string(filename: "description.txt", content: description),
-        RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: credits),
-        RecordingStudioDownloadable::DownloadFile.from_string(
-          filename: "press-kit.json",
-          content_type: "application/json",
-          content: json
-        )
-      ]
-    end
+    install_workspace_manifest!(
+      RecordingStudioDownloadable::DownloadFile.from_blob(blob, filename: "hero.jpg"),
+      RecordingStudioDownloadable::DownloadFile.from_string(filename: "description.txt", content: description),
+      RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: credits),
+      RecordingStudioDownloadable::DownloadFile.from_string(
+        filename: "press-kit.json",
+        content_type: "application/json",
+        content: json
+      )
+    )
 
     with_downloadable_options(Workspace, source: :manifest, format: :zip) do
       files = @recording.downloadable_files
 
-      assert called
       assert_equal :manifest, @recording.downloadable_source
       assert_equal %w[hero.jpg description.txt credits.txt press-kit.json], files.map(&:filename)
     end
@@ -54,7 +52,7 @@ class ManifestSourceTest < ActiveSupport::TestCase
 
   test "manifest zip contains stored and generated files in order" do
     blob = create_blob!(filename: "ignored.bin", contents: "hero-bytes", content_type: "image/jpeg")
-    install_manifest!(
+    install_workspace_manifest!(
       RecordingStudioDownloadable::DownloadFile.from_blob(blob, filename: "hero.jpg"),
       RecordingStudioDownloadable::DownloadFile.from_string(filename: "description.txt", content: "Hello"),
       RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: "Jane Doe"),
@@ -75,7 +73,7 @@ class ManifestSourceTest < ActiveSupport::TestCase
   end
 
   test "empty manifest behaves like empty attachments" do
-    install_manifest!
+    install_workspace_manifest!
 
     with_downloadable_options(Workspace, source: :manifest, format: :zip) do
       assert_predicate @recording.downloadable_files, :empty?
@@ -97,7 +95,7 @@ class ManifestSourceTest < ActiveSupport::TestCase
   end
 
   test "invalid manifest entry raises a downloadable error" do
-    @recording.recordable.define_singleton_method(:downloadable_manifest) { [Object.new] }
+    install_workspace_manifest!(Object.new)
 
     with_downloadable_options(Workspace, source: :manifest, format: :zip) do
       error = assert_raises(RecordingStudioDownloadable::InvalidManifestEntryError) do
@@ -111,7 +109,7 @@ class ManifestSourceTest < ActiveSupport::TestCase
 
   test "changing generated text makes an existing package stale" do
     credits = +"Jane"
-    install_manifest!(
+    install_workspace_manifest!(
       RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: credits)
     )
 
@@ -120,7 +118,7 @@ class ManifestSourceTest < ActiveSupport::TestCase
       assert @recording.reload.downloadable_ready?
 
       credits.replace("Jane Doe")
-      install_manifest!(
+      install_workspace_manifest!(
         RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: credits)
       )
 
@@ -131,14 +129,15 @@ class ManifestSourceTest < ActiveSupport::TestCase
 
   test "changing an included blob makes an existing package stale" do
     blob = create_blob!(filename: "hero.jpg", contents: "v1", content_type: "image/jpeg")
-    install_manifest!(RecordingStudioDownloadable::DownloadFile.from_blob(blob, filename: "hero.jpg"))
+    install_workspace_manifest!(RecordingStudioDownloadable::DownloadFile.from_blob(blob, filename: "hero.jpg"))
 
     with_downloadable_options(Workspace, source: :manifest, format: :zip) do
       perform_enqueued_jobs { @recording.downloadable_generate! }
       assert @recording.reload.downloadable_ready?
 
       replacement = create_blob!(filename: "hero.jpg", contents: "v2", content_type: "image/jpeg")
-      install_manifest!(RecordingStudioDownloadable::DownloadFile.from_blob(replacement, filename: "hero.jpg"))
+      file = RecordingStudioDownloadable::DownloadFile.from_blob(replacement, filename: "hero.jpg")
+      install_workspace_manifest!(file)
 
       assert @recording.downloadable_stale?
       refute @recording.downloadable_ready?
@@ -146,7 +145,7 @@ class ManifestSourceTest < ActiveSupport::TestCase
   end
 
   test "identical manifest content does not regenerate" do
-    install_manifest!(
+    install_workspace_manifest!(
       RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: "Jane")
     )
 
@@ -154,7 +153,7 @@ class ManifestSourceTest < ActiveSupport::TestCase
     with_downloadable_options(Workspace, source: :manifest, format: :zip) do
       perform_enqueued_jobs { first = @recording.downloadable_generate! }
 
-      install_manifest!(
+      install_workspace_manifest!(
         RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: "Jane")
       )
 
@@ -167,7 +166,7 @@ class ManifestSourceTest < ActiveSupport::TestCase
   end
 
   test "duplicate filenames stay safe through existing zip collision behaviour" do
-    install_manifest!(
+    install_workspace_manifest!(
       RecordingStudioDownloadable::DownloadFile.from_string(filename: "image.jpg", content: "one"),
       RecordingStudioDownloadable::DownloadFile.from_string(filename: "image.jpg", content: "two")
     )
@@ -180,7 +179,7 @@ class ManifestSourceTest < ActiveSupport::TestCase
   end
 
   test "unsafe filenames cannot create zip path traversal" do
-    install_manifest!(
+    install_workspace_manifest!(
       RecordingStudioDownloadable::DownloadFile.from_string(filename: "../../secret.txt", content: "nope")
     )
 
@@ -191,10 +190,6 @@ class ManifestSourceTest < ActiveSupport::TestCase
   end
 
   private
-
-  def install_manifest!(*files)
-    @recording.recordable.define_singleton_method(:downloadable_manifest) { files }
-  end
 
   def generated_zip_entries
     with_downloadable_options(Workspace, source: :manifest, format: :zip) do

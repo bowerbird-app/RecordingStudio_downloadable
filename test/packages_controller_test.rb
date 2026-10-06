@@ -18,6 +18,10 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
   end
 
+  teardown do
+    uninstall_workspace_manifest!
+  end
+
   test "authorized download redirects to a short-lived blob url without buffering the zip" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
 
@@ -237,7 +241,7 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
   test "empty manifest download is not found like empty attachments" do
     empty = create_workspace_recording
     grant_download_access!(empty, @user)
-    empty.recordable.define_singleton_method(:downloadable_manifest) { [] }
+    install_workspace_manifest!
 
     with_downloadable_options(Workspace, source: :manifest, format: :zip) do
       get recording_studio_downloadable.recording_package_path(empty)
@@ -247,11 +251,9 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "denied actor cannot download a ready manifest package" do
-    @recording.recordable.define_singleton_method(:downloadable_manifest) do
-      [
-        RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: "Jane")
-      ]
-    end
+    install_workspace_manifest!(
+      RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: "Jane")
+    )
 
     with_downloadable_options(Workspace, source: :manifest, format: :zip) do
       perform_enqueued_jobs { @recording.downloadable_generate! }
