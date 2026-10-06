@@ -183,8 +183,13 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes initializer_source, "config.require_recordable_declarations = true"
     assert_includes(
       initializer_source,
-      'config.recordable_types = [ "Workspace", "Folder", "Page", "RecordingStudioAttachable::Attachment" ]'
+      "config.recordable_types = ["
     )
+    assert_includes initializer_source, '"PressKit"'
+    assert_includes initializer_source, '"Workspace"'
+    assert_includes initializer_source, '"Folder"'
+    assert_includes initializer_source, '"Page"'
+    assert_includes initializer_source, '"RecordingStudioAttachable::Attachment"'
     refute_includes initializer_source, "config.include_children"
     refute_includes initializer_source, "config.features."
     refute_includes initializer_source, "v3"
@@ -200,6 +205,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme_source, "flat_pack_sidebar"
     assert_includes readme_source, "DUMMY_ACTIVE_STORAGE_SERVICE"
     assert_includes readme_source, "DUMMY_AWS_ACCESS_KEY_ID"
+    assert_includes readme_source, "/press_kits"
   end
 
   def test_dummy_storage_yml_wires_r2_from_env_without_secrets
@@ -242,6 +248,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
 
     assert_includes view_source, 'title: "Downloadable Demo"'
     assert_includes view_source, "recording_studio_downloadable_button"
+    assert_includes view_source, "press_kits_path"
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "dummy_page_nav"
     refute_includes view_source, 'title: "Demo"'

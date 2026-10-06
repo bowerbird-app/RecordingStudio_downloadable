@@ -35,4 +35,30 @@
       <% end %>
     <% end %>
   <% end %>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.header do %>
+      <%= render FlatPack::PageTitle::Component.new(
+        title: "Press kits",
+        subtitle: "A mixed ZIP: uploaded files plus generated text and JSON.",
+        variant: :h3,
+        class: "mb-0 pb-0"
+      ) %>
+    <% end %>
+
+    <% card.body do %>
+      <p class="text-sm leading-6">
+        Open Press kits to upload files, edit the description, and download the package.
+      </p>
+    <% end %>
+
+    <% card.footer do %>
+      <%= render FlatPack::Button::Component.new(
+        text: "View press kits",
+        style: :primary,
+        size: :md,
+        href: press_kits_path
+      ) %>
+    <% end %>
+  <% end %>
 </div>

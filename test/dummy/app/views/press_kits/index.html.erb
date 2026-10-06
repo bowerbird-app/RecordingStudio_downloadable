@@ -1,0 +1,21 @@
+<% dummy_page_nav(title: "Press kits", back_url: root_path) %>
+
+<div class="flex w-full flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: "Press kits",
+    subtitle: "The ZIP packs uploaded files plus description.txt, credits.txt, and press-kit.json.",
+    variant: :h1
+  ) %>
+
+  <% if @kit_rows.any? %>
+    <%= render FlatPack::Table::Component.new(data: @kit_rows, class: "text-sm") do |table| %>
+      <% table.column(title: "Name", html: ->(row) { row[:name] }) %>
+      <% table.column(title: "Description", html: ->(row) { row[:description] }) %>
+      <% table.column(title: "Actions", html: ->(row) { dummy_press_kit_row_actions(row[:press_kit], row[:recording]) }) %>
+    <% end %>
+  <% else %>
+    <p class="text-sm text-(--surface-muted-content-color)">
+      No press kits yet. Seed the dummy app to create “Launch Press Kit”.
+    </p>
+  <% end %>
+</div>

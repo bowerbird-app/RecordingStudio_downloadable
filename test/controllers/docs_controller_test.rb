@@ -61,6 +61,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Workspace"
     assert_includes response.body, "Folder"
     assert_includes response.body, "Page"
+    assert_includes response.body, "Press kit"
     assert_includes response_text, "Root recordable"
     assert_includes response_text, "Child recordable"
     assert_includes response_text, "Allowed parents: Workspace, Folder"
@@ -75,6 +76,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Workspace"
     assert_includes response.body, "Folder"
     assert_includes response.body, "Page"
+    assert_includes response.body, "Press kit"
   end
 
   test "recordings tree page renders successfully" do
@@ -142,6 +144,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, docs_install_path
     assert_includes response.body, docs_methods_path
     assert_includes response.body, pages_path
+    assert_includes response.body, press_kits_path
   end
 
   private

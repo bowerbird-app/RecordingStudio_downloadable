@@ -93,6 +93,11 @@ class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
     assert RecordingStudio.capability_enabled?(:downloadable, for: "Page")
     assert_equal({ source: :attachments, format: :zip },
                  RecordingStudio.capability_options(:downloadable, for: "Workspace"))
+    assert_equal({ source: :attachments, format: :zip },
+                 RecordingStudio.capability_options(:downloadable, for: "Page"))
+    assert_equal({ source: :manifest, format: :zip },
+                 RecordingStudio.capability_options(:downloadable, for: "PressKit"))
+    assert_equal ["Workspace"], RecordingStudio.allowed_parent_types_for("PressKit")
     assert_equal %i[attachments manifest], RecordingStudio::Capabilities::Downloadable::SUPPORTED_SOURCES
     assert_equal %i[zip], RecordingStudio::Capabilities::Downloadable::SUPPORTED_FORMATS
   end

@@ -2,6 +2,8 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
+require "stringio"
+
 find_or_record_child = lambda do |recordable, root_recording, parent_recording|
   RecordingStudio::Recording.find_by(
     root_recording: root_recording,
@@ -44,8 +46,34 @@ begin
 
   find_or_record_child.call(page, root_recording, folder_recording)
 
+  press_kit = RecordingStudio::Recording.find_by(
+    recordable_type: "PressKit",
+    parent_recording_id: root_recording.id,
+    trashed_at: nil
+  )&.recordable
+  press_kit ||= PressKit.find_or_create_by!(name: "Launch Press Kit") do |record|
+    record.description = "Photos, copy, and credits for the launch."
+    record.credits = "Ava Chen, photos. The Studio, words."
+  end
+  press_kit_recording = find_or_record_child.call(press_kit, root_recording, root_recording)
+
   [root_recording, accessible_root_recording, private_root_recording].each do |recording|
     RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
+  end
+
+  stored = RecordingStudioDownloadable::Sources::Attachments.call(press_kit_recording)
+  if stored.empty?
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: StringIO.new("studio mark"),
+      filename: "logo.txt",
+      content_type: "text/plain"
+    )
+    result = press_kit_recording.record_attachment_upload(
+      signed_blob_id: blob.signed_id,
+      actor: user,
+      name: "logo"
+    )
+    raise "Failed to seed press kit logo" if result.blank?
   end
 ensure
   Current.actor = previous_actor
@@ -56,3 +84,4 @@ puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recordin
 puts "Seeded: Workspace '#{accessible_workspace.name}' with root recording ##{accessible_root_recording.id}"
 puts "Seeded: Workspace '#{private_workspace.name}' with root recording ##{private_root_recording.id}"
 puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
+puts "Seeded: Press kit '#{press_kit.name}'"
