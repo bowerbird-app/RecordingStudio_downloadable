@@ -86,6 +86,24 @@ class DownloadableCapabilityTest < Minitest::Test
     assert_includes error.message, "unknown Downloadable option"
   end
 
+  def test_to_accepts_manifest_source
+    captured_options = nil
+    factory = Module.new
+
+    RecordingStudio::Capabilities.stub :include_for, lambda { |_name, **options|
+      captured_options = options
+      factory
+    } do
+      result = RecordingStudio::Capabilities::Downloadable.to(source: :manifest)
+
+      assert_same factory, result
+    end
+
+    assert_equal({ source: :manifest, format: :zip }, captured_options)
+    assert_includes RecordingStudio::Capabilities::Downloadable::SUPPORTED_SOURCES, :manifest
+    assert_includes RecordingStudio::Capabilities::Downloadable::SUPPORTED_SOURCES, :attachments
+  end
+
   def test_to_rejects_unsupported_source_and_format
     error = assert_raises(RecordingStudioDownloadable::UnsupportedOptionError) do
       RecordingStudio::Capabilities::Downloadable.to(source: :children)

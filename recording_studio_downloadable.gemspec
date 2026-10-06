@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.authors     = ["Bowerbird"]
   spec.homepage    = "https://github.com/bowerbird-app/RecordingStudio_downloadable"
   spec.summary     = "Optional Recording Studio addon for packaging recording files into a ZIP"
-  spec.description = "Reusable Recording Studio addon that discovers a recording's files, " \
-                     "packages them into a downloadable ZIP archive, and serves the archive " \
-                     "through an authorized engine route."
+  spec.description = "Reusable Recording Studio addon that collects a recording's files from " \
+                     "attachments or a host manifest, packages them into a ZIP, and serves the " \
+                     "archive through an authorized engine route."
   spec.license     = "MIT"
   spec.required_ruby_version = ">= 3.3.0"
 

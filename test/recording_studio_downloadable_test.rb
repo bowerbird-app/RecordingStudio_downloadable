@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.1.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.2.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -232,6 +232,8 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute_includes readme, "recording_studio/v3.0.0"
     assert_includes readme, "blob.url"
     assert_includes readme, "does not call `blob.download`"
+    assert_includes readme, "source: :manifest"
+    assert_includes readme, "downloadable_manifest"
   end
 
   def test_dummy_home_page_uses_demo_title_only

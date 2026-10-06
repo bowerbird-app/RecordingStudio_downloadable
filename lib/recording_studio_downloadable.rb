@@ -9,6 +9,8 @@ module RecordingStudioDownloadable
   class EmptySourceError < Error; end
   class SourceMissingError < Error; end
   class GenerationError < Error; end
+  class ManifestMissingError < Error; end
+  class InvalidManifestEntryError < Error; end
 
   # blob.url rejects expires_in of 0 or less. Fall back when the host sets
   # ActiveStorage.urls_expire_in to 0/nil (Rails' usual default is 5 minutes).
@@ -32,6 +34,6 @@ require "recording_studio_downloadable/filename"
 require "recording_studio_downloadable/fingerprint"
 require "recording_studio_downloadable/zip_builder"
 require "recording_studio_downloadable/authorization"
-require "recording_studio_downloadable/sources/attachments"
+require "recording_studio_downloadable/sources"
 require "recording_studio_downloadable/engine"
 require "recording_studio/capabilities/downloadable"

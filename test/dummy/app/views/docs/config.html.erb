@@ -16,7 +16,7 @@
     language: :ruby,
     code: <<~CODE
       include RecordingStudio::Capabilities::Downloadable.to(
-        source: :attachments, # V1 floor — only :attachments
+        source: :attachments, # or :manifest
         format: :zip          # V1 floor — only :zip
       )
     CODE

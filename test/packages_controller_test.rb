@@ -233,4 +233,34 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal false, payload["ready"]
     assert_nil payload["download_url"]
   end
+
+  test "empty manifest download is not found like empty attachments" do
+    empty = create_workspace_recording
+    grant_download_access!(empty, @user)
+    empty.recordable.define_singleton_method(:downloadable_manifest) { [] }
+
+    with_downloadable_options(Workspace, source: :manifest, format: :zip) do
+      get recording_studio_downloadable.recording_package_path(empty)
+
+      assert_response :not_found
+    end
+  end
+
+  test "denied actor cannot download a ready manifest package" do
+    @recording.recordable.define_singleton_method(:downloadable_manifest) do
+      [
+        RecordingStudioDownloadable::DownloadFile.from_string(filename: "credits.txt", content: "Jane")
+      ]
+    end
+
+    with_downloadable_options(Workspace, source: :manifest, format: :zip) do
+      perform_enqueued_jobs { @recording.downloadable_generate! }
+      sign_in @other
+
+      get recording_studio_downloadable.recording_package_path(@recording)
+
+      assert_response :forbidden
+      assert_nil response.redirect_url
+    end
+  end
 end

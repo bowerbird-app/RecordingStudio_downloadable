@@ -30,6 +30,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "bin/rails generate recording_studio_downloadable:migrations"
     assert_includes response.body, "Downloadable.to"
     assert_includes response.body, "source: :attachments"
+    assert_includes response.body, "source: :manifest"
     assert_includes response.body, "format: :zip"
   end
 
@@ -41,6 +42,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "download: :view"
     assert_includes response.body, "RecordingStudioAccessible::Authorization.allowed?"
     assert_includes response.body, "source: :attachments"
+    assert_includes response.body, "source: :manifest"
     refute_includes response.body, "Replace this placeholder"
   end
 

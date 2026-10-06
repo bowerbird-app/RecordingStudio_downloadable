@@ -18,6 +18,32 @@ module DownloadableTestHelper
     RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: actor)
   end
 
+  def create_blob!(filename:, contents:, content_type: "text/plain")
+    ActiveStorage::Blob.create_and_upload!(
+      io: StringIO.new(contents),
+      filename: filename,
+      content_type: content_type
+    )
+  end
+
+  def with_downloadable_options(recordable_class, **options)
+    previous = RecordingStudio.capability_options(:downloadable, for: recordable_class)
+    RecordingStudio.set_capability_options(:downloadable, on: recordable_class, **options)
+    yield
+  ensure
+    restore = previous || { source: :attachments, format: :zip }
+    RecordingStudio.set_capability_options(:downloadable, on: recordable_class, **restore)
+  end
+
+  def zip_entries_from(io_or_string)
+    payload = io_or_string.respond_to?(:read) ? io_or_string.tap(&:rewind).read : io_or_string
+    entries = {}
+    Zip::File.open_buffer(payload) do |zip|
+      zip.each { |entry| entries[entry.name] = entry.get_input_stream.read }
+    end
+    entries
+  end
+
   def attach_file!(parent_recording, filename:, contents:, actor:, content_type: "text/plain")
     blob = ActiveStorage::Blob.create_and_upload!(
       io: StringIO.new(contents),

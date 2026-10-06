@@ -36,6 +36,8 @@ Metrics/MethodLength:
     - 'lib/recording_studio_downloadable/engine.rb'
     - 'lib/recording_studio_downloadable/authorization.rb'
     - 'lib/recording_studio_downloadable/sources/attachments.rb'
+    - 'lib/recording_studio_downloadable/sources/manifest.rb'
+    - 'lib/recording_studio_downloadable/download_file.rb'
     - 'lib/recording_studio_downloadable/filename.rb'
     - 'app/services/recording_studio_downloadable/services/**/*'
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
@@ -50,6 +52,8 @@ Metrics/AbcSize:
     - 'lib/recording_studio_downloadable/engine.rb'
     - 'lib/recording_studio_downloadable/authorization.rb'
     - 'lib/recording_studio_downloadable/sources/attachments.rb'
+    - 'lib/recording_studio_downloadable/sources/manifest.rb'
+    - 'lib/recording_studio_downloadable/download_file.rb'
     - 'app/services/recording_studio_downloadable/services/**/*'
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
 
@@ -59,6 +63,8 @@ Metrics/CyclomaticComplexity:
     - 'lib/recording_studio_downloadable/engine.rb'
     - 'lib/recording_studio_downloadable/authorization.rb'
     - 'lib/recording_studio_downloadable/sources/attachments.rb'
+    - 'lib/recording_studio_downloadable/sources/manifest.rb'
+    - 'lib/recording_studio_downloadable/download_file.rb'
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
     - 'app/services/recording_studio_downloadable/services/generate_package.rb'
 
@@ -68,6 +74,8 @@ Metrics/PerceivedComplexity:
     - 'lib/recording_studio_downloadable/engine.rb'
     - 'lib/recording_studio_downloadable/authorization.rb'
     - 'lib/recording_studio_downloadable/sources/attachments.rb'
+    - 'lib/recording_studio_downloadable/sources/manifest.rb'
+    - 'lib/recording_studio_downloadable/download_file.rb'
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
     - 'app/services/recording_studio_downloadable/services/**/*'
 

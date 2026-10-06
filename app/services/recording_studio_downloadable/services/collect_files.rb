@@ -20,15 +20,7 @@ module RecordingStudioDownloadable
           format: format
         )
 
-        files =
-          case source
-          when :attachments
-            Sources::Attachments.call(recording)
-          else
-            raise UnsupportedOptionError, "Unsupported Downloadable source: #{source.inspect}"
-          end
-
-        success(files)
+        success(Sources.collect(source, recording))
       end
 
       def capability_option(name, default)

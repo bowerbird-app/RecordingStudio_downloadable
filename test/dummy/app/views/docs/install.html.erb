@@ -9,12 +9,14 @@
 
   <%= render FlatPack::SectionTitle::Component.new(
     title: "Depends on Accessible and Attachable",
-    subtitle: "ZIP archives are built from Attachable original files. Accessible decides whether the actor may download the owner recording."
+    subtitle: "ZIP archives are built from Attachable originals or a host manifest. Accessible decides whether the actor may download the owner recording."
   ) %>
 
   <p class="text-sm leading-6 text-(--surface-muted-content-color)">
     Downloadable does not change Accessible. It does not upload, replace, or preview individual files — that stays in Attachable.
     Active Storage must already be installed so package archives can be stored.
+    For composite ZIPs, opt into <code>source: :manifest</code> and return <code>DownloadFile</code> objects from
+    <code>#downloadable_manifest</code>. Downloadable does not walk the recording tree or learn domain types.
   </p>
 
   <%= render FlatPack::SectionTitle::Component.new(
@@ -84,7 +86,8 @@
   ) %>
 
   <p class="text-sm leading-6 text-(--surface-muted-content-color)">
-    V1 only supports <code>source: :attachments</code> and <code>format: :zip</code>.
-    <code>Downloadable.to</code> with no arguments uses those defaults.
+    V1 supports <code>source: :attachments</code> and <code>source: :manifest</code>, with <code>format: :zip</code>.
+    <code>Downloadable.to</code> with no arguments uses attachments. Manifest sources must implement
+    <code>#downloadable_manifest</code>; they never fall back to attachments.
   </p>
 </div>

@@ -3,7 +3,7 @@
 module RecordingStudio
   module Capabilities
     module Downloadable
-      SUPPORTED_SOURCES = %i[attachments].freeze
+      SUPPORTED_SOURCES = %i[attachments manifest].freeze
       SUPPORTED_FORMATS = %i[zip].freeze
       DEFAULTS = { source: :attachments, format: :zip }.freeze
 
