@@ -147,7 +147,7 @@ recording.downloadable_source        # :attachments or :manifest
 4. `bin/rails db:migrate`
 5. Opt each recordable in with `.to`.
 
-dummy GitHub tag `v4.3.0`, dummy GitHub tag `v0.11.1`, dummy GitHub tag `v0.5.1`, dummy GitHub tag `v0.1.198`, Attachable `v0.7.1`.
+dummy GitHub tag `v4.4.0`, dummy GitHub tag `v0.11.1`, dummy GitHub tag `v0.5.1`, dummy GitHub tag `v0.1.198`, Attachable `v0.7.1`.
 
 ## Dummy app
 
