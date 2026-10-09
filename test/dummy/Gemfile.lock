@@ -17,11 +17,11 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_attachable.git
-  revision: dadc3c53997c700bd80f5281e49fba86a26f8104
-  tag: v0.7.1
+  revision: 8457c5681d9d3742d2b272082d62eecd91dd1102
+  tag: v0.13.0
   specs:
-    recording_studio_attachable (0.7.0)
-      flat_pack (>= 0.1.135)
+    recording_studio_attachable (0.13.0)
+      flat_pack (>= 0.1.213)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
 
@@ -38,10 +38,10 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/flatpack.git
-  revision: 20a17d7dcb76686ea5e5964dd6483a455b2a32d6
-  tag: v0.1.198
+  revision: 9606a6f24717e8f98c22c73e7ed40b30523fdd3f
+  tag: v0.1.213
   specs:
-    flat_pack (0.1.198)
+    flat_pack (0.1.213)
       pagy (~> 9.0)
       rails (>= 7.1, < 9)
       tailwind_merge (~> 0.13)
@@ -564,7 +564,7 @@ CHECKSUMS
   ffi (1.17.4-x86_64-darwin) sha256=aa70390523cf3235096cf64962b709b4cfbd5c082a2cb2ae714eb0fe2ccda496
   ffi (1.17.4-x86_64-linux-gnu) sha256=9d3db14c2eae074b382fa9c083fe95aec6e0a1451da249eab096c34002bc752d
   ffi (1.17.4-x86_64-linux-musl) sha256=3fdf9888483de005f8ef8d1cf2d3b20d86626af206cbf780f6a6a12439a9c49e
-  flat_pack (0.1.198)
+  flat_pack (0.1.213)
   fugit (1.14.0) sha256=e311a9cc85a54bb67649df45060e721282a1e2c8ebad40e41874a3a7d576f37e
   globalid (1.4.0) sha256=037f12fbf1d9d7a014d501c2d5c77356fd4ddd96d7a7991d6700bba96706f427
   i18n (1.15.2) sha256=00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5
@@ -634,7 +634,7 @@ CHECKSUMS
   rdoc (8.1.0) sha256=befc37880a5cfd36dcb176c748b5fd5ee39dd3536a75e81824e4972ce230f60a
   recording_studio (4.4.0)
   recording_studio_accessible (0.14.0)
-  recording_studio_attachable (0.7.0)
+  recording_studio_attachable (0.13.0)
   recording_studio_downloadable (0.3.0)
   recording_studio_root_switchable (0.5.1)
   regexp_parser (2.13.1) sha256=5aedb6b7c35688f51e86eef17a15374dfd287c83f4ca644b2c5f3ec50a33b44b
