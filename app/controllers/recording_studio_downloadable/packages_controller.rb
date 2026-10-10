@@ -5,27 +5,19 @@ module RecordingStudioDownloadable
     def show
       recording = find_recording
       authorize_download!(recording)
+      throttle_download!(recording)
 
       raise ActiveRecord::RecordNotFound if recording.downloadable_empty?
 
-      unless recording.downloadable_ready?
-        recording.downloadable_generate!
-        recording.reload
-      end
-
-      if recording.downloadable_ready?
-        package = recording.downloadable_package
-        redirect_to_archive_url!(package.archive.blob, filename: download_filename(recording))
-      else
-        respond_not_ready(recording)
-      end
+      serve_or_prepare!(recording)
     end
 
     def create
       recording = find_recording
       authorize_download!(recording)
+      throttle_download!(recording)
 
-      recording.downloadable_generate!
+      enqueue_generation_if_granted!(recording)
       recording.reload
       session[:recording_studio_downloadable_autostart] = recording.id
       redirect_back_or_to fallback_location, notice: generate_notice(recording)
@@ -42,11 +34,61 @@ module RecordingStudioDownloadable
         stale: recording.downloadable_stale?,
         failed: package&.failed? || false,
         failure_message: package&.failure_message,
+        can_generate: granted_to_generate?(recording),
         download_url: recording.downloadable_ready? ? recording.downloadable_download_path : nil
       }
     end
 
     private
+
+    def serve_or_prepare!(recording)
+      package = recording.downloadable_package
+      if serveable_package?(recording, package)
+        redirect_to_archive_url!(package.archive.blob, filename: download_filename(recording))
+        return
+      end
+
+      enqueue_generation_if_granted!(recording)
+      recording.reload
+      package = recording.downloadable_package
+
+      if serveable_package?(recording, package)
+        redirect_to_archive_url!(package.archive.blob, filename: download_filename(recording))
+      else
+        respond_not_ready(recording)
+      end
+    end
+
+    def serveable_package?(recording, package)
+      return false unless recording.downloadable_ready?
+      return false unless fingerprint_matches_for_serve?(recording, package)
+
+      true
+    end
+
+    def fingerprint_matches_for_serve?(recording, package)
+      return false unless package
+      return false unless package.identity_matches?(
+        action: downloadable_action_for(recording),
+        export_scope: downloadable_export_scope_for(recording)
+      )
+
+      recording.downloadable_current_fingerprint_matches?(
+        package,
+        action: downloadable_action_for(recording),
+        export_scope: downloadable_export_scope_for(recording)
+      )
+    end
+
+    def enqueue_generation_if_granted!(recording)
+      return unless granted_to_generate?(recording)
+
+      recording.downloadable_generate!(
+        action: downloadable_action_for(recording),
+        export_scope: downloadable_export_scope_for(recording),
+        force: true
+      )
+    end
 
     def download_filename(recording)
       recordable = recording.recordable
@@ -94,18 +136,22 @@ module RecordingStudioDownloadable
     end
 
     def status_state(recording, package)
+      return "not_ready" if recording.downloadable_stale? && !granted_to_generate?(recording)
       return "stale" if recording.downloadable_stale?
+      return "not_ready" if package.blank? && !granted_to_generate?(recording)
 
       package&.state || "missing"
     end
 
     def generate_notice(recording)
       if recording.downloadable_empty?
-        "Nothing to package."
+        Copy.t("notices.empty")
       elsif recording.downloadable_ready?
-        "Download is ready."
+        Copy.t("notices.ready")
+      elsif granted_to_generate?(recording)
+        Copy.t("notices.building")
       else
-        "Building ZIP. The download starts automatically when it is ready."
+        Copy.t("notices.not_ready")
       end
     end
 

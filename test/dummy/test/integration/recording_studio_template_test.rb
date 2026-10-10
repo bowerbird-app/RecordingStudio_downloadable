@@ -80,7 +80,7 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
 
     assert_includes workspace_source, "include RecordingStudio::Capabilities::Attachable.to("
     assert_includes workspace_source, "include RecordingStudio::Capabilities::Downloadable.to("
-    assert_includes capability_source, "RecordingStudio::Capabilities.include_for(:downloadable, **options)"
+    assert_includes capability_source, "RecordingStudio::Capabilities.include_for(:downloadable, **options.compact)"
     refute_includes capability_source, "enable_capability"
     refute_includes capability_source, "set_capability_options"
 

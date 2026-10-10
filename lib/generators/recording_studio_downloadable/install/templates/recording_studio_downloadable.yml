@@ -1,7 +1,9 @@
 development:
   auth_roles:
     download: view
+  max_concurrent_builds: 5
 
 production:
   auth_roles:
     download: view
+  max_concurrent_builds: 5

@@ -9,11 +9,11 @@
 
   <%= render FlatPack::SectionTitle::Component.new(
     title: "Depends on Accessible and Attachable",
-    subtitle: "ZIP archives are built from Attachable originals or a host manifest. Accessible decides whether the actor may download the owner recording."
+    subtitle: "ZIP archives are built from Attachable originals or a host manifest. Accessible decides whether the actor may perform this download action."
   ) %>
 
   <p class="text-sm leading-6 text-(--surface-muted-content-color)">
-    Downloadable does not change Accessible. It does not upload, replace, or preview individual files — that stays in Attachable.
+    Downloadable does not change Accessible. It calls <code>authorized_action?</code> for the named download action, then an optional domain hook. It does not upload, replace, or preview individual files — that stays in Attachable.
     Active Storage must already be installed so package archives can be stored.
     For composite ZIPs, opt into <code>source: :manifest</code> and return <code>DownloadFile</code> objects from
     <code>#downloadable_manifest</code>. Downloadable does not walk the recording tree or learn domain types.
@@ -28,8 +28,8 @@
     language: :ruby,
     code: <<~CODE
       gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.4.0"
-      gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.11.0"
-      gem "recording_studio_attachable", github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.0"
+      gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.14.0"
+      gem "recording_studio_attachable", github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.1"
       gem "recording_studio_downloadable", github: "bowerbird-app/RecordingStudio_downloadable"
     CODE
   ) %>
@@ -79,7 +79,8 @@
         )
         include RecordingStudio::Capabilities::Downloadable.to(
           source: :attachments,
-          format: :zip
+          format: :zip,
+          action: :"workspaces.download"
         )
       end
     CODE

@@ -37,7 +37,7 @@ Then open the app and sign in with:
 - `/docs/install`, `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` - dummy-only starter pages
 - `/pages` - dummy table of Page recordables; `/pages/new` creates a page then opens Attachable upload
 - `/press_kits` - dummy Press Kit list (`source: :manifest` ZIP of uploads plus generated files); `/press_kits/:id/edit` changes the description
-- Download on home or Pages `POST`s ZIP generation. Stimulus polls `/recording_studio_downloadable/recordings/:id/package/status` until `ready`, then starts the authorized GET. That GET redirects to a short-lived signed Active Storage URL so the ZIP streams from Disk/R2 instead of Rails memory.
+- Download on home or Pages `POST`s ZIP generation for people with access. Stimulus polls `/recording_studio_downloadable/recordings/:id/package/status` until `ready`, then starts the authorized GET. That GET redirects to a short-lived signed Active Storage URL (a bearer link until it expires) so the ZIP streams from Disk/R2 instead of Rails memory. Anonymous visitors never enqueue a build.
 - `/up` - Rails health check
 
 ## Active Storage / Cloudflare R2

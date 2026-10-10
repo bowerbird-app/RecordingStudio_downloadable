@@ -95,8 +95,8 @@ class PressKitsTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to press_kits_path
     @recording.reload
-    assert @recording.downloadable_stale?
     refute @recording.downloadable_ready?
+    assert_includes %w[pending processing], @recording.downloadable_package.state
     assert_equal "Hello world", @recording.recordable.description
   end
 

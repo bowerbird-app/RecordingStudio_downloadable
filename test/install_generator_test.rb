@@ -170,6 +170,8 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes install_guide, "GET …/package/status"
     assert_includes install_guide, "lazyLoadControllersFrom"
     assert_includes install_guide, "blob.url"
+    assert_includes install_guide, "authorized_action?"
+    assert_includes install_guide, "action_audiences"
     refute_includes install_guide, "RecordingStudio v3"
   end
 

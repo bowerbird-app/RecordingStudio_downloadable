@@ -11,9 +11,23 @@ module RecordingStudioDownloadable
       size = button_options.fetch(:size, :md)
       pending = downloadable_pending?(recording)
       auto_download = downloadable_autostart?(recording) && recording.downloadable_ready?
+      can_generate = downloadable_can_generate?(recording)
 
-      control_options = button_options.merge(path: path, style: style, size: size, pending: pending)
-      tag.span(data: downloadable_package_poll_data(recording, poll: pending, auto_download: auto_download)) do
+      control_options = button_options.merge(
+        path: path,
+        style: style,
+        size: size,
+        pending: pending,
+        can_generate: can_generate
+      )
+      tag.span(
+        data: downloadable_package_poll_data(
+          recording,
+          poll: pending,
+          auto_download: auto_download,
+          can_generate: can_generate
+        )
+      ) do
         downloadable_button_control(recording, control_options)
       end
     end
@@ -27,13 +41,13 @@ module RecordingStudioDownloadable
 
       if options.fetch(:pending)
         render FlatPack::Button::Component.new(
-          text: options.fetch(:preparing_text, "Preparing…"),
+          text: options.fetch(:preparing_text, Copy.t("buttons.preparing")),
           style: options.fetch(:style, :secondary),
           size: size
         )
       elsif recording.downloadable_package&.failed?
         render FlatPack::Button::Component.new(
-          text: options.fetch(:retry_text, "Retry download"),
+          text: options.fetch(:retry_text, Copy.t("buttons.retry")),
           style: style,
           size: size,
           href: path,
@@ -42,7 +56,7 @@ module RecordingStudioDownloadable
         )
       elsif recording.downloadable_ready?
         render FlatPack::Button::Component.new(
-          text: options.fetch(:ready_text, "Download"),
+          text: options.fetch(:ready_text, Copy.t("buttons.download")),
           style: style,
           size: size,
           href: path,
@@ -50,17 +64,34 @@ module RecordingStudioDownloadable
         )
       else
         render FlatPack::Button::Component.new(
-          text: options.fetch(:generate_text, "Download"),
+          text: options.fetch(:generate_text, Copy.t("buttons.download")),
           style: style,
           size: size,
           href: path,
-          data: { turbo_method: :post }
+          data: options.fetch(:can_generate, true) ? { turbo_method: :post } : { turbo: false }
         )
       end
     end
 
     def downloadable_pending?(recording)
       recording.downloadable_package&.processing? || recording.downloadable_package&.pending?
+    end
+
+    def downloadable_can_generate?(recording)
+      return false unless recording.respond_to?(:downloadable_action)
+
+      RecordingStudioDownloadable::Authorization.granted_to_generate?(
+        actor: downloadable_view_actor,
+        recording: recording,
+        action: recording.downloadable_action
+      )
+    end
+
+    def downloadable_view_actor
+      return Current.actor if defined?(Current) && Current.respond_to?(:actor) && Current.actor
+      return current_user if respond_to?(:current_user, true)
+
+      nil
     end
 
     def downloadable_package_path_for(recording)
@@ -81,14 +112,20 @@ module RecordingStudioDownloadable
       true
     end
 
-    def downloadable_package_poll_data(recording, poll:, auto_download:)
+    def downloadable_package_poll_data(recording, poll:, auto_download:, can_generate:)
       {
         controller: "recording-studio-downloadable--package",
         action: "click->recording-studio-downloadable--package#startDownload",
         "recording-studio-downloadable--package-status-url-value": downloadable_package_status_path_for(recording),
         "recording-studio-downloadable--package-download-url-value": downloadable_package_path_for(recording),
         "recording-studio-downloadable--package-poll-value": poll,
-        "recording-studio-downloadable--package-auto-download-value": auto_download
+        "recording-studio-downloadable--package-auto-download-value": auto_download,
+        "recording-studio-downloadable--package-can-generate-value": can_generate,
+        "recording-studio-downloadable--package-ready-text-value": Copy.t("buttons.download"),
+        "recording-studio-downloadable--package-preparing-text-value": Copy.t("buttons.preparing"),
+        "recording-studio-downloadable--package-retry-text-value": Copy.t("buttons.retry"),
+        "recording-studio-downloadable--package-not-ready-text-value": Copy.t("notices.not_ready"),
+        "recording-studio-downloadable--package-timeout-text-value": Copy.t("notices.timeout")
       }
     end
 

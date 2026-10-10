@@ -22,6 +22,23 @@ class FingerprintTest < Minitest::Test
                  RecordingStudioDownloadable::Fingerprint.call([replaced])
   end
 
+  def test_changes_when_action_or_export_scope_changes
+    file = download_file("a.txt", "aaa", identity: "1")
+
+    public_workspace = RecordingStudioDownloadable::Fingerprint.call(
+      [file], action: :"workspaces.download", export_scope: :public
+    )
+    public_kit = RecordingStudioDownloadable::Fingerprint.call(
+      [file], action: :"presskits.kit_download", export_scope: :public
+    )
+    draft_workspace = RecordingStudioDownloadable::Fingerprint.call(
+      [file], action: :"workspaces.download", export_scope: :draft
+    )
+
+    refute_equal public_workspace, public_kit
+    refute_equal public_workspace, draft_workspace
+  end
+
   private
 
   def download_file(name, contents, identity:)

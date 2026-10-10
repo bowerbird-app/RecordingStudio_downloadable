@@ -22,19 +22,19 @@
       helper: "recording_package_path(recording)",
       method: "GET",
       path: "/recording_studio_downloadable/recordings/:recording_id/package",
-      purpose: "Authorize :download, then 302 to a short-lived signed Active Storage URL for the ZIP (R2/S3 or Disk). Does not buffer the archive in Rails. 404 when empty or not ready."
+      purpose: "Authorize the download action, then 302 to a short-lived signed Active Storage URL for the ZIP (R2/S3 or Disk). Bearer link until expiry. 404 when empty. Not-ready (no enqueue) when missing/stale for non-granted actors."
     },
     {
       helper: "recording_package_path(recording)",
       method: "POST",
       path: "/recording_studio_downloadable/recordings/:recording_id/package",
-      purpose: "Enqueue ZIP generation, then redirect. Empty sets notice “Nothing to package.”"
+      purpose: "Enqueue ZIP generation for granted actors, then redirect. Non-granted actors get a not-ready notice and no job. Empty sets notice “Nothing to package.”"
     },
     {
       helper: "recording_package_status_path(recording)",
       method: "GET",
       path: "/recording_studio_downloadable/recordings/:recording_id/package/status",
-      purpose: "JSON package state for the Stimulus poll. Same Accessible :download gate. Does not send the ZIP."
+      purpose: "JSON package state for the Stimulus poll. Same authorization as show/create. Never enqueues a build. Includes can_generate."
     }
   ] %>
 

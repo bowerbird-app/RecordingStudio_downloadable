@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.2.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.3.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -48,7 +48,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.4.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.11.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.14.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.5.1"'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.198"'
@@ -76,6 +76,11 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes migration, "add_column :recording_studio_accesses, :depends_on_recording_id, :uuid"
     assert_includes schema, 'create_table "recording_studio_access_invitations"'
     assert_includes schema, "idx_rs_access_invitations_token_digest"
+    assert_includes schema, 't.string "action"'
+    assert_includes schema, 't.string "export_scope"'
+    assert_includes schema, "idx_rs_downloadable_packages_identity"
+    assert_includes schema, 'create_table "recording_studio_access_constraints"'
+    assert_includes schema, 'create_table "recording_studio_access_rules"'
     invitation_migration = File.read(
       File.expand_path(
         "dummy/db/migrate/20261001000011_create_recording_studio_access_invitations.rb",
@@ -94,7 +99,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
   def test_downloadable_capability_wraps_include_for_and_is_not_enabled_globally
     source = File.read(File.expand_path("../lib/recording_studio/capabilities/downloadable.rb", __dir__))
 
-    assert_includes source, "RecordingStudio::Capabilities.include_for(:downloadable, **options)"
+    assert_includes source, "RecordingStudio::Capabilities.include_for(:downloadable, **options.compact)"
     refute_includes source, "enable_capability"
     refute_includes source, "set_capability_options"
     refute RecordingStudio.capability_enabled?(:downloadable, for: "Folder")
@@ -128,6 +133,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable"'
     assert_includes controller, "package/status"
     assert_includes controller, "triggerDownload"
+    assert_includes controller, "canGenerate"
   end
 
   def test_packages_show_redirects_to_signed_blob_url_instead_of_buffering
@@ -137,6 +143,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes source, "blob.url("
     assert_includes source, "expires_in: archive_url_expires_in"
     assert_includes source, "SIGNED_URL_EXPIRES_IN"
+    assert_includes source, "enqueue_generation_if_granted!"
     refute_includes source, "blob.download"
     refute_includes source, "send_data"
   end
@@ -225,7 +232,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "RecordingStudio"
     assert_includes readme, "dummy GitHub tag `v4.4.0`"
     assert_includes readme, "dummy GitHub tag `v0.1.198`"
-    assert_includes readme, "dummy GitHub tag `v0.11.1`"
+    assert_includes readme, "dummy GitHub tag `v0.14.0`"
     assert_includes readme, "dummy GitHub tag `v0.5.1`"
     refute_includes readme, "dummy GitHub tag `v4.3.0`"
     refute_includes readme, "v0.1.177"
@@ -240,6 +247,9 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "does not call `blob.download`"
     assert_includes readme, "source: :manifest"
     assert_includes readme, "downloadable_manifest"
+    assert_includes readme, "authorized_action?"
+    assert_includes readme, "action_audiences"
+    assert_includes readme, "bearer link"
   end
 
   def test_dummy_home_page_uses_demo_title_only

@@ -11,7 +11,7 @@
     Installing the gem does not enable Downloadable. These methods are on recordings whose recordable type
     included <code>Downloadable.to</code>. <code>source: :attachments</code> uses direct Attachable children
     (original blobs, not variants; trashed attachments skipped). <code>source: :manifest</code> uses
-    <code>#downloadable_manifest</code>. Empty file sets never produce a ZIP. Accessible gates the download route.
+    <code>#downloadable_manifest</code>. Empty file sets never produce a ZIP. Accessible <code>authorized_action?</code> gates every download endpoint.
   </p>
 
   <%= render FlatPack::SectionTitle::Component.new(
@@ -51,11 +51,13 @@
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
     code: <<~CODE
-      recording.downloadable_package  # Package row for this recording + format, or nil
+      recording.downloadable_package  # Package row for recording + action + scope + format
       recording.downloadable_ready?
       recording.downloadable_stale?
-      # ready? is false when sources changed after the last ZIP (stale fingerprint).
-      # Download then regenerates; GET /package never 404s a stale archive.
+      recording.downloadable_action
+      recording.downloadable_invalidate!(immediate: true)
+      # ready? is false when sources, action, or export scope changed (stale fingerprint).
+      # Granted users may regenerate. Everyone else gets a not-ready response.
     CODE
   ) %>
 
@@ -69,11 +71,11 @@
     code: <<~CODE
       recording.downloadable_download_path
       # Engine GET recording_package_path(recording)
-      # Controller authorizes :download via Accessible (default role :view),
-      # then redirects to a short-lived signed blob URL so the ZIP streams
-      # from storage (R2/S3 or Disk) instead of blob.download in Rails.
-      # After POST generate, the button polls GET recording_package_status_path
-      # until ready, then starts that GET so the ZIP downloads in the browser.
+      # Controller authorizes the recording's download action, then redirects
+      # to a short-lived signed blob URL (bearer link until expiry, default 5
+      # minutes). After POST generate, the button polls GET
+      # recording_package_status_path until ready. Non-granted actors never
+      # enqueue a build from show, create, or status.
     CODE
   ) %>
 
@@ -85,8 +87,10 @@
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
     code: <<~CODE
-      recording.downloadable_source   # :attachments or :manifest
-      recording.downloadable_format   # :zip
+      recording.downloadable_source        # :attachments or :manifest
+      recording.downloadable_format        # :zip
+      recording.downloadable_action        # :"workspaces.download"
+      recording.downloadable_export_scope  # :public
     CODE
   ) %>
 </div>

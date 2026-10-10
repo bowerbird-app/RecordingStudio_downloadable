@@ -25,6 +25,28 @@ module RecordingStudioDownloadable
         )
       end
 
+      def skip_inherited_host_callbacks!
+        controller = RecordingStudioDownloadable::ApplicationController
+        return unless controller.respond_to?(:skip_before_action)
+
+        Array(RecordingStudioDownloadable.configuration.skip_host_before_actions).each do |callback|
+          controller.skip_before_action callback, raise: false
+        end
+      end
+
+      def install_recording_observer!
+        return unless defined?(RecordingStudio::Recording)
+        return if RecordingStudio::Recording.method_defined?(:recording_studio_downloadable_after_commit)
+
+        RecordingStudio::Recording.class_eval do
+          after_commit :recording_studio_downloadable_after_commit, on: %i[create update destroy]
+
+          def recording_studio_downloadable_after_commit
+            RecordingStudioDownloadable::Invalidation.after_recording_commit(self)
+          end
+        end
+      end
+
       private
 
       def extensions_for(kind, names)
@@ -149,6 +171,18 @@ module RecordingStudioDownloadable
         ActionController::Base.descendants.each do |controller|
           RecordingStudioDownloadable::Engine.apply_controller_extensions(controller)
         end
+      end
+    end
+
+    initializer "recording_studio_downloadable.skip_host_auth" do
+      config.to_prepare do
+        RecordingStudioDownloadable::Engine.skip_inherited_host_callbacks!
+      end
+    end
+
+    initializer "recording_studio_downloadable.observe_recordings" do
+      config.to_prepare do
+        RecordingStudioDownloadable::Engine.install_recording_observer!
       end
     end
   end

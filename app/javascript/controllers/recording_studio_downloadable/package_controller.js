@@ -4,14 +4,20 @@ import { Controller } from "@hotwired/stimulus"
 // Status is polled at package/status until a current (non-stale) archive is
 // ready, then the authorized GET runs in a hidden iframe so a 302 to the
 // signed blob URL does not replace the Pages UI. Stale/missing packages POST
-// generate first.
+// generate first only when the actor is allowed to enqueue a build.
 export default class extends Controller {
   static values = {
     statusUrl: String,
     downloadUrl: String,
     poll: { type: Boolean, default: false },
     autoDownload: { type: Boolean, default: false },
-    interval: { type: Number, default: 1000 }
+    canGenerate: { type: Boolean, default: false },
+    interval: { type: Number, default: 1000 },
+    readyText: { type: String, default: "Download" },
+    preparingText: { type: String, default: "Preparing…" },
+    retryText: { type: String, default: "Retry download" },
+    notReadyText: { type: String, default: "This download is not ready yet." },
+    timeoutText: { type: String, default: "Download is taking too long. Retry." }
   }
 
   connect() {
@@ -45,10 +51,15 @@ export default class extends Controller {
       return
     }
 
-    await this.enqueueGenerate()
-    this.pollValue = true
-    this.showPreparing()
-    this.startPolling()
+    if (this.canGenerateFrom(data)) {
+      await this.enqueueGenerate()
+      this.pollValue = true
+      this.showPreparing()
+      this.startPolling()
+      return
+    }
+
+    this.showNotReady()
   }
 
   startPolling() {
@@ -68,7 +79,7 @@ export default class extends Controller {
     if (this.attempts > this.maxAttempts) {
       this.stopPolling()
       this.pollValue = false
-      this.showFailure("Download is taking too long. Retry.")
+      this.showFailure(this.timeoutTextValue)
       return
     }
 
@@ -86,14 +97,22 @@ export default class extends Controller {
     if (data.failed) {
       this.stopPolling()
       this.pollValue = false
-      this.showFailure(data.failure_message || "Download failed. Retry.")
+      this.showFailure(data.failure_message || this.retryTextValue)
       return
     }
 
-    if ((data.stale || data.state === "missing") && !this.requeued) {
+    if ((data.stale || data.state === "missing") && !this.requeued && this.canGenerateFrom(data)) {
       this.requeued = true
       await this.enqueueGenerate()
     }
+  }
+
+  canGenerateFrom(data) {
+    if (data && Object.prototype.hasOwnProperty.call(data, "can_generate")) {
+      return !!data.can_generate
+    }
+
+    return this.canGenerateValue
   }
 
   async fetchStatus() {
@@ -145,12 +164,7 @@ export default class extends Controller {
   }
 
   showReady() {
-    const link = document.createElement("a")
-    link.href = this.downloadUrlValue
-    link.dataset.turbo = "false"
-    link.className = this.linkClassName()
-    link.textContent = "Download"
-    this.element.replaceChildren(link)
+    this.replaceWithLink(this.downloadUrlValue, this.readyTextValue, { turbo: "false" })
   }
 
   showPreparing() {
@@ -158,17 +172,31 @@ export default class extends Controller {
     button.type = "button"
     button.disabled = true
     button.className = this.linkClassName()
-    button.textContent = "Preparing…"
+    button.textContent = this.preparingTextValue
+    this.element.replaceChildren(button)
+  }
+
+  showNotReady() {
+    const button = document.createElement("button")
+    button.type = "button"
+    button.disabled = true
+    button.className = this.linkClassName()
+    button.textContent = this.notReadyTextValue
     this.element.replaceChildren(button)
   }
 
   showFailure(message) {
+    this.replaceWithLink(this.downloadUrlValue, this.retryTextValue, { turboMethod: "post", title: message })
+  }
+
+  replaceWithLink(href, text, { turbo, turboMethod, title } = {}) {
     const link = document.createElement("a")
-    link.href = this.downloadUrlValue
-    link.dataset.turboMethod = "post"
+    link.href = href
     link.className = this.linkClassName()
-    link.textContent = "Retry download"
-    link.title = message
+    link.textContent = text
+    if (turbo) link.dataset.turbo = turbo
+    if (turboMethod) link.dataset.turboMethod = turboMethod
+    if (title) link.title = title
     this.element.replaceChildren(link)
   }
 

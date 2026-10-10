@@ -49,7 +49,7 @@ class PackageLifecycleTest < ActiveSupport::TestCase
       package = @recording.downloadable_generate!
       assert @recording.reload.downloadable_ready?
       refute @recording.downloadable_stale?
-      assert_equal RecordingStudioDownloadable::Fingerprint.call(@recording.downloadable_files),
+      assert_equal @recording.downloadable_source_fingerprint,
                    package.reload.source_fingerprint
     end
   end
@@ -72,5 +72,20 @@ class PackageLifecycleTest < ActiveSupport::TestCase
     assert result.failure?
     assert package.reload.failed?
     assert_includes package.failure_message.downcase, "missing"
+  end
+
+  test "oversize archives fail generation without serving a zip" do
+    previous = RecordingStudioDownloadable.configuration.max_zip_bytes
+    RecordingStudioDownloadable.configuration.max_zip_bytes = 1
+
+    perform_enqueued_jobs { @recording.downloadable_generate! }
+
+    package = @recording.reload.downloadable_package
+    assert package.failed?
+    assert_includes package.failure_message, "too large"
+    refute package.archive.attached?
+    refute @recording.downloadable_ready?
+  ensure
+    RecordingStudioDownloadable.configuration.max_zip_bytes = previous
   end
 end

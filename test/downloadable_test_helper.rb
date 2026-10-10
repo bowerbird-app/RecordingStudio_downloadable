@@ -18,6 +18,15 @@ module DownloadableTestHelper
     RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: actor)
   end
 
+  def with_action_audience(action, settings)
+    audiences = RecordingStudioAccessible.configuration.action_audiences
+    previous = audiences.to_h
+    audiences[action] = settings
+    yield
+  ensure
+    audiences.replace(previous)
+  end
+
   def create_blob!(filename:, contents:, content_type: "text/plain")
     ActiveStorage::Blob.create_and_upload!(
       io: StringIO.new(contents),

@@ -2,6 +2,8 @@
 
 class PressKit < ApplicationRecord
   recording_studio_recordable label: "Press kit", root: false, allowed_parent_types: ["Workspace"]
+  RecordingStudio.enable_capability(:accessible, on: self) if defined?(RecordingStudioAccessible)
+  RecordingStudio.enable_capability(:action_audiences, on: self) if defined?(RecordingStudioAccessible)
 
   validates :name, presence: true
 

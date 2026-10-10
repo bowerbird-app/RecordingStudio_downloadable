@@ -18,17 +18,21 @@ module RecordingStudioDownloadable
         if files.empty?
           package.with_lock do
             package.archive.purge if package.archive.attached?
-            package.mark_failed!("Source set is empty")
+            package.mark_failed!(Copy.t("notices.empty"))
           end
-          return failure(EmptySourceError.new("Source set is empty"))
+          return failure(EmptySourceError.new(Copy.t("notices.empty")))
         end
 
-        fingerprint = Fingerprint.call(files)
+        fingerprint = recording.downloadable_source_fingerprint(
+          action: package.action,
+          export_scope: package.export_scope
+        )
         package.with_lock do
           return success(package) if package.ready? && !package.stale_for?(fingerprint) && package.archive.attached?
         end
 
         blob = upload_archive!(files)
+        assert_archive_size!(blob)
         package.with_lock do
           package.mark_processing!
           package.archive.purge if package.archive.attached?
@@ -38,7 +42,7 @@ module RecordingStudioDownloadable
           package.mark_ready!(fingerprint: fingerprint)
           success(package.reload)
         end
-      rescue EmptySourceError, SourceMissingError, UnsupportedOptionError, GenerationError => e
+      rescue EmptySourceError, SourceMissingError, UnsupportedOptionError, GenerationError, ArchiveTooLargeError => e
         fail_package!(e)
         failure(e)
       rescue StandardError => e
@@ -55,6 +59,15 @@ module RecordingStudioDownloadable
             content_type: "application/zip"
           )
         end
+      end
+
+      def assert_archive_size!(blob)
+        max = RecordingStudioDownloadable.configuration.max_zip_bytes
+        return if max.blank? || max.to_i <= 0
+        return if blob.byte_size <= max.to_i
+
+        blob.purge
+        raise ArchiveTooLargeError, Copy.t("errors.archive_too_large")
       end
 
       def archive_filename
