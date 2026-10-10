@@ -1,0 +1,20 @@
+en:
+  recording_studio:
+    downloadable:
+      buttons:
+        download: "Download"
+        preparing: "Preparing…"
+        retry: "Retry download"
+      notices:
+        empty: "Nothing to package."
+        ready: "Download is ready."
+        building: "Building ZIP. The download starts automatically when it is ready."
+        not_ready: "This download is not ready yet."
+        timeout: "Download is taking too long. Retry."
+      errors:
+        not_authorized: "Not authorized to download this package"
+        capability_disabled: "Downloads are not enabled for this item"
+        rate_limited: "Too many download requests. Try again shortly."
+        concurrent_builds: "A download is already being built. Try again shortly."
+        archive_too_large: "This download is too large to package."
+        not_ready: "This download is not ready yet."

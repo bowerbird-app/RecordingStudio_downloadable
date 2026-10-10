@@ -7,7 +7,9 @@ RecordingStudio.configure do |config|
     "Folder",
     "Page",
     "PressKit",
-    "RecordingStudioAttachable::Attachment"
+    "RecordingStudioAttachable::Attachment",
+    "RecordingStudio::AccessConstraint",
+    "RecordingStudio::AccessRule"
   ]
 
   # Require each configured ActiveRecord type to call recording_studio_recordable.

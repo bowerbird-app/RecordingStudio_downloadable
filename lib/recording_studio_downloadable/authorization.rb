@@ -6,33 +6,33 @@ module RecordingStudioDownloadable
     class CapabilityNotEnabledError < NotAuthorizedError; end
 
     class << self
-      def authorize!(action:, actor:, recording:, capability_options: nil)
+      def authorize!(action:, actor:, recording:, capability_options: nil, controller: nil)
         assert_downloadable_enabled!(recording: recording, capability_options: capability_options)
         return true if allowed?(
           action: action,
           actor: actor,
           recording: recording,
-          capability_options: capability_options
+          capability_options: capability_options,
+          controller: controller
         )
 
-        raise NotAuthorizedError,
-              "Not authorized to #{action} packages for #{recording&.recordable_type || recording.class.name}"
+        raise NotAuthorizedError, Copy.t("errors.not_authorized")
       end
 
-      def allowed?(action:, actor:, recording:, capability_options: nil)
+      def allowed?(action:, actor:, recording:, capability_options: nil, controller: nil)
         return false unless downloadable_enabled?(recording: recording, capability_options: capability_options)
 
-        role = required_role_for(action, capability_options: capability_options)
-        return false if role.blank?
+        return false unless audience_allows?(
+          action: action,
+          actor: actor,
+          recording: recording,
+          capability_options: capability_options,
+          controller: controller
+        )
 
-        adapter = authorization_adapter(capability_options)
-        if adapter.respond_to?(:call)
-          return !!adapter.call(action: action, actor: actor, recording: recording, role: role)
-        end
-
-        return false unless defined?(RecordingStudioAccessible::Authorization)
-
-        RecordingStudioAccessible::Authorization.allowed?(actor: actor, recording: recording, role: role)
+        domain_available?(actor: actor, recording: recording, action: action)
+      rescue StandardError
+        false
       end
 
       def authorization_adapter(capability_options)
@@ -43,7 +43,9 @@ module RecordingStudioDownloadable
         roles = RecordingStudioDownloadable.configuration.auth_roles.merge(
           capability_options.to_h[:auth_roles].to_h
         )
-        RecordingStudioDownloadable.configuration.normalize_role(roles[action.to_sym])
+        RecordingStudioDownloadable.configuration.normalize_role(
+          roles[action.to_sym] || roles[:download]
+        )
       end
 
       def downloadable_enabled?(recording:, capability_options: nil)
@@ -62,8 +64,7 @@ module RecordingStudioDownloadable
       def assert_downloadable_enabled!(recording:, capability_options: nil)
         return if downloadable_enabled?(recording: recording, capability_options: capability_options)
 
-        raise CapabilityNotEnabledError,
-              "Downloadable capability is not enabled for #{owner_type_for(recording) || recording.class.name}"
+        raise CapabilityNotEnabledError, Copy.t("errors.capability_disabled")
       end
 
       def owner_recording_for(recording)
@@ -72,6 +73,77 @@ module RecordingStudioDownloadable
 
       def owner_type_for(recording)
         owner_recording_for(recording)&.recordable_type
+      end
+
+      def action_audiences_configured?(action)
+        return false unless defined?(RecordingStudioAccessible)
+        return false unless RecordingStudioAccessible.respond_to?(:configuration)
+
+        audiences = RecordingStudioAccessible.configuration.action_audiences
+        audiences.respond_to?(:configured?) && audiences.configured?(action.to_sym)
+      rescue StandardError
+        false
+      end
+
+      private
+
+      def audience_allows?(action:, actor:, recording:, capability_options:, controller:)
+        adapter = authorization_adapter(capability_options)
+        if adapter.respond_to?(:call)
+          role = required_role_for(action, capability_options: capability_options)
+          return !!adapter.call(action: action, actor: actor, recording: recording, role: role)
+        end
+
+        accessible_allows?(action: action, actor: actor, recording: recording, controller: controller)
+      end
+
+      def accessible_allows?(action:, actor:, recording:, controller:)
+        return false unless defined?(RecordingStudioAccessible)
+
+        if uses_authorized_action?(action)
+          return RecordingStudioAccessible.authorized_action?(
+            actor: actor,
+            action: action.to_sym,
+            recording: recording,
+            controller: controller
+          )
+        end
+
+        role = required_role_for(action)
+        return false if role.blank?
+        return false unless defined?(RecordingStudioAccessible::Authorization)
+
+        RecordingStudioAccessible::Authorization.allowed?(actor: actor, recording: recording, role: role)
+      end
+
+      def uses_authorized_action?(action)
+        return false unless defined?(RecordingStudioAccessible)
+        return true if action_audiences_configured?(action)
+
+        RecordingStudioAccessible.respond_to?(:action_defined?) &&
+          RecordingStudioAccessible.action_defined?(action.to_sym)
+      rescue StandardError
+        false
+      end
+
+      def domain_available?(actor:, recording:, action:)
+        hook_target = domain_hook_target(recording)
+        return true unless hook_target
+
+        !!hook_target.downloadable_available_for?(actor: actor, action: action)
+      rescue StandardError
+        false
+      end
+
+      def domain_hook_target(recording)
+        if recording.respond_to?(:recordable)
+          recordable = recording.recordable
+          return recordable if recordable.respond_to?(:downloadable_available_for?)
+        end
+
+        recording if recording.respond_to?(:downloadable_available_for?)
+      rescue StandardError
+        recording if recording.respond_to?(:downloadable_available_for?)
       end
     end
   end

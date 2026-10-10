@@ -21,12 +21,17 @@ Metrics/ClassLength:
     - 'test/**/*'
     - 'lib/recording_studio_downloadable/engine.rb'
     - 'lib/recording_studio/capabilities/downloadable.rb'
+    - 'lib/recording_studio_downloadable/authorization.rb'
+    - 'lib/recording_studio_downloadable/configuration.rb'
+    - 'app/controllers/recording_studio_downloadable/packages_controller.rb'
     - 'lib/generators/**/*'
 
 Metrics/ModuleLength:
   Exclude:
     - 'test/**/*'
     - 'lib/recording_studio/capabilities/downloadable.rb'
+    - 'lib/recording_studio_downloadable/authorization.rb'
+    - 'app/helpers/recording_studio_downloadable/application_helper.rb'
 
 Metrics/MethodLength:
   Exclude:
@@ -42,6 +47,7 @@ Metrics/MethodLength:
     - 'app/services/recording_studio_downloadable/services/**/*'
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
     - 'app/controllers/recording_studio_downloadable/packages_controller.rb'
+    - 'lib/recording_studio_downloadable/invalidation.rb'
     - 'db/migrate/**/*'
 
 Metrics/AbcSize:
@@ -56,6 +62,8 @@ Metrics/AbcSize:
     - 'lib/recording_studio_downloadable/download_file.rb'
     - 'app/services/recording_studio_downloadable/services/**/*'
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
+    - 'lib/recording_studio_downloadable/fingerprint.rb'
+    - 'lib/recording_studio_downloadable/rate_limiter.rb'
 
 Metrics/CyclomaticComplexity:
   Exclude:
@@ -67,6 +75,9 @@ Metrics/CyclomaticComplexity:
     - 'lib/recording_studio_downloadable/download_file.rb'
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
     - 'app/services/recording_studio_downloadable/services/generate_package.rb'
+    - 'app/controllers/recording_studio_downloadable/packages_controller.rb'
+    - 'lib/recording_studio_downloadable/invalidation.rb'
+    - 'lib/recording_studio_downloadable/rate_limiter.rb'
 
 Metrics/PerceivedComplexity:
   Exclude:
@@ -78,6 +89,7 @@ Metrics/PerceivedComplexity:
     - 'lib/recording_studio_downloadable/download_file.rb'
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
     - 'app/services/recording_studio_downloadable/services/**/*'
+    - 'lib/recording_studio_downloadable/invalidation.rb'
 
 Style/ArgumentsForwarding:
   Exclude:

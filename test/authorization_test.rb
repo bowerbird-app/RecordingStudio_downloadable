@@ -40,7 +40,7 @@ class AuthorizationTest < Minitest::Test
         )
       end
 
-      assert_includes error.message, "Downloadable capability is not enabled"
+      assert_includes error.message, "Downloads are not enabled"
     end
   end
 
@@ -97,6 +97,19 @@ class AuthorizationTest < Minitest::Test
     )
 
     assert_equal :admin, role
+  end
+
+  def test_allowed_is_false_for_a_nil_actor_when_the_adapter_denies
+    recording = FakeRecording.new(recordable_type: "Project")
+
+    RecordingStudio.configuration.stub(:capability_enabled?, true) do
+      refute RecordingStudioDownloadable::Authorization.allowed?(
+        action: :download,
+        actor: nil,
+        recording: recording,
+        capability_options: { authorize_with: ->(**) { false } }
+      )
+    end
   end
 
   def test_authorize_raises_when_adapter_denies

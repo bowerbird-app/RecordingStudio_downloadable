@@ -1,6 +1,7 @@
 class Workspace < ApplicationRecord
   recording_studio_recordable label: "Workspace", root: true
   RecordingStudio.enable_capability(:accessible, on: self) if defined?(RecordingStudioAccessible)
+  RecordingStudio.enable_capability(:action_audiences, on: self) if defined?(RecordingStudioAccessible)
 
   include RecordingStudio::Capabilities::Attachable.to(
     allowed_content_types: [ "image/*", "application/pdf", "text/plain", "application/zip",

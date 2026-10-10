@@ -25,11 +25,12 @@ class DownloadableCapabilityTest < Minitest::Test
   def test_to_is_the_include_for_wrapper_not_a_fourth_verb
     source = File.read(File.expand_path("../../lib/recording_studio/capabilities/downloadable.rb", __dir__))
 
-    assert_includes source, "def self.to(source: DEFAULTS[:source], format: DEFAULTS[:format], **unknown)"
-    assert_includes source, "RecordingStudio::Capabilities.include_for(:downloadable, **options)"
+    assert_includes source, "action: nil, export_scope: nil, **unknown"
+    assert_includes source, "RecordingStudio::Capabilities.include_for(:downloadable, **options.compact)"
     refute_includes source, "enable_capability"
     refute_includes source, "set_capability_options"
-    assert_equal [:to], RecordingStudio::Capabilities::Downloadable.singleton_methods(false)
+    assert_equal %i[default_action_for normalize_export_scope to],
+                 RecordingStudio::Capabilities::Downloadable.singleton_methods(false).sort
   end
 
   def test_to_delegates_to_include_for_with_defaults
@@ -102,6 +103,36 @@ class DownloadableCapabilityTest < Minitest::Test
     assert_equal({ source: :manifest, format: :zip }, captured_options)
     assert_includes RecordingStudio::Capabilities::Downloadable::SUPPORTED_SOURCES, :manifest
     assert_includes RecordingStudio::Capabilities::Downloadable::SUPPORTED_SOURCES, :attachments
+  end
+
+  def test_to_accepts_action_and_export_scope
+    captured_options = nil
+    factory = Module.new
+
+    RecordingStudio::Capabilities.stub :include_for, lambda { |_name, **options|
+      captured_options = options
+      factory
+    } do
+      result = RecordingStudio::Capabilities::Downloadable.to(
+        source: :manifest,
+        action: :"presskits.kit_download",
+        export_scope: :public
+      )
+
+      assert_same factory, result
+    end
+
+    assert_equal(
+      { source: :manifest, format: :zip, action: :"presskits.kit_download", export_scope: :public },
+      captured_options
+    )
+  end
+
+  def test_default_action_is_derived_from_the_recordable_type
+    assert_equal :"workspaces.download",
+                 RecordingStudio::Capabilities::Downloadable.default_action_for("Workspace")
+    assert_equal :"press_kits.download",
+                 RecordingStudio::Capabilities::Downloadable.default_action_for("PressKit")
   end
 
   def test_to_rejects_unsupported_source_and_format

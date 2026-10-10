@@ -34,6 +34,10 @@ class ConfigurationTest < Minitest::Test
     assert_equal({ download: :view }, @configuration.auth_roles)
     assert_equal :view, @configuration.auth_role_for(:download)
     assert_instance_of RecordingStudio::Hooks, @configuration.hooks
+    assert_equal 60, @configuration.rate_limits[:ip][:limit]
+    assert_equal 5, @configuration.max_concurrent_builds
+    assert_includes @configuration.skip_host_before_actions, :authenticate_user!
+    assert_includes @configuration.skip_host_before_actions, :set_current_actor
   end
 
   def test_merge_accepts_string_keys_and_role_aliases
@@ -57,5 +61,16 @@ class ConfigurationTest < Minitest::Test
     RecordingStudioDownloadable.configure
 
     assert_kind_of RecordingStudioDownloadable::Configuration, RecordingStudioDownloadable.configuration
+  end
+
+  def test_debounce_wait_clamps_to_thirty_through_sixty_seconds
+    @configuration.content_change_debounce = 5.seconds
+    assert_equal 30.seconds, @configuration.debounce_wait
+
+    @configuration.content_change_debounce = 45.seconds
+    assert_equal 45.seconds, @configuration.debounce_wait
+
+    @configuration.content_change_debounce = 120.seconds
+    assert_equal 60.seconds, @configuration.debounce_wait
   end
 end
