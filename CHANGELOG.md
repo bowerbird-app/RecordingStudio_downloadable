@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Package identity `recording_id + action + export_scope + format`, with a migration that backfills existing rows to the default action and `public` scope.
 - Authorization through Accessible 0.14 `authorized_action?` and `config.action_audiences`. Optional `downloadable_available_for?(actor:, action:)` runs after the audience check.
 - Anonymous-safe engine endpoints: inherited host auth/tenant callbacks are skipped; every `show` / `create` / `status` request still authorizes the same way.
-- Non-granted actors never enqueue ZIP generation. Missing or stale packages return a not-ready response. Fingerprints include action and export scope and are re-checked before serving.
+- Anyone who passes the full authorization for that action (Accessible `authorized_action?` plus `downloadable_available_for?`) may enqueue a build when the package is missing or stale, including anonymous actors when the audience is `public`. Unauthorized requests never enqueue. Builds are deduplicated (one in-flight job per recording + action + export_scope + format). `show` and `create` stay rate-limited; `status` may enqueue only when authorized and nothing is in flight (missing or stale, never a failed retry).
+- Host API for subscribers: `recording.downloadable_generate!(action:, export_scope:, ...)` and `recording.downloadable_invalidate!(immediate: true)`. Downloadable does not depend on Publishable.
+- Fingerprints include action and export scope and are re-checked before serving.
 - Immediate invalidation for attachment removal and trash; debounced rebuilds (30–60s) for ordinary content changes once a package exists.
 - Per-action rate limits (IP, actor, recording), concurrent build cap, and host `max_zip_bytes`.
 - I18n under `recording_studio.downloadable.*`.

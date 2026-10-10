@@ -52,15 +52,6 @@ module RecordingStudioDownloadable
       RecordingStudio.capability_options(:downloadable, for: recording.recordable_type) || {}
     end
 
-    def granted_to_generate?(recording)
-      RecordingStudioDownloadable::Authorization.granted_to_generate?(
-        actor: current_downloadable_actor,
-        recording: recording,
-        action: downloadable_action_for(recording),
-        capability_options: capability_options_for(recording)
-      )
-    end
-
     def throttle_download!(recording)
       RateLimiter.throttle!(
         action: downloadable_action_for(recording),

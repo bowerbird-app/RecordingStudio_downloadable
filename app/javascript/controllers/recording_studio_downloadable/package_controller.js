@@ -4,7 +4,7 @@ import { Controller } from "@hotwired/stimulus"
 // Status is polled at package/status until a current (non-stale) archive is
 // ready, then the authorized GET runs in a hidden iframe so a 302 to the
 // signed blob URL does not replace the Pages UI. Stale/missing packages POST
-// generate first only when the actor is allowed to enqueue a build.
+// generate when the actor is authorized for the download action.
 export default class extends Controller {
   static values = {
     statusUrl: String,

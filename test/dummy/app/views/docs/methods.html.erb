@@ -37,9 +37,32 @@
   <%= render FlatPack::CodeBlock::Component.new(
     language: :ruby,
     code: <<~CODE
-      package = recording.downloadable_generate!
+      package = recording.downloadable_generate!(
+        action: recording.downloadable_action,
+        export_scope: recording.downloadable_export_scope
+      )
       # Enqueues GeneratePackageJob. Returns nil when downloadable_empty?.
       # Reuses a ready/pending/processing package when the source fingerprint matches.
+      # Hosts call this from their own subscribers (publish, first ZIP, and so on).
+    CODE
+  ) %>
+
+  <%= render FlatPack::SectionTitle::Component.new(
+    title: "Host subscribers",
+    subtitle: "Downloadable stays independent of Publishable. Wire host events to the recording API."
+  ) %>
+
+  <%= render FlatPack::CodeBlock::Component.new(
+    language: :ruby,
+    code: <<~CODE
+      recording.downloadable_generate!(
+        action: recording.downloadable_action,
+        export_scope: recording.downloadable_export_scope
+      )
+      recording.downloadable_invalidate!(immediate: true)
+      # Example only: RecordingStudio_publishable v0.7.0 emits
+      # published.recording_studio_publishable and
+      # unpublished.recording_studio_publishable.
     CODE
   ) %>
 
@@ -57,7 +80,8 @@
       recording.downloadable_action
       recording.downloadable_invalidate!(immediate: true)
       # ready? is false when sources, action, or export scope changed (stale fingerprint).
-      # Granted users may regenerate. Everyone else gets a not-ready response.
+      # Hosts call invalidate from their own unpublish/privacy subscribers. Downloadable
+      # does not depend on Publishable.
     CODE
   ) %>
 
@@ -74,8 +98,9 @@
       # Controller authorizes the recording's download action, then redirects
       # to a short-lived signed blob URL (bearer link until expiry, default 5
       # minutes). After POST generate, the button polls GET
-      # recording_package_status_path until ready. Non-granted actors never
-      # enqueue a build from show, create, or status.
+      # recording_package_status_path until ready. Authorized actors
+      # (including public anonymous) enqueue a missing or stale rebuild;
+      # unauthorized requests never enqueue.
     CODE
   ) %>
 

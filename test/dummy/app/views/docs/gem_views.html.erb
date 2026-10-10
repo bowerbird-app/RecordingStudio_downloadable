@@ -22,19 +22,19 @@
       helper: "recording_package_path(recording)",
       method: "GET",
       path: "/recording_studio_downloadable/recordings/:recording_id/package",
-      purpose: "Authorize the download action, then 302 to a short-lived signed Active Storage URL for the ZIP (R2/S3 or Disk). Bearer link until expiry. 404 when empty. Not-ready (no enqueue) when missing/stale for non-granted actors."
+      purpose: "Authorize the download action, then 302 to a short-lived signed Active Storage URL for the ZIP (R2/S3 or Disk). Bearer link until expiry. 404 when empty. Missing or stale packages enqueue one rebuild for authorized actors (including public anonymous) and return not-ready until it finishes."
     },
     {
       helper: "recording_package_path(recording)",
       method: "POST",
       path: "/recording_studio_downloadable/recordings/:recording_id/package",
-      purpose: "Enqueue ZIP generation for granted actors, then redirect. Non-granted actors get a not-ready notice and no job. Empty sets notice “Nothing to package.”"
+      purpose: "Enqueue ZIP generation for authorized actors (rate-limited), then redirect. Concurrent requests share one in-flight job. Unauthorized requests never enqueue. Empty sets notice “Nothing to package.”"
     },
     {
       helper: "recording_package_status_path(recording)",
       method: "GET",
       path: "/recording_studio_downloadable/recordings/:recording_id/package/status",
-      purpose: "JSON package state for the Stimulus poll. Same authorization as show/create. Never enqueues a build. Includes can_generate."
+      purpose: "JSON package state for the Stimulus poll. Same authorization as show/create. May enqueue only when authorized and nothing is in flight (missing or stale). Includes can_generate."
     }
   ] %>
 

@@ -80,10 +80,10 @@ module RecordingStudioDownloadable
     def downloadable_can_generate?(recording)
       return false unless recording.respond_to?(:downloadable_action)
 
-      RecordingStudioDownloadable::Authorization.granted_to_generate?(
+      RecordingStudioDownloadable::Authorization.allowed?(
+        action: recording.downloadable_action,
         actor: downloadable_view_actor,
-        recording: recording,
-        action: recording.downloadable_action
+        recording: recording
       )
     end
 

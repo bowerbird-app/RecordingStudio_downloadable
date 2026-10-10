@@ -20,10 +20,10 @@ class AnonymousGenerationTest < ActionDispatch::IntegrationTest
     restore_download_audience!
   end
 
-  test "anonymous show create and status never enqueue when the package is missing" do
+  test "anonymous authorized show create and status enqueue exactly once when missing" do
     sign_out @user
 
-    assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
+    assert_enqueued_jobs 1, only: RecordingStudioDownloadable::GeneratePackageJob do
       get recording_studio_downloadable.recording_package_path(@recording),
           headers: { "HTTP_REFERER" => "http://www.example.com/" }
       assert_response :redirect
@@ -36,35 +36,37 @@ class AnonymousGenerationTest < ActionDispatch::IntegrationTest
     end
 
     payload = response.parsed_body
-    assert_equal "not_ready", payload["state"]
+    assert_equal "pending", payload["state"]
     assert_equal false, payload["ready"]
-    assert_equal false, payload["can_generate"]
+    assert_equal true, payload["can_generate"]
     assert_nil payload["download_url"]
-    assert_nil @recording.reload.downloadable_package
+    assert @recording.reload.downloadable_package.pending?
   end
 
-  test "anonymous status polling does not enqueue a stale package" do
+  test "anonymous authorized status polling enqueues a stale package once" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
     attach_file!(@recording, filename: "extra.txt", contents: "more", actor: @user)
     sign_out @user
 
-    assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
+    assert_enqueued_jobs 1, only: RecordingStudioDownloadable::GeneratePackageJob do
+      get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
       get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
     end
 
     assert_response :success
     payload = response.parsed_body
     assert_equal false, payload["ready"]
-    assert_equal false, payload["can_generate"]
+    assert_equal true, payload["can_generate"]
     assert_nil payload["download_url"]
+    assert_includes %w[pending processing], @recording.reload.downloadable_package.state
   end
 
-  test "anonymous show of a stale package does not serve the old zip or enqueue" do
+  test "anonymous show of a stale package does not serve the old zip and enqueues a rebuild" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
     attach_file!(@recording, filename: "extra.txt", contents: "more", actor: @user)
     sign_out @user
 
-    assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
+    assert_enqueued_jobs 1, only: RecordingStudioDownloadable::GeneratePackageJob do
       get recording_studio_downloadable.recording_package_path(@recording),
           headers: { "HTTP_REFERER" => "http://www.example.com/" }
     end
@@ -72,6 +74,30 @@ class AnonymousGenerationTest < ActionDispatch::IntegrationTest
     assert_response :redirect
     refute_match(/active_storage|X-Amz-Signature/i, response.redirect_url.to_s)
     refute @recording.reload.downloadable_ready?
+  end
+
+  test "unauthorized anonymous never enqueues a build" do
+    RecordingStudioAccessible.configuration.action_audiences[:"workspaces.download"] = {
+      allowed: %i[granted],
+      default: :granted,
+      granted_roles: %i[view edit admin],
+      granted_override: true,
+      manage_role: :admin
+    }
+    sign_out @user
+
+    assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
+      get recording_studio_downloadable.recording_package_path(@recording)
+      assert_response :forbidden
+
+      post recording_studio_downloadable.recording_package_path(@recording)
+      assert_response :forbidden
+
+      get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+      assert_response :forbidden
+    end
+
+    assert_nil @recording.reload.downloadable_package
   end
 
   test "anonymous show of a current public package redirects to the signed zip" do
@@ -86,14 +112,17 @@ class AnonymousGenerationTest < ActionDispatch::IntegrationTest
     assert_match(/attachment/, response.headers["Content-Disposition"].to_s)
   end
 
-  test "anonymous create is authorized the same way as show and does not enqueue" do
+  test "concurrent authorized requests share one in-flight build" do
     sign_out @user
 
-    assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
+    assert_enqueued_jobs 1, only: RecordingStudioDownloadable::GeneratePackageJob do
+      get recording_studio_downloadable.recording_package_path(@recording),
+          headers: { "HTTP_REFERER" => "http://www.example.com/" }
       post recording_studio_downloadable.recording_package_path(@recording)
+      get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
     end
 
-    assert_response :redirect
+    assert_equal 1, RecordingStudioDownloadable::Package.where(recording: @recording).count
   end
 
   test "revoked actor cannot download a ready package" do

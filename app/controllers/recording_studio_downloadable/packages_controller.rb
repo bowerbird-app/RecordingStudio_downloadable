@@ -17,7 +17,7 @@ module RecordingStudioDownloadable
       authorize_download!(recording)
       throttle_download!(recording)
 
-      enqueue_generation_if_granted!(recording)
+      enqueue_generation_if_needed!(recording)
       recording.reload
       session[:recording_studio_downloadable_autostart] = recording.id
       redirect_back_or_to fallback_location, notice: generate_notice(recording)
@@ -26,6 +26,8 @@ module RecordingStudioDownloadable
     def status
       recording = find_recording
       authorize_download!(recording)
+      enqueue_generation_if_needed!(recording, only_when_idle: true)
+      recording.reload
 
       package = recording.downloadable_package
       render json: {
@@ -34,7 +36,7 @@ module RecordingStudioDownloadable
         stale: recording.downloadable_stale?,
         failed: package&.failed? || false,
         failure_message: package&.failure_message,
-        can_generate: granted_to_generate?(recording),
+        can_generate: true,
         download_url: recording.downloadable_ready? ? recording.downloadable_download_path : nil
       }
     end
@@ -48,7 +50,7 @@ module RecordingStudioDownloadable
         return
       end
 
-      enqueue_generation_if_granted!(recording)
+      enqueue_generation_if_needed!(recording)
       recording.reload
       package = recording.downloadable_package
 
@@ -80,14 +82,25 @@ module RecordingStudioDownloadable
       )
     end
 
-    def enqueue_generation_if_granted!(recording)
-      return unless granted_to_generate?(recording)
+    def enqueue_generation_if_needed!(recording, only_when_idle: false)
+      return if recording.downloadable_empty?
+
+      package = recording.downloadable_package
+      if only_when_idle
+        return if package_in_flight?(package)
+        return unless package.blank? || recording.downloadable_stale?
+      end
+      return if serveable_package?(recording, package)
 
       recording.downloadable_generate!(
         action: downloadable_action_for(recording),
         export_scope: downloadable_export_scope_for(recording),
         force: true
       )
+    end
+
+    def package_in_flight?(package)
+      package&.pending? || package&.processing?
     end
 
     def download_filename(recording)
@@ -136,11 +149,10 @@ module RecordingStudioDownloadable
     end
 
     def status_state(recording, package)
-      return "not_ready" if recording.downloadable_stale? && !granted_to_generate?(recording)
       return "stale" if recording.downloadable_stale?
-      return "not_ready" if package.blank? && !granted_to_generate?(recording)
+      return "missing" if package.blank?
 
-      package&.state || "missing"
+      package.state
     end
 
     def generate_notice(recording)
@@ -148,10 +160,8 @@ module RecordingStudioDownloadable
         Copy.t("notices.empty")
       elsif recording.downloadable_ready?
         Copy.t("notices.ready")
-      elsif granted_to_generate?(recording)
-        Copy.t("notices.building")
       else
-        Copy.t("notices.not_ready")
+        Copy.t("notices.building")
       end
     end
 

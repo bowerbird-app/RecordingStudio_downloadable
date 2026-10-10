@@ -67,12 +67,29 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     refute_match(/<span>Preparing/, html)
   end
 
-  test "anonymous visitors do not get a generate post" do
+  test "anonymous visitors do not get a generate post when the audience is granted" do
     Current.actor = nil
     html = recording_studio_downloadable_button(@recording.reload)
 
     assert_includes html, "Download"
     refute_includes html, "turbo-method"
     assert_includes html, "can-generate-value=\"false\""
+  end
+
+  test "anonymous visitors get a generate post when the audience is public" do
+    with_action_audience(:"workspaces.download", {
+      allowed: %i[public granted],
+      default: :public,
+      granted_roles: %i[view edit admin],
+      granted_override: true,
+      manage_role: :admin
+    }) do
+      Current.actor = nil
+      html = recording_studio_downloadable_button(@recording.reload)
+
+      assert_includes html, "Download"
+      assert_includes html, "turbo-method"
+      assert_includes html, "can-generate-value=\"true\""
+    end
   end
 end

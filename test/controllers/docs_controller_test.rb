@@ -131,6 +131,8 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "recording.downloadable_download_path"
     assert_includes response.body, "recording.downloadable_action"
     assert_includes response.body, "downloadable_invalidate!"
+    assert_includes response.body, "published.recording_studio_publishable"
+    assert_includes response.body, "unpublished.recording_studio_publishable"
     assert_includes response.body, "recording_package_status_path"
     assert_includes response.body, "signed blob URL"
     assert_includes response.body, "Installing the gem does not enable Downloadable."

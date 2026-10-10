@@ -177,34 +177,42 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "status returns json for an authorized actor and forbids others" do
-    get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    assert_enqueued_jobs 1, only: RecordingStudioDownloadable::GeneratePackageJob do
+      get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    end
 
     assert_response :success
     payload = response.parsed_body
-    assert_equal "missing", payload["state"]
+    assert_equal "pending", payload["state"]
     assert_equal false, payload["ready"]
     assert_equal false, payload["stale"]
     assert_equal false, payload["failed"]
+    assert_equal true, payload["can_generate"]
     assert_nil payload["download_url"]
 
     perform_enqueued_jobs { @recording.downloadable_generate! }
 
-    get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
+      get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    end
 
     assert_response :success
     payload = response.parsed_body
     assert_equal "ready", payload["state"]
     assert_equal true, payload["ready"]
     assert_equal false, payload["stale"]
+    assert_equal true, payload["can_generate"]
     assert_equal recording_studio_downloadable.recording_package_path(@recording), payload["download_url"]
 
     sign_in @other
-    get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
+      get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    end
 
     assert_response :forbidden
   end
 
-  test "status reports failed packages without sending a zip" do
+  test "status reports failed packages without enqueueing a retry" do
     package = RecordingStudioDownloadable::Package.create!(
       recording: @recording,
       format: "zip",
@@ -212,7 +220,9 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
       failure_message: "Source set is empty"
     )
 
-    get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
+      get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    end
 
     assert_response :success
     payload = response.parsed_body
@@ -221,21 +231,27 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal false, payload["stale"]
     assert_equal "Source set is empty", payload["failure_message"]
     assert_equal false, payload["ready"]
+    assert_equal true, payload["can_generate"]
     assert_nil payload["download_url"]
+    assert_equal "failed", @recording.reload.downloadable_package.state
   end
 
-  test "status reports stale after new attachments" do
+  test "status of a stale package enqueues one rebuild and does not serve the old zip" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
     attach_file!(@recording, filename: "extra.txt", contents: "more", actor: @user)
 
-    get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    assert_enqueued_jobs 1, only: RecordingStudioDownloadable::GeneratePackageJob do
+      get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+      get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
+    end
 
     assert_response :success
     payload = response.parsed_body
-    assert_equal "stale", payload["state"]
-    assert_equal true, payload["stale"]
+    assert_includes %w[pending processing], payload["state"]
     assert_equal false, payload["ready"]
+    assert_equal true, payload["can_generate"]
     assert_nil payload["download_url"]
+    assert_includes %w[pending processing], @recording.reload.downloadable_package.state
   end
 
   test "empty manifest download is not found like empty attachments" do

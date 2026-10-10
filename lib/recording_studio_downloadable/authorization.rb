@@ -35,30 +35,6 @@ module RecordingStudioDownloadable
         false
       end
 
-      def granted_to_generate?(actor:, recording:, action:, capability_options: nil)
-        return false if actor.blank?
-        return false unless downloadable_enabled?(recording: recording, capability_options: capability_options)
-
-        if action_audiences_configured?(action)
-          roles = RecordingStudioAccessible.granted_roles_for(action.to_sym)
-          return false if roles.blank?
-
-          return RecordingStudioAccessible.authorized_for_any_role?(
-            actor: actor,
-            recording: recording,
-            roles: roles
-          )
-        end
-
-        role = required_role_for(action, capability_options: capability_options)
-        return false if role.blank?
-        return false unless defined?(RecordingStudioAccessible::Authorization)
-
-        RecordingStudioAccessible::Authorization.allowed?(actor: actor, recording: recording, role: role)
-      rescue StandardError
-        false
-      end
-
       def authorization_adapter(capability_options)
         capability_options.to_h[:authorize_with] || RecordingStudioDownloadable.configuration.authorize_with
       end

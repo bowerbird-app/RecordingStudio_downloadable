@@ -71,11 +71,11 @@ Anonymous requests are first-class. The engine skips inherited host auth and ten
 
 ### Who may generate a ZIP
 
-A ready, current package may be downloaded by anyone the audience allows, including a nil actor when the audience is `public`.
+Anyone who passes the full authorization for that action may trigger a build: Accessible `authorized_action?` plus the optional `downloadable_available_for?` domain hook. That includes a nil actor when the action's audience is `public`.
 
-Anonymous and other non-granted actors **never enqueue generation**, including via status polling. Missing or stale packages return a controlled not-ready response. People who hold that action's `granted_roles` can enqueue a rebuild.
+Builds enqueue when no current package exists or the stored one is stale. One in-flight build is shared per `recording + action + export_scope + format`; concurrent `show` / `create` / `status` requests get a not-ready or preparing response and wait for the same job. Unauthorized requests never enqueue. `show` and `create` are rate-limited per action (IP, actor, recording). `status` polling may enqueue only when authorized and idle (missing or stale, never a failed retry), so it stays un-rate-limited.
 
-Before serving to a non-granted actor, Downloadable verifies the stored fingerprint against the current manifest (action and export scope included). A mismatch is not served.
+Before serving, Downloadable verifies the stored fingerprint against the current manifest (action and export scope included). A mismatch is not served.
 
 ## Package identity
 
@@ -154,15 +154,34 @@ recording.downloadable_action        # => :"projects.download" (or the action: p
 recording.downloadable_export_scope  # => :public
 recording.downloadable_files         # DownloadFile value objects
 recording.downloadable_empty?
-recording.downloadable_generate!     # enqueues Active Job; hosts do not call the job
-recording.downloadable_invalidate!(immediate: true)
+recording.downloadable_generate!(action:, export_scope:, ...) # enqueue a build
+recording.downloadable_invalidate!(immediate: true)          # drop/stop serving the ZIP
 recording.downloadable_ready?
 recording.downloadable_package       # persisted Package (archive blob + fingerprint + state)
 recording.downloadable_download_path # engine route; authorizes in the controller
 recording.downloadable_source        # :attachments or :manifest
 ```
 
-`downloadable_invalidate!(immediate: true)` marks the cached ZIP unusable immediately (asset removal, unpublish, visibility, or authorization changes). Ordinary content changes debounce a rebuild for 30–60 seconds (`config.content_change_debounce`, default 45). Automatic rebuilds run only after a package row already exists; the first ZIP is created by a granted generate.
+`recording.downloadable_generate!(action:, export_scope:)` enqueues a build. `recording.downloadable_invalidate!(immediate: true)` drops the current ZIP so it is not served. Hosts call these from their own subscribers. Downloadable does not depend on Publishable.
+
+`downloadable_invalidate!(immediate: true)` marks the cached ZIP unusable immediately (asset removal, unpublish, visibility, or authorization changes). Ordinary content changes debounce a rebuild for 30–60 seconds (`config.content_change_debounce`, default 45). Attachment observers enqueue a rebuild only when a package row already exists; the first ZIP comes from an authorized generate (HTTP or `downloadable_generate!`).
+
+## Host publish and unpublish signals
+
+Downloadable stays independent of Publishable. Wire your own events to the recording API:
+
+```ruby
+# Enqueue a build when the host considers the item current.
+recording.downloadable_generate!(
+  action: recording.downloadable_action,
+  export_scope: recording.downloadable_export_scope
+)
+
+# Stop serving the current ZIP immediately.
+recording.downloadable_invalidate!(immediate: true)
+```
+
+Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_studio_publishable` and `unpublished.recording_studio_publishable`. A host gem can subscribe and call generate or invalidate on the recording in the payload. Do not add a Publishable dependency to Downloadable.
 
 ## Install
 
@@ -181,7 +200,7 @@ Dummy credentials (`test/dummy/config/credentials.yml.enc`) are encrypted with t
 
 Sign in at `/users/sign_in` (`admin@admin.com` / `Password`). The home page and `/pages` show a Download control.
 
-Clicking Download `POST`s generation, then Stimulus polls `GET …/package/status` until the package is `ready` (or `failed`). When ready, the authorized `GET …/package` starts in a hidden iframe so the ZIP downloads without replacing the page. If source files changed since the last ZIP, the package is **stale**: granted users regenerate; everyone else gets a not-ready response rather than an old ZIP.
+Clicking Download `POST`s generation, then Stimulus polls `GET …/package/status` until the package is `ready` (or `failed`). When ready, the authorized `GET …/package` starts in a hidden iframe so the ZIP downloads without replacing the page. If source files changed since the last ZIP, the package is **stale**: authorized actors (including anonymous when the audience is `public`) enqueue one rebuild; the old ZIP is not served.
 
 Customer-facing copy uses `recording_studio.downloadable.*` in `config/locales/en.yml`.
 

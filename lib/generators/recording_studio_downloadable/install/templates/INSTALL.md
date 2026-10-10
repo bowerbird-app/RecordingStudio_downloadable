@@ -32,10 +32,11 @@ Next steps:
    similar) so public audiences can reach show/create/status. Every endpoint still authorizes through
    Accessible `authorized_action?`. Keep `recording_studio_recordable` declarations on host types.
 8. Pin the Stimulus package controller so “Preparing…” polls `GET …/package/status` (same authorization
-   as the ZIP) and starts the authorized `GET …/package` when the package is `ready`. Anonymous and
-   non-granted actors never enqueue a build; missing or stale packages return a not-ready response.
-   Failed packages show Retry instead of spinning forever. The installer adds the importmap pin and
-   `lazyLoadControllersFrom` when those host files exist.
+   as the ZIP) and starts the authorized `GET …/package` when the package is `ready`. Anyone who passes
+   that authorization (including anonymous when the audience is `public`) may enqueue a build when the
+   package is missing or stale. Concurrent requests share one in-flight job. Unauthorized requests never
+   enqueue. Failed packages show Retry (rate-limited `POST`) instead of spinning forever. The installer
+   adds the importmap pin and `lazyLoadControllersFrom` when those host files exist.
 9. Large ZIP downloads: authorized `GET …/package` redirects to a short-lived signed Active Storage URL
    (`blob.url`, default 5 minutes). That URL is a bearer link until it expires, even if access is later
    revoked. Bytes stream from Disk or R2/S3. The app does not buffer the archive with `blob.download`.

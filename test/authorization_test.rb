@@ -99,14 +99,15 @@ class AuthorizationTest < Minitest::Test
     assert_equal :admin, role
   end
 
-  def test_granted_to_generate_is_false_for_a_nil_actor
+  def test_allowed_is_false_for_a_nil_actor_when_the_adapter_denies
     recording = FakeRecording.new(recordable_type: "Project")
 
     RecordingStudio.configuration.stub(:capability_enabled?, true) do
-      refute RecordingStudioDownloadable::Authorization.granted_to_generate?(
+      refute RecordingStudioDownloadable::Authorization.allowed?(
+        action: :download,
         actor: nil,
         recording: recording,
-        action: :download
+        capability_options: { authorize_with: ->(**) { false } }
       )
     end
   end

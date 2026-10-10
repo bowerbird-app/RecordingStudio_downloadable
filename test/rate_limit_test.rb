@@ -95,4 +95,31 @@ class RateLimitTest < ActionDispatch::IntegrationTest
     assert_includes error.message, "already being built"
     assert_nil other.reload.downloadable_package
   end
+
+  test "rate limits still apply to authorized anonymous downloads" do
+    previous = RecordingStudioAccessible.configuration.action_audiences.to_h
+    RecordingStudioAccessible.configuration.action_audiences[:"workspaces.download"] = {
+      allowed: %i[public granted],
+      default: :public,
+      granted_roles: %i[view edit admin],
+      granted_override: true,
+      manage_role: :admin
+    }
+    RecordingStudioDownloadable.configuration.rate_limits = {
+      ip: { limit: 1, period: 1.minute },
+      actor: { limit: 100, period: 1.minute },
+      recording: { limit: 100, period: 1.minute }
+    }
+    sign_out @user
+
+    get recording_studio_downloadable.recording_package_path(@recording),
+        headers: { "HTTP_REFERER" => "http://www.example.com/" }
+    assert_response :redirect
+
+    get recording_studio_downloadable.recording_package_path(@recording),
+        headers: { "HTTP_REFERER" => "http://www.example.com/" }
+    assert_response :too_many_requests
+  ensure
+    RecordingStudioAccessible.configuration.action_audiences.replace(previous)
+  end
 end

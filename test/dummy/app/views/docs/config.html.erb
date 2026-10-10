@@ -50,7 +50,8 @@
 
   <p class="text-sm leading-6 text-(--surface-muted-content-color)">
     Downloadable calls <code>RecordingStudioAccessible.authorized_action?</code>. Add <code>public</code> to
-    <code>allowed</code> only for anonymous downloads. Domain conditions belong on
+    <code>allowed</code> only for anonymous downloads. Anyone who passes that check plus
+    <code>downloadable_available_for?</code> may enqueue a missing or stale ZIP. Domain conditions belong on
     <code>downloadable_available_for?(actor:, action:)</code>, not in Accessible.
   </p>
 

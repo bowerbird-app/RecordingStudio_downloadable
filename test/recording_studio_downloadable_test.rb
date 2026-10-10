@@ -143,7 +143,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes source, "blob.url("
     assert_includes source, "expires_in: archive_url_expires_in"
     assert_includes source, "SIGNED_URL_EXPIRES_IN"
-    assert_includes source, "enqueue_generation_if_granted!"
+    assert_includes source, "enqueue_generation_if_needed!"
     refute_includes source, "blob.download"
     refute_includes source, "send_data"
   end
@@ -250,6 +250,11 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "authorized_action?"
     assert_includes readme, "action_audiences"
     assert_includes readme, "bearer link"
+    assert_includes readme, "downloadable_generate!(action:, export_scope:"
+    assert_includes readme, "downloadable_invalidate!"
+    assert_includes readme, "published.recording_studio_publishable"
+    assert_includes readme, "unpublished.recording_studio_publishable"
+    refute_includes readme, "Non-granted actors never enqueue"
   end
 
   def test_dummy_home_page_uses_demo_title_only
