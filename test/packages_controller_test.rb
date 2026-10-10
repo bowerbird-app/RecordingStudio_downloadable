@@ -176,7 +176,7 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
-  test "status returns json for an authorized actor and forbids others" do
+  test "status of a missing package enqueues one rebuild" do
     assert_enqueued_jobs 1, only: RecordingStudioDownloadable::GeneratePackageJob do
       get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
     end
@@ -189,7 +189,9 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal false, payload["failed"]
     assert_equal true, payload["can_generate"]
     assert_nil payload["download_url"]
+  end
 
+  test "status of a ready package does not enqueue" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
 
     assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
@@ -203,8 +205,11 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal false, payload["stale"]
     assert_equal true, payload["can_generate"]
     assert_equal recording_studio_downloadable.recording_package_path(@recording), payload["download_url"]
+  end
 
+  test "denied actor cannot poll status" do
     sign_in @other
+
     assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
       get recording_studio_downloadable.recording_package_status_path(@recording), as: :json
     end

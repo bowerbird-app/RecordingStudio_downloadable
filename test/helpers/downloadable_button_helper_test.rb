@@ -77,13 +77,14 @@ class DownloadableButtonHelperTest < ActionView::TestCase
   end
 
   test "anonymous visitors get a generate post when the audience is public" do
-    with_action_audience(:"workspaces.download", {
+    audience = {
       allowed: %i[public granted],
       default: :public,
       granted_roles: %i[view edit admin],
       granted_override: true,
       manage_role: :admin
-    }) do
+    }
+    with_action_audience(:"workspaces.download", audience) do
       Current.actor = nil
       html = recording_studio_downloadable_button(@recording.reload)
 
