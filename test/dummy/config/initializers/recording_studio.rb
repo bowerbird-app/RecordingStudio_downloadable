@@ -8,6 +8,8 @@ RecordingStudio.configure do |config|
     "Page",
     "PressKit",
     "RecordingStudioAttachable::Attachment",
+    "RecordingStudioAttachable::Library",
+    "RecordingStudioAttachable::Placement",
     "RecordingStudio::AccessConstraint",
     "RecordingStudio::AccessRule"
   ]

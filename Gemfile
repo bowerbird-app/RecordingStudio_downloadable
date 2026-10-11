@@ -6,10 +6,10 @@ source "https://rubygems.org"
 gemspec
 
 # Private Recording Studio gems are not published to RubyGems.
-gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.198"
+gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.213"
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v4.4.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.14.0"
-gem "recording_studio_attachable", github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.7.1"
+gem "recording_studio_attachable", github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.13.0"
 
 gem "devise"
 gem "puma"
