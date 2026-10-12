@@ -17,11 +17,21 @@ GIT
 
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_attachable.git
-  revision: 8457c5681d9d3742d2b272082d62eecd91dd1102
-  tag: v0.13.0
+  revision: 0140c73d2cce6a5bdbdc8825ff496c42f8e260c3
+  tag: v0.15.0
   specs:
-    recording_studio_attachable (0.13.0)
+    recording_studio_attachable (0.15.0)
       flat_pack (>= 0.1.213)
+      rails (~> 8.1.0)
+      recording_studio (~> 4.2)
+      recording_studio_metrics (~> 0.2)
+
+GIT
+  remote: https://github.com/bowerbird-app/RecordingStudio_metrics.git
+  revision: 6e02b6b75a8a9dad2bd80c6ba2d30f7444e67b9e
+  tag: v0.2.0
+  specs:
+    recording_studio_metrics (0.2.0)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
 
@@ -344,6 +354,7 @@ DEPENDENCIES
   recording_studio_accessible!
   recording_studio_attachable!
   recording_studio_downloadable!
+  recording_studio_metrics!
   rubocop
   rubocop-rails
   simplecov
@@ -427,8 +438,9 @@ CHECKSUMS
   rdoc (8.1.0) sha256=befc37880a5cfd36dcb176c748b5fd5ee39dd3536a75e81824e4972ce230f60a
   recording_studio (4.5.0)
   recording_studio_accessible (0.15.0)
-  recording_studio_attachable (0.13.0)
+  recording_studio_attachable (0.15.0)
   recording_studio_downloadable (0.3.0)
+  recording_studio_metrics (0.2.0)
   regexp_parser (2.13.1) sha256=5aedb6b7c35688f51e86eef17a15374dfd287c83f4ca644b2c5f3ec50a33b44b
   reline (0.7.0) sha256=5b012d8e55dbf9d450f12bde2cf7d15ff546ae80b3f8f3b30e570d431815583d
   responders (3.2.1) sha256=c2772970cbda654c0e772d852e5a851e82cd8e96f5fa958650861ba75b8ffa84
