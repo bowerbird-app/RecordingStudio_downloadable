@@ -192,7 +192,7 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 5. List each download action in Accessible `config.action_audiences`.
 6. Opt each recordable in with `.to`.
 
-This dummy pins Recording Studio dummy GitHub tag `v4.5.0`, Accessible dummy GitHub tag `v0.15.0`, Root Switchable dummy GitHub tag `v0.8.0`, Metrics dummy GitHub tag `v0.2.0` (required by Root Switchable `>= 0.7`), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.13.0`.
+This dummy pins Recording Studio dummy GitHub tag `v4.5.0`, Accessible dummy GitHub tag `v0.15.0`, Root Switchable dummy GitHub tag `v0.8.0`, Metrics dummy GitHub tag `v0.2.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
 
 ## Dummy app
 
