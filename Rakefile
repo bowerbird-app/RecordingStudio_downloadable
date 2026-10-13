@@ -15,7 +15,8 @@ DUMMY_TEST_FILES = [
   File.expand_path("test/anonymous_generation_test.rb", __dir__),
   File.expand_path("test/invalidation_test.rb", __dir__),
   File.expand_path("test/rate_limit_test.rb", __dir__),
-  File.expand_path("test/domain_hook_test.rb", __dir__)
+  File.expand_path("test/domain_hook_test.rb", __dir__),
+  File.expand_path("test/locales_test.rb", __dir__)
 ].freeze
 DUMMY_GEMFILE = File.expand_path("test/dummy/Gemfile", __dir__)
 DUMMY_APP_ROOT = File.expand_path("test/dummy", __dir__)
@@ -34,6 +35,7 @@ ROOT_TEST_EXCLUSIONS = %w[
   test/invalidation_test.rb
   test/rate_limit_test.rb
   test/domain_hook_test.rb
+  test/locales_test.rb
   test/rename_verification_test.rb
 ].freeze
 DUMMY_BUNDLE_CLEARED_ENV = {

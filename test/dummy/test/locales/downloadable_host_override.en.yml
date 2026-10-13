@@ -1,0 +1,7 @@
+# Test-only host override fixture. Loaded via I18n.backend.load_translations
+# inside one integration test — never appended to I18n.load_path.
+en:
+  recording_studio:
+    downloadable:
+      buttons:
+        download: "HOST Download"

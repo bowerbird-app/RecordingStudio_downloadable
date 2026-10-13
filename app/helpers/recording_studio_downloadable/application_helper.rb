@@ -41,13 +41,13 @@ module RecordingStudioDownloadable
 
       if options.fetch(:pending)
         render FlatPack::Button::Component.new(
-          text: options.fetch(:preparing_text, Copy.t("buttons.preparing")),
+          text: options.fetch(:preparing_text, Copy.t("buttons.preparing", default: Copy::PREPARING_BUTTON)),
           style: options.fetch(:style, :secondary),
           size: size
         )
       elsif recording.downloadable_package&.failed?
         render FlatPack::Button::Component.new(
-          text: options.fetch(:retry_text, Copy.t("buttons.retry")),
+          text: options.fetch(:retry_text, Copy.t("buttons.retry", default: Copy::RETRY_BUTTON)),
           style: style,
           size: size,
           href: path,
@@ -56,7 +56,7 @@ module RecordingStudioDownloadable
         )
       elsif recording.downloadable_ready?
         render FlatPack::Button::Component.new(
-          text: options.fetch(:ready_text, Copy.t("buttons.download")),
+          text: options.fetch(:ready_text, Copy.t("buttons.download", default: Copy::DOWNLOAD_BUTTON)),
           style: style,
           size: size,
           href: path,
@@ -64,7 +64,7 @@ module RecordingStudioDownloadable
         )
       else
         render FlatPack::Button::Component.new(
-          text: options.fetch(:generate_text, Copy.t("buttons.download")),
+          text: options.fetch(:generate_text, Copy.t("buttons.download", default: Copy::DOWNLOAD_BUTTON)),
           style: style,
           size: size,
           href: path,
@@ -121,11 +121,11 @@ module RecordingStudioDownloadable
         "recording-studio-downloadable--package-poll-value": poll,
         "recording-studio-downloadable--package-auto-download-value": auto_download,
         "recording-studio-downloadable--package-can-generate-value": can_generate,
-        "recording-studio-downloadable--package-ready-text-value": Copy.t("buttons.download"),
-        "recording-studio-downloadable--package-preparing-text-value": Copy.t("buttons.preparing"),
-        "recording-studio-downloadable--package-retry-text-value": Copy.t("buttons.retry"),
-        "recording-studio-downloadable--package-not-ready-text-value": Copy.t("notices.not_ready"),
-        "recording-studio-downloadable--package-timeout-text-value": Copy.t("notices.timeout")
+        "recording-studio-downloadable--package-ready-text-value": Copy.t("buttons.download", default: Copy::DOWNLOAD_BUTTON),
+        "recording-studio-downloadable--package-preparing-text-value": Copy.t("buttons.preparing", default: Copy::PREPARING_BUTTON),
+        "recording-studio-downloadable--package-retry-text-value": Copy.t("buttons.retry", default: Copy::RETRY_BUTTON),
+        "recording-studio-downloadable--package-not-ready-text-value": Copy.t("notices.not_ready", default: Copy::NOT_READY_NOTICE),
+        "recording-studio-downloadable--package-timeout-text-value": Copy.t("notices.timeout", default: Copy::TIMEOUT_NOTICE)
       }
     end
 

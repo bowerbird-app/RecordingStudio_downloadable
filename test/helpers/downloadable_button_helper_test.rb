@@ -41,7 +41,33 @@ class DownloadableButtonHelperTest < ActionView::TestCase
 
     assert_includes html, "Retry download"
     assert_includes html, "turbo-method"
+    assert_includes html, "Source set is empty"
     refute_match(/<span>Preparing/, html)
+  end
+
+  test "failed package button title shows persisted failure message as-is" do
+    RecordingStudioDownloadable::Package.create!(
+      recording: @recording,
+      format: "zip",
+      action: @recording.downloadable_action.to_s,
+      export_scope: "public",
+      state: "failed",
+      failure_message: RecordingStudioDownloadable::Copy::EMPTY_NOTICE
+    )
+    html = recording_studio_downloadable_button(@recording.reload)
+
+    assert_includes html, "Retry download"
+    assert_includes html, "Nothing to package."
+  end
+
+  test "stimulus data attributes pass english defaults for js fallbacks" do
+    html = recording_studio_downloadable_button(@recording.reload)
+
+    assert_includes html, 'recording-studio-downloadable--package-ready-text-value="Download"'
+    assert_includes html, "package-preparing-text-value=\"Preparing…"
+    assert_includes html, 'package-retry-text-value="Retry download"'
+    assert_includes html, 'package-not-ready-text-value="This download is not ready yet."'
+    assert_includes html, "package-timeout-text-value="
   end
 
   test "ready package button is a turbo-free zip get" do
