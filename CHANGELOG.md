@@ -11,12 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Rate limiting now uses shared `RecordingStudioCache::RateLimiter` (recording_studio_cache `v0.5.0`) instead of a bespoke counter. Public `RateLimiter` methods, `config.rate_limits`, cache key shapes (`rs_downloadable:rate:…`), windows, 429 responses, and fail-open `StandardError` handling are unchanged. Blank or nil bucket keys still skip that bucket.
+- Rate limiting now uses shared `RecordingStudioCache::RateLimiter` (recording_studio_cache `~> 0.5`, git tag `v0.5.0`) instead of a bespoke counter. Public `RateLimiter` methods, `config.rate_limits`, `config.cache` / `cache_store`, key shapes (`rs_downloadable:rate:…`), fixed windows, 429 responses, blank/nil/`<= 0` limit skips, blank-key skips, string periods (via `to_i`), and fail-open `StandardError` handling match main.
+- Rate-limit cache keys now get a TTL equal to the period (shared `rails_cache` backend). Main’s `increment` often left keys without expiry and relied on the window segment in the key name.
 
 ### Upgrade notes
 
 - Bump to `0.5.0`. No migration.
-- Pin `recording_studio_cache` to GitHub tag `v0.5.0` (not RubyGems). Rate-limit config and behavior stay the same.
+- Pin `recording_studio_cache` to GitHub tag `v0.5.0` (not RubyGems), gemspec `~> 0.5`.
+- Rate-limit config (`rate_limits`, `cache`) stays the same. Expect counter keys to expire after one period instead of lingering until eviction.
 
 ## [0.4.0] - 2026-10-13
 

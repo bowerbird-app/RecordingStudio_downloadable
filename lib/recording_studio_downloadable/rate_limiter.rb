@@ -2,7 +2,8 @@
 
 module RecordingStudioDownloadable
   # Thin adapter over {RecordingStudioCache::RateLimiter}. Public methods, config
-  # keys, cache key shapes, and fail-open error handling stay as before.
+  # keys, and cache key shapes stay as before. Counter keys now also receive a TTL
+  # equal to the period (shared rails_cache backend).
   class RateLimiter
     class << self
       def throttle!(action:, ip:, actor:, recording:)
@@ -37,17 +38,22 @@ module RecordingStudioDownloadable
       private
 
       def throttle_bucket!(bucket, key:, action:, limit:, period:)
+        # Same order as main: disable on blank / non-positive limit, then blank key.
         return true if limit.blank? || limit.to_i <= 0
-        # Match prior behavior: blank / nil bucket keys skip that bucket.
         return true if key.blank?
 
+        cache = RecordingStudioDownloadable.configuration.cache_store
+        return true unless cache
+
+        # Normalize like main's window math (`[period.to_i, 1].max`) before the
+        # shared limiter, which rejects non-positive periods.
         result = RecordingStudioCache::RateLimiter.new(
           key: "#{action}:#{bucket}:#{key}",
           limit: limit.to_i,
           period: [period.to_i, 1].max,
           backend: :rails_cache,
           strategy: :fixed,
-          store: Rails.cache,
+          store: cache,
           fail_closed: false,
           rescue_errors: [StandardError],
           prefix: "rs_downloadable:rate",

@@ -75,7 +75,7 @@ PATH
       recording_studio (~> 4.2)
       recording_studio_accessible
       recording_studio_attachable
-      recording_studio_cache
+      recording_studio_cache (~> 0.5)
       rubyzip (>= 2.3)
 
 GEM

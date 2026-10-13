@@ -17,7 +17,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_accessible"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_attachable"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_cache"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
     assert_includes gemspec, 'spec.add_dependency "rubyzip"'
   end
 

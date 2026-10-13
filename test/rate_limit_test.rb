@@ -11,6 +11,7 @@ class RateLimitTest < ActionDispatch::IntegrationTest
     Rails.cache.clear
     @previous_limits = RecordingStudioDownloadable.configuration.rate_limits.deep_dup
     @previous_concurrent = RecordingStudioDownloadable.configuration.max_concurrent_builds
+    @previous_cache = RecordingStudioDownloadable.configuration.cache
     @user = User.create!(email: "rate-#{SecureRandom.hex(4)}@example.com", password: "Password",
                          password_confirmation: "Password")
     @recording = create_workspace_recording
@@ -22,6 +23,7 @@ class RateLimitTest < ActionDispatch::IntegrationTest
   teardown do
     RecordingStudioDownloadable.configuration.rate_limits = @previous_limits
     RecordingStudioDownloadable.configuration.max_concurrent_builds = @previous_concurrent
+    RecordingStudioDownloadable.configuration.cache = @previous_cache
     Rails.cache.clear
   end
 
@@ -180,8 +182,7 @@ class RateLimitTest < ActionDispatch::IntegrationTest
     def boom.write(*) = raise(StandardError, "cache down")
     def boom.read(*) = raise(StandardError, "cache down")
 
-    previous_cache = Rails.cache
-    Rails.cache = boom
+    RecordingStudioDownloadable.configuration.cache = boom
 
     assert RecordingStudioDownloadable::RateLimiter.allowed?(
       action: @recording.downloadable_action,
@@ -189,7 +190,59 @@ class RateLimitTest < ActionDispatch::IntegrationTest
       actor: @user,
       recording: @recording
     )
-  ensure
-    Rails.cache = previous_cache
+  end
+
+  test "nil blank and non-positive limits skip throttling like main" do
+    action = "workspaces.download"
+    [nil, "", "  ", 0, -1, "0"].each do |limit|
+      assert RecordingStudioDownloadable::RateLimiter.send(
+        :throttle_bucket!, :ip, key: "1.2.3.4", action: action, limit: limit, period: 60
+      ), "expected allow for limit=#{limit.inspect}"
+    end
+
+    window = Time.now.to_i / 60
+    refute Rails.cache.exist?("rs_downloadable:rate:#{action}:ip:1.2.3.4:#{window}")
+  end
+
+  test "string period values coerce like main window math and still enforce" do
+    action = "workspaces.download"
+    memory = ActiveSupport::Cache::MemoryStore.new
+    RecordingStudioDownloadable.configuration.cache = memory
+
+    assert RecordingStudioDownloadable::RateLimiter.send(
+      :throttle_bucket!, :ip, key: "9.9.9.9", action: action, limit: 1, period: "60"
+    )
+    error = assert_raises(RecordingStudioDownloadable::RateLimitedError) do
+      RecordingStudioDownloadable::RateLimiter.send(
+        :throttle_bucket!, :ip, key: "9.9.9.9", action: action, limit: 1, period: "60"
+      )
+    end
+    assert_includes error.message, "Too many download requests"
+
+    window = Time.now.to_i / 60
+    assert memory.exist?("rs_downloadable:rate:#{action}:ip:9.9.9.9:#{window}")
+  end
+
+  test "config.cache is used as the rate limit store" do
+    action = @recording.downloadable_action
+    memory = ActiveSupport::Cache::MemoryStore.new
+    RecordingStudioDownloadable.configuration.cache = memory
+    RecordingStudioDownloadable.configuration.rate_limits = {
+      ip: { limit: 100, period: 1.minute },
+      actor: { limit: 100, period: 1.minute },
+      recording: { limit: 5, period: 1.minute }
+    }
+
+    RecordingStudioDownloadable::RateLimiter.throttle!(
+      action: action,
+      ip: "127.0.0.1",
+      actor: @user,
+      recording: @recording
+    )
+
+    window = Time.now.to_i / 60
+    expected = "rs_downloadable:rate:#{action}:recording:#{@recording.id}:#{window}"
+    assert memory.exist?(expected), "expected key on config.cache store"
+    refute Rails.cache.exist?(expected), "must not write to Rails.cache when config.cache is set"
   end
 end

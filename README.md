@@ -228,7 +228,7 @@ RecordingStudioDownloadable.configure do |config|
 end
 ```
 
-Rate limiting is a thin adapter over `RecordingStudioCache::RateLimiter` (fixed windows, keys under `rs_downloadable:rate:…`) with `store: Rails.cache` passed explicitly. Use a store that supports `increment`. Exceeded limits return 429. Oversize archives fail generation without serving a partial ZIP.
+Rate limiting is a thin adapter over `RecordingStudioCache::RateLimiter` (fixed windows, keys under `rs_downloadable:rate:…`) with `store:` set to `config.cache_store` (`config.cache` if set, else `Rails.cache`). Counter keys expire after one period. Use a store that supports `increment`. Exceeded limits return 429. Oversize archives fail generation without serving a partial ZIP.
 
 ## Upgrade notes
 
