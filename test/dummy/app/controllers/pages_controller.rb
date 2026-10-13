@@ -51,7 +51,10 @@ class PagesController < ApplicationController
   end
 
   def page_recordings_by_recordable_id(pages)
-    RecordingStudio::Recording.where(recordable: pages, trashed_at: nil).index_by(&:recordable_id)
+    RecordingStudio::Recording
+      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .where(recordable: pages)
+      .index_by(&:recordable_id)
   end
 
   def description_snippet(text)
@@ -62,7 +65,9 @@ class PagesController < ApplicationController
 
   def parent_recording_for_new_page
     folder = Folder.find_by(name: "Product Docs")
-    folder_recording = RecordingStudio::Recording.find_by(recordable: folder, trashed_at: nil) if folder
+    folder_recording = RecordingStudio::Recording
+      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .find_by(recordable: folder) if folder
     return folder_recording if folder_recording
 
     workspace = Workspace.find_by(name: "Studio Workspace") || Workspace.order(:created_at).first

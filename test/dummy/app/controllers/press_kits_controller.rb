@@ -2,7 +2,10 @@
 
 class PressKitsController < ApplicationController
   def index
-    recordings = RecordingStudio::Recording.where(recordable_type: "PressKit", trashed_at: nil).to_a
+    recordings = RecordingStudio::Recording
+      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .where(recordable_type: "PressKit")
+      .to_a
     recordings_by_id = recordings.index_by(&:recordable_id)
     kits = recordings.filter_map(&:recordable)
 
@@ -34,7 +37,9 @@ class PressKitsController < ApplicationController
 
   def load_press_kit!
     @press_kit = PressKit.find(params[:id])
-    @recording = RecordingStudio::Recording.find_by!(recordable: @press_kit, trashed_at: nil)
+    @recording = RecordingStudio::Recording
+      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .find_by!(recordable: @press_kit)
   end
 
   def press_kit_params
