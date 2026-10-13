@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-13
+
+### Changed
+
+- Rate limiting now uses shared `RecordingStudioCache::RateLimiter` (recording_studio_cache `~> 0.5`, git tag `v0.5.0`) instead of a bespoke counter. Public `RateLimiter` methods, `config.rate_limits`, `config.cache` / `cache_store`, key shapes (`rs_downloadable:rate:…`), fixed windows, 429 responses, blank/nil/`<= 0` limit skips, blank-key skips, NullStore / unusable-cache short-circuit, string periods (via `to_i`), and fail-open `StandardError` handling match main.
+- Storage-only: counter keys now also receive a TTL equal to the period (shared `rails_cache` backend). Counting is unchanged because the fixed-window segment is already part of the key name; keys simply expire instead of lingering until eviction.
+
+### Upgrade notes
+
+- Bump to `0.5.0`. No migration.
+- Pin `recording_studio_cache` to GitHub tag `v0.5.0` (not RubyGems), gemspec `~> 0.5`.
+- Rate-limit config and counting behavior stay the same. Cache entries for counters may disappear after one period (storage cleanup only).
+
 ## [0.4.0] - 2026-10-13
 
 ### Added
@@ -99,7 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.5.0
 [0.4.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.4.0
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.2.0

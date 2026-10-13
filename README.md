@@ -192,7 +192,7 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 5. List each download action in Accessible `config.action_audiences`.
 6. Opt each recordable in with `.to`.
 
-This dummy pins Recording Studio dummy GitHub tag `v4.5.0`, Accessible dummy GitHub tag `v0.15.0`, Root Switchable dummy GitHub tag `v0.8.0`, Metrics dummy GitHub tag `v0.2.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
+This dummy pins Recording Studio dummy GitHub tag `v4.5.0`, Accessible dummy GitHub tag `v0.15.0`, Cache dummy GitHub tag `v0.5.0`, Root Switchable dummy GitHub tag `v0.8.0`, Metrics dummy GitHub tag `v0.2.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
 
 ## Dummy app
 
@@ -228,12 +228,12 @@ RecordingStudioDownloadable.configure do |config|
 end
 ```
 
-Rate limiting uses `Rails.cache` (or `config.cache`). Use a store that supports `increment`. Exceeded limits return 429. Oversize archives fail generation without serving a partial ZIP.
+Rate limiting is a thin adapter over `RecordingStudioCache::RateLimiter` (fixed windows, keys under `rs_downloadable:rate:…`) with `store:` set to `config.cache_store` (`config.cache` if set, else `Rails.cache`). NullStore and other unusable caches still short-circuit (no limiting). Counter keys also get a TTL equal to the period — storage cleanup only; counting is unchanged because the window is in the key name. Use a store that supports `increment`. Exceeded limits return 429. Oversize archives fail generation without serving a partial ZIP.
 
 ## Upgrade notes
 
 Hosts on 0.2.x need a new migration (`action` + `export_scope` on `recording_studio_downloadable_packages`). Existing packages are backfilled to the default action for that recording's type and `public` scope.
 
-Pin Accessible to GitHub tag `v0.15.0`. List each download action in `config.action_audiences`. Until an action is configured, Downloadable keeps the previous role mapping (`auth_roles`, default `download: :view`) so existing granted users can still download.
+Pin Accessible to GitHub tag `v0.15.0` and Cache to `v0.5.0`. List each download action in `config.action_audiences`. Until an action is configured, Downloadable keeps the previous role mapping (`auth_roles`, default `download: :view`) so existing granted users can still download.
 
 `source: :attachments` and `source: :manifest` are unchanged. Pass `action:` on `.to` when the derived name is not the Accessible action you configured.

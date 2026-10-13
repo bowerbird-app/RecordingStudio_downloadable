@@ -27,6 +27,15 @@ GIT
       recording_studio_metrics (~> 0.2)
 
 GIT
+  remote: https://github.com/bowerbird-app/RecordingStudio_cache.git
+  revision: ffadfbd2a804104e1146c835aaf1bdb8068596ff
+  tag: v0.5.0
+  specs:
+    recording_studio_cache (0.5.0)
+      rails (~> 8.1.0)
+      recording_studio (~> 4.2)
+
+GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_metrics.git
   revision: 6e02b6b75a8a9dad2bd80c6ba2d30f7444e67b9e
   tag: v0.2.0
@@ -61,11 +70,12 @@ GIT
 PATH
   remote: ../..
   specs:
-    recording_studio_downloadable (0.4.0)
+    recording_studio_downloadable (0.5.0)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
       recording_studio_accessible
       recording_studio_attachable
+      recording_studio_cache (~> 0.5)
       rubyzip (>= 2.3)
 
 GEM
@@ -510,6 +520,7 @@ DEPENDENCIES
   recording_studio!
   recording_studio_accessible!
   recording_studio_attachable!
+  recording_studio_cache!
   recording_studio_downloadable!
   recording_studio_metrics!
   recording_studio_root_switchable!
@@ -647,7 +658,8 @@ CHECKSUMS
   recording_studio (4.5.0)
   recording_studio_accessible (0.15.0)
   recording_studio_attachable (0.15.0)
-  recording_studio_downloadable (0.4.0)
+  recording_studio_cache (0.5.0)
+  recording_studio_downloadable (0.5.0)
   recording_studio_metrics (0.2.0)
   recording_studio_root_switchable (0.8.0)
   regexp_parser (2.13.1) sha256=5aedb6b7c35688f51e86eef17a15374dfd287c83f4ca644b2c5f3ec50a33b44b

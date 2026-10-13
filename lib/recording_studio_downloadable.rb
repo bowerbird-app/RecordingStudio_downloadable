@@ -2,6 +2,7 @@
 
 require "recording_studio"
 require "recording_studio_accessible"
+require "recording_studio_cache"
 
 module RecordingStudioDownloadable
   class Error < StandardError; end

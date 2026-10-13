@@ -44,6 +44,7 @@ Metrics/MethodLength:
     - 'lib/recording_studio_downloadable/sources/manifest.rb'
     - 'lib/recording_studio_downloadable/download_file.rb'
     - 'lib/recording_studio_downloadable/filename.rb'
+    - 'lib/recording_studio_downloadable/rate_limiter.rb'
     - 'app/services/recording_studio_downloadable/services/**/*'
     - 'app/helpers/recording_studio_downloadable/application_helper.rb'
     - 'app/controllers/recording_studio_downloadable/packages_controller.rb'

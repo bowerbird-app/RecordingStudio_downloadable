@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 module RecordingStudioDownloadable
+  # Thin adapter over {RecordingStudioCache::RateLimiter}. Public methods, config
+  # keys, and counting stay as on main. Counter keys also get a TTL equal to the
+  # period (storage cleanup only; the fixed-window segment is in the key name).
   class RateLimiter
     class << self
       def throttle!(action:, ip:, actor:, recording:)
@@ -35,30 +38,31 @@ module RecordingStudioDownloadable
       private
 
       def throttle_bucket!(bucket, key:, action:, limit:, period:)
+        # Same order as main: limit guard, blank key, then cache_usable?.
         return true if limit.blank? || limit.to_i <= 0
         return true if key.blank?
 
         cache = RecordingStudioDownloadable.configuration.cache_store
         return true unless cache_usable?(cache)
 
-        window = Time.now.to_i / [period.to_i, 1].max
-        cache_key = ["rs_downloadable", "rate", action, bucket, key, window].join(":")
-        count = increment(cache, cache_key, period)
-        return true if count <= limit.to_i
+        # Normalize like main's window math (`[period.to_i, 1].max`) before the
+        # shared limiter, which rejects non-positive periods.
+        result = RecordingStudioCache::RateLimiter.new(
+          key: "#{action}:#{bucket}:#{key}",
+          limit: limit.to_i,
+          period: [period.to_i, 1].max,
+          backend: :rails_cache,
+          strategy: :fixed,
+          store: cache,
+          fail_closed: false,
+          rescue_errors: [StandardError],
+          prefix: "rs_downloadable:rate",
+          separator: ":"
+        ).throttle
+
+        return true if result.allowed?
 
         raise RateLimitedError, Copy.t("errors.rate_limited", default: Copy::RATE_LIMITED)
-      end
-
-      def increment(cache, key, period)
-        count = cache.increment(key, 1)
-        if count.nil?
-          cache.write(key, 1, expires_in: period)
-          1
-        else
-          count
-        end
-      rescue StandardError
-        0
       end
 
       def cache_usable?(cache)
