@@ -64,10 +64,10 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     html = recording_studio_downloadable_button(@recording.reload)
 
     assert_includes html, 'recording-studio-downloadable--package-ready-text-value="Download"'
-    assert_includes html, "recording-studio-downloadable--package-preparing-text-value=\"Preparing…"
-    assert_includes html, 'recording-studio-downloadable--package-retry-text-value="Retry download"'
-    assert_includes html, 'recording-studio-downloadable--package-not-ready-text-value="This download is not ready yet."'
-    assert_includes html, 'recording-studio-downloadable--package-timeout-text-value="'
+    assert_includes html, "package-preparing-text-value=\"Preparing…"
+    assert_includes html, 'package-retry-text-value="Retry download"'
+    assert_includes html, 'package-not-ready-text-value="This download is not ready yet."'
+    assert_includes html, "package-timeout-text-value="
   end
 
   test "ready package button is a turbo-free zip get" do

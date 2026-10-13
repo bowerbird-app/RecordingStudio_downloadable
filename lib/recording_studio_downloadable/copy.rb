@@ -27,8 +27,8 @@ module RecordingStudioDownloadable
 
     module_function
 
-    def t(key, **options)
-      I18n.t("#{PREFIX}.#{key}", **options)
+    def t(key, **)
+      I18n.t("#{PREFIX}.#{key}", **)
     end
 
     # Map persisted / raised English failure strings to locale keys at render.

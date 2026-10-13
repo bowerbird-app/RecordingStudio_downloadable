@@ -165,6 +165,27 @@ class PackagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test "create flash renders building notice in literal english" do
+    post recording_studio_downloadable.recording_package_path(@recording),
+         headers: { "HTTP_REFERER" => "http://www.example.com/" }
+
+    assert_response :redirect
+    assert_equal(
+      "Building ZIP. The download starts automatically when it is ready.",
+      flash[:notice]
+    )
+  end
+
+  test "create flash renders ready notice in literal english when package is current" do
+    perform_enqueued_jobs { @recording.downloadable_generate! }
+
+    post recording_studio_downloadable.recording_package_path(@recording),
+         headers: { "HTTP_REFERER" => "http://www.example.com/" }
+
+    assert_response :redirect
+    assert_equal "Download is ready.", flash[:notice]
+  end
+
   test "create enqueues regeneration when the package is stale" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
     attach_file!(@recording, filename: "extra.txt", contents: "more", actor: @user)
