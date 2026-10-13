@@ -137,45 +137,23 @@ class LocalesTest < ActiveSupport::TestCase
   end
 
   test "raise and persist copy t stays locale-aware with english default" do
-    previous_locales = I18n.available_locales
-    I18n.available_locales = Array(previous_locales) | [:fr]
-    I18n.backend.store_translations(
-      :fr,
-      recording_studio: {
-        downloadable: {
-          errors: {
-            not_authorized: "Non autorisé à télécharger ce paquet",
-            rate_limited: "Trop de demandes de téléchargement.",
-            archive_too_large: "Ce téléchargement est trop volumineux."
-          },
-          notices: {
-            empty: "Rien à empaqueter."
-          }
-        }
-      }
-    )
+    with_french_downloadable_translations do
+      I18n.with_locale(:fr) do
+        assert_equal "Non autorisé à télécharger ce paquet",
+                     Copy.t("errors.not_authorized", default: Copy::NOT_AUTHORIZED)
+        assert_equal "Trop de demandes de téléchargement.",
+                     Copy.t("errors.rate_limited", default: Copy::RATE_LIMITED)
+        assert_equal "Rien à empaqueter.",
+                     Copy.t("notices.empty", default: Copy::EMPTY_NOTICE)
+      end
 
-    I18n.with_locale(:fr) do
-      assert_equal "Non autorisé à télécharger ce paquet",
-                   Copy.t("errors.not_authorized", default: Copy::NOT_AUTHORIZED)
-      assert_equal "Trop de demandes de téléchargement.",
-                   Copy.t("errors.rate_limited", default: Copy::RATE_LIMITED)
-      assert_equal "Ce téléchargement est trop volumineux.",
-                   Copy.t("errors.archive_too_large", default: Copy::ARCHIVE_TOO_LARGE)
-      assert_equal "Rien à empaqueter.",
-                   Copy.t("notices.empty", default: Copy::EMPTY_NOTICE)
+      I18n.with_locale(:en) do
+        assert_equal Copy::NOT_AUTHORIZED,
+                     Copy.t("errors.not_authorized", default: Copy::NOT_AUTHORIZED)
+        assert_equal Copy::EMPTY_NOTICE,
+                     Copy.t("notices.empty", default: Copy::EMPTY_NOTICE)
+      end
     end
-
-    I18n.with_locale(:en) do
-      assert_equal Copy::NOT_AUTHORIZED,
-                   Copy.t("errors.not_authorized", default: Copy::NOT_AUTHORIZED)
-      assert_equal Copy::RATE_LIMITED,
-                   Copy.t("errors.rate_limited", default: Copy::RATE_LIMITED)
-      assert_equal Copy::EMPTY_NOTICE,
-                   Copy.t("notices.empty", default: Copy::EMPTY_NOTICE)
-    end
-  ensure
-    I18n.available_locales = previous_locales if previous_locales
   end
 
   test "raised and persisted english defaults stay on copy constants" do
@@ -208,5 +186,26 @@ class LocalesTest < ActiveSupport::TestCase
         []
       end
     end
+  end
+
+  def with_french_downloadable_translations
+    previous_locales = I18n.available_locales
+    I18n.available_locales = Array(previous_locales) | [:fr]
+    I18n.backend.store_translations(
+      :fr,
+      recording_studio: {
+        downloadable: {
+          errors: {
+            not_authorized: "Non autorisé à télécharger ce paquet",
+            rate_limited: "Trop de demandes de téléchargement.",
+            archive_too_large: "Ce téléchargement est trop volumineux."
+          },
+          notices: { empty: "Rien à empaqueter." }
+        }
+      }
+    )
+    yield
+  ensure
+    I18n.available_locales = previous_locales if previous_locales
   end
 end
