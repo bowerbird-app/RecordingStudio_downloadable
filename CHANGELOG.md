@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-13
+
+### Added
+
+- English Rails I18n keys for non-view copy under `recording_studio.downloadable` (controller flashes, button labels, Stimulus poll strings, and known failure titles) resolve through `Copy.t` with English `default:` so a host locale without a fallback never shows "translation missing".
+- Host English override coverage: test-only fixture `test/dummy/test/locales/downloadable_host_override.en.yml` loaded via `I18n.backend.load_translations` (no `I18n.load_path` mutation) plus a real-page assert.
+- Always-loaded boot-order guard `test/dummy/config/locales/recording_studio_downloadable_host.en.yml` for the rarely shown `notices.timeout` key, with a render assert on the home Download control data attribute.
+- Locale regression: every `lib/**/*.rb` file must not mention `i18n.load_path` / `I18n.load_path`.
+- Render-level asserts for Download button labels, Stimulus data values, and create flashes (`Building ZIP…` / `Download is ready.`).
+
+### Changed
+
+- Controller flashes, helper button labels, and Stimulus data attributes pass English `default:` on every `Copy.t` call. English output stays byte-identical to 0.3.0.
+- Authorization, rate-limit, empty-source, and archive-too-large raised/persisted messages stay main's English literals on `Copy::*` constants. Known failure titles translate at the helper render site via `Copy.failure_message`.
+- Removed the explicit `I18n.load_path` append from `lib/recording_studio_downloadable.rb`. The engine exposes `config/locales` through Rails as usual.
+
+### Upgrade notes
+
+- Bump to `0.4.0`. No migration.
+- English hosts need no change. Copy `recording_studio.downloadable.*` keys into host locale files when translating.
+- Hosts override by defining the same nested keys in their own `config/locales`.
+- Generator CLI text, developer `ArgumentError`s, unsupported-source / missing-manifest messages, icon/style tokens, and stored archive filenames stay untranslated.
+- Stimulus JS keeps English defaults for `readyText` / `preparingText` / `retryText` / `notReadyText` / `timeoutText` when data attributes are absent.
+
 ## [0.3.0] - 2026-10-10
 
 ### Added
@@ -75,7 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.4.0
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.1.0

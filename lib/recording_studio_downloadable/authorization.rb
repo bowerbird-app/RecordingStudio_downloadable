@@ -16,7 +16,7 @@ module RecordingStudioDownloadable
           controller: controller
         )
 
-        raise NotAuthorizedError, Copy.t("errors.not_authorized")
+        raise NotAuthorizedError, Copy::NOT_AUTHORIZED
       end
 
       def allowed?(action:, actor:, recording:, capability_options: nil, controller: nil)
@@ -64,7 +64,7 @@ module RecordingStudioDownloadable
       def assert_downloadable_enabled!(recording:, capability_options: nil)
         return if downloadable_enabled?(recording: recording, capability_options: capability_options)
 
-        raise CapabilityNotEnabledError, Copy.t("errors.capability_disabled")
+        raise CapabilityNotEnabledError, Copy::CAPABILITY_DISABLED
       end
 
       def owner_recording_for(recording)

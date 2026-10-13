@@ -61,7 +61,7 @@ GIT
 PATH
   remote: ../..
   specs:
-    recording_studio_downloadable (0.3.0)
+    recording_studio_downloadable (0.4.0)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
       recording_studio_accessible
@@ -647,7 +647,7 @@ CHECKSUMS
   recording_studio (4.5.0)
   recording_studio_accessible (0.15.0)
   recording_studio_attachable (0.15.0)
-  recording_studio_downloadable (0.3.0)
+  recording_studio_downloadable (0.4.0)
   recording_studio_metrics (0.2.0)
   recording_studio_root_switchable (0.8.0)
   regexp_parser (2.13.1) sha256=5aedb6b7c35688f51e86eef17a15374dfd287c83f4ca644b2c5f3ec50a33b44b

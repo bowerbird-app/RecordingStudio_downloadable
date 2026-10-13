@@ -157,11 +157,11 @@ module RecordingStudioDownloadable
 
     def generate_notice(recording)
       if recording.downloadable_empty?
-        Copy.t("notices.empty")
+        Copy.t("notices.empty", default: Copy::EMPTY_NOTICE)
       elsif recording.downloadable_ready?
-        Copy.t("notices.ready")
+        Copy.t("notices.ready", default: Copy::READY_NOTICE)
       else
-        Copy.t("notices.building")
+        Copy.t("notices.building", default: Copy::BUILDING_NOTICE)
       end
     end
 

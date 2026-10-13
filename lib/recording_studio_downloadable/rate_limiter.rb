@@ -29,7 +29,7 @@ module RecordingStudioDownloadable
         count = concurrent_builds_for(action: action)
         return true if count < max.to_i
 
-        raise ConcurrentBuildLimitError, Copy.t("errors.concurrent_builds")
+        raise ConcurrentBuildLimitError, Copy::CONCURRENT_BUILDS
       end
 
       private
@@ -46,7 +46,7 @@ module RecordingStudioDownloadable
         count = increment(cache, cache_key, period)
         return true if count <= limit.to_i
 
-        raise RateLimitedError, Copy.t("errors.rate_limited")
+        raise RateLimitedError, Copy::RATE_LIMITED
       end
 
       def increment(cache, key, period)

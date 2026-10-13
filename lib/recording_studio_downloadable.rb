@@ -2,11 +2,6 @@
 
 require "recording_studio"
 require "recording_studio_accessible"
-require "i18n"
-
-locale_file = File.expand_path("../config/locales/en.yml", __dir__)
-I18n.load_path << locale_file unless I18n.load_path.include?(locale_file)
-I18n.backend.load_translations if I18n.backend.respond_to?(:load_translations)
 
 module RecordingStudioDownloadable
   class Error < StandardError; end
