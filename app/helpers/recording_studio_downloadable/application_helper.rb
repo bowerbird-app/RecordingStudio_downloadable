@@ -51,7 +51,7 @@ module RecordingStudioDownloadable
           style: style,
           size: size,
           href: path,
-          title: downloadable_failure_title(recording.downloadable_package),
+          title: recording.downloadable_package.failure_message.presence,
           data: { turbo_method: :post }
         )
       elsif recording.downloadable_ready?
@@ -71,13 +71,6 @@ module RecordingStudioDownloadable
           data: options.fetch(:can_generate, true) ? { turbo_method: :post } : { turbo: false }
         )
       end
-    end
-
-    def downloadable_failure_title(package)
-      message = package&.failure_message.presence
-      return unless message
-
-      Copy.failure_message(message)
     end
 
     def downloadable_pending?(recording)

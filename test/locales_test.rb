@@ -125,15 +125,60 @@ class LocalesTest < ActiveSupport::TestCase
     end
   end
 
-  test "failure message mapper translates known english at render" do
+  test "failure message mapper is pass-through-safe for unknown strings" do
     I18n.with_locale(:en) do
       assert_equal Copy::EMPTY_NOTICE, Copy.failure_message(Copy::EMPTY_NOTICE)
       assert_equal Copy::ARCHIVE_TOO_LARGE, Copy.failure_message(Copy::ARCHIVE_TOO_LARGE)
       assert_equal "Source set is empty", Copy.failure_message("Source set is empty")
+      assert_nil Copy.failure_message(nil)
+      assert_equal "", Copy.failure_message("")
+      assert_equal "Déjà traduit", Copy.failure_message("Déjà traduit")
     end
   end
 
-  test "raised and persisted english stay on copy constants" do
+  test "raise and persist copy t stays locale-aware with english default" do
+    previous_locales = I18n.available_locales
+    I18n.available_locales = Array(previous_locales) | [:fr]
+    I18n.backend.store_translations(
+      :fr,
+      recording_studio: {
+        downloadable: {
+          errors: {
+            not_authorized: "Non autorisé à télécharger ce paquet",
+            rate_limited: "Trop de demandes de téléchargement.",
+            archive_too_large: "Ce téléchargement est trop volumineux."
+          },
+          notices: {
+            empty: "Rien à empaqueter."
+          }
+        }
+      }
+    )
+
+    I18n.with_locale(:fr) do
+      assert_equal "Non autorisé à télécharger ce paquet",
+                   Copy.t("errors.not_authorized", default: Copy::NOT_AUTHORIZED)
+      assert_equal "Trop de demandes de téléchargement.",
+                   Copy.t("errors.rate_limited", default: Copy::RATE_LIMITED)
+      assert_equal "Ce téléchargement est trop volumineux.",
+                   Copy.t("errors.archive_too_large", default: Copy::ARCHIVE_TOO_LARGE)
+      assert_equal "Rien à empaqueter.",
+                   Copy.t("notices.empty", default: Copy::EMPTY_NOTICE)
+    end
+
+    I18n.with_locale(:en) do
+      assert_equal Copy::NOT_AUTHORIZED,
+                   Copy.t("errors.not_authorized", default: Copy::NOT_AUTHORIZED)
+      assert_equal Copy::RATE_LIMITED,
+                   Copy.t("errors.rate_limited", default: Copy::RATE_LIMITED)
+      assert_equal Copy::EMPTY_NOTICE,
+                   Copy.t("notices.empty", default: Copy::EMPTY_NOTICE)
+    end
+  ensure
+    I18n.available_locales = previous_locales if previous_locales
+  end
+
+  test "raised and persisted english defaults stay on copy constants" do
     assert_equal "Nothing to package.", Copy::EMPTY_NOTICE
     assert_equal "Not authorized to download this package", Copy::NOT_AUTHORIZED
     assert_equal "Downloads are not enabled for this item", Copy::CAPABILITY_DISABLED

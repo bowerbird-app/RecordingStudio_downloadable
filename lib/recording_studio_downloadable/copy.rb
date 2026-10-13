@@ -31,19 +31,19 @@ module RecordingStudioDownloadable
       I18n.t("#{PREFIX}.#{key}", **)
     end
 
-    # Map persisted / raised English failure strings to locale keys at render.
-    # Unknown strings pass through unchanged.
+    FAILURE_MESSAGE_KEYS = {
+      EMPTY_NOTICE => "notices.empty",
+      ARCHIVE_TOO_LARGE => "errors.archive_too_large",
+      NOT_READY_NOTICE => "notices.not_ready"
+    }.freeze
+
+    # Pass-through-safe helper for known English failure strings. Unknown or
+    # already-translated values return unchanged (main showed failure_message as-is).
     def failure_message(english)
-      case english
-      when EMPTY_NOTICE
-        t("notices.empty", default: EMPTY_NOTICE)
-      when ARCHIVE_TOO_LARGE
-        t("errors.archive_too_large", default: ARCHIVE_TOO_LARGE)
-      when NOT_READY_NOTICE
-        t("notices.not_ready", default: NOT_READY_NOTICE)
-      else
-        english
-      end
+      return english if english.blank?
+
+      key = FAILURE_MESSAGE_KEYS[english]
+      key ? t(key, default: english) : english
     end
   end
 end

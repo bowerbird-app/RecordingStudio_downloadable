@@ -45,7 +45,7 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     refute_match(/<span>Preparing/, html)
   end
 
-  test "failed package button title translates known empty failure at render" do
+  test "failed package button title shows persisted failure message as-is" do
     RecordingStudioDownloadable::Package.create!(
       recording: @recording,
       format: "zip",

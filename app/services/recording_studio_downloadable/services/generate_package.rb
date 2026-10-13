@@ -18,9 +18,9 @@ module RecordingStudioDownloadable
         if files.empty?
           package.with_lock do
             package.archive.purge if package.archive.attached?
-            package.mark_failed!(Copy::EMPTY_NOTICE)
+            package.mark_failed!(Copy.t("notices.empty", default: Copy::EMPTY_NOTICE))
           end
-          return failure(EmptySourceError.new(Copy::EMPTY_NOTICE))
+          return failure(EmptySourceError.new(Copy.t("notices.empty", default: Copy::EMPTY_NOTICE)))
         end
 
         fingerprint = recording.downloadable_source_fingerprint(
@@ -67,7 +67,7 @@ module RecordingStudioDownloadable
         return if blob.byte_size <= max.to_i
 
         blob.purge
-        raise ArchiveTooLargeError, Copy::ARCHIVE_TOO_LARGE
+        raise ArchiveTooLargeError, Copy.t("errors.archive_too_large", default: Copy::ARCHIVE_TOO_LARGE)
       end
 
       def archive_filename

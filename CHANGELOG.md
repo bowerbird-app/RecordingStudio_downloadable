@@ -11,17 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- English Rails I18n keys for non-view copy under `recording_studio.downloadable` (controller flashes, button labels, Stimulus poll strings, and known failure titles) resolve through `Copy.t` with English `default:` so a host locale without a fallback never shows "translation missing".
+- English Rails I18n keys for non-view copy under `recording_studio.downloadable` (controller flashes, button labels, Stimulus poll strings, and raise/persist error notices) resolve through `Copy.t` with English `default:` so a host locale without a fallback never shows "translation missing".
 - Host English override coverage: test-only fixture `test/dummy/test/locales/downloadable_host_override.en.yml` loaded via `I18n.backend.load_translations` (no `I18n.load_path` mutation) plus a real-page assert.
 - Always-loaded boot-order guard `test/dummy/config/locales/recording_studio_downloadable_host.en.yml` for the rarely shown `notices.timeout` key, with a render assert on the home Download control data attribute.
 - Locale regression: every `lib/**/*.rb` file must not mention `i18n.load_path` / `I18n.load_path`.
 - Render-level asserts for Download button labels, Stimulus data values, and create flashes (`Building ZIP…` / `Download is ready.`).
+- Locale-aware asserts for authorization / rate-limit / empty-source / archive-too-large `Copy.t` call sites (French override plus English `default:`).
 
 ### Changed
 
-- Controller flashes, helper button labels, and Stimulus data attributes pass English `default:` on every `Copy.t` call. English output stays byte-identical to 0.3.0.
-- Authorization, rate-limit, empty-source, and archive-too-large raised/persisted messages stay main's English literals on `Copy::*` constants. Known failure titles translate at the helper render site via `Copy.failure_message`.
-- Removed the explicit `I18n.load_path` append from `lib/recording_studio_downloadable.rb`. The engine exposes `config/locales` through Rails as usual.
+- Controller flashes, helper button labels, Stimulus data attributes, and the existing raise/persist `Copy.t` call sites (authorization, rate limits, empty source, archive-too-large) pass English `default:` on every lookup. Locale-aware messages stay as on 0.3.0; English output stays byte-identical.
+- Removed the explicit `I18n.load_path` append from `lib/recording_studio_downloadable.rb`. The engine exposes `config/locales` through Rails as usual (dummy boot-order host override proves host locale files still win).
 
 ### Upgrade notes
 

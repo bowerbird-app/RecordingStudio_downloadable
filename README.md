@@ -202,7 +202,7 @@ Sign in at `/users/sign_in` (`admin@admin.com` / `Password`). The home page and 
 
 Clicking Download `POST`s generation, then Stimulus polls `GET …/package/status` until the package is `ready` (or `failed`). When ready, the authorized `GET …/package` starts in a hidden iframe so the ZIP downloads without replacing the page. If source files changed since the last ZIP, the package is **stale**: authorized actors (including anonymous when the audience is `public`) enqueue one rebuild; the old ZIP is not served.
 
-Customer-facing copy uses `recording_studio.downloadable.*` in `config/locales/en.yml`. Every `Copy.t` call passes English `default:` so a host locale without a fallback never shows "translation missing". Hosts override by defining the same nested keys in their own `config/locales`. Raised and persisted failure strings stay English literals; known titles translate at the button render site. Stimulus keeps English JS defaults when data attributes are absent.
+Customer-facing copy uses `recording_studio.downloadable.*` in `config/locales/en.yml`. Every `Copy.t` call passes English `default:` so a host locale without a fallback never shows "translation missing". Hosts override by defining the same nested keys in their own `config/locales`. Authorization, rate-limit, empty-source, and archive-too-large raise/persist sites stay locale-aware `Copy.t` (with English `default:`). Stimulus keeps English JS defaults when data attributes are absent.
 
 ## Serving large ZIPs
 
