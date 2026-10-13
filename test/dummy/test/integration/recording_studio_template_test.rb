@@ -40,11 +40,12 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     private_root_recording = RecordingStudio::Recording.find_by!(recordable: private_workspace)
     folder_recording = RecordingStudio::Recording.find_by!(recordable: folder)
     page_recording = RecordingStudio::Recording.find_by!(recordable: page)
-    press_kit_recording = RecordingStudio::Recording.find_by!(
-      recordable_type: "PressKit",
-      parent_recording: root_recording,
-      trashed_at: nil
-    )
+    press_kit_recording = RecordingStudio::Recording
+      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .find_by!(
+        recordable_type: "PressKit",
+        parent_recording: root_recording
+      )
     press_kit = press_kit_recording.recordable
 
     assert_nil Current.actor

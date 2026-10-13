@@ -22,7 +22,9 @@ class PressKit < ApplicationRecord
   private
 
   def stored_download_files
-    recording = RecordingStudio::Recording.find_by(recordable: self, trashed_at: nil)
+    recording = RecordingStudio::Recording
+      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .find_by(recordable: self)
     return [] unless recording
 
     RecordingStudioDownloadable::Sources::Attachments.call(recording)

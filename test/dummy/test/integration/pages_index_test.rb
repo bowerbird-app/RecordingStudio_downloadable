@@ -56,7 +56,9 @@ class PagesIndexTest < ActionDispatch::IntegrationTest
     workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
     root_recording = RecordingStudio.root_recording_for(workspace)
     folder = Folder.find_or_create_by!(name: "Product Docs")
-    folder_recording = RecordingStudio::Recording.find_by(recordable: folder, trashed_at: nil) ||
+    folder_recording = RecordingStudio::Recording
+      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .find_by(recordable: folder) ||
       RecordingStudio.record!(
         action: "created",
         recordable: folder,
@@ -73,7 +75,9 @@ class PagesIndexTest < ActionDispatch::IntegrationTest
     end
 
     page = Page.find_by!(title: title)
-    recording = RecordingStudio::Recording.find_by!(recordable: page, trashed_at: nil)
+    recording = RecordingStudio::Recording
+      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .find_by!(recordable: page)
 
     assert_equal folder_recording, recording.parent_recording
     assert recording.downloadable?
