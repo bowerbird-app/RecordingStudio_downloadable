@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-13
+
+### Changed
+
+- Rate limiting now uses shared `RecordingStudioCache::RateLimiter` (recording_studio_cache `v0.5.0`) instead of a bespoke counter. Public `RateLimiter` methods, `config.rate_limits`, cache key shapes (`rs_downloadable:rate:…`), windows, 429 responses, and fail-open `StandardError` handling are unchanged. Blank or nil bucket keys still skip that bucket.
+
+### Upgrade notes
+
+- Bump to `0.5.0`. No migration.
+- Pin `recording_studio_cache` to GitHub tag `v0.5.0` (not RubyGems). Rate-limit config and behavior stay the same.
+
 ## [0.4.0] - 2026-10-13
 
 ### Added

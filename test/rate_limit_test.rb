@@ -122,4 +122,74 @@ class RateLimitTest < ActionDispatch::IntegrationTest
   ensure
     RecordingStudioAccessible.configuration.action_audiences.replace(previous)
   end
+
+  test "blank or nil bucket keys skip throttling for that bucket" do
+    RecordingStudioDownloadable.configuration.rate_limits = {
+      ip: { limit: 100, period: 1.minute },
+      actor: { limit: 100, period: 1.minute },
+      recording: { limit: 1, period: 1.minute }
+    }
+
+    assert RecordingStudioDownloadable::RateLimiter.send(
+      :throttle_bucket!, :recording, key: nil, action: "workspaces.download", limit: 1, period: 60
+    )
+    assert RecordingStudioDownloadable::RateLimiter.send(
+      :throttle_bucket!, :recording, key: "", action: "workspaces.download", limit: 1, period: 60
+    )
+    assert RecordingStudioDownloadable::RateLimiter.send(
+      :throttle_bucket!, :recording, key: "   ", action: "workspaces.download", limit: 1, period: 60
+    )
+
+    period = 60
+    window = Time.now.to_i / period
+    refute Rails.cache.exist?("rs_downloadable:rate:workspaces.download:recording::#{window}")
+    refute Rails.cache.exist?("rs_downloadable:rate:workspaces.download:recording:   :#{window}")
+  end
+
+  test "shared limiter writes the legacy fixed-window cache key shape" do
+    RecordingStudioDownloadable.configuration.rate_limits = {
+      ip: { limit: 100, period: 1.minute },
+      actor: { limit: 100, period: 1.minute },
+      recording: { limit: 5, period: 1.minute }
+    }
+
+    action = @recording.downloadable_action
+    period = 60
+    window = Time.now.to_i / period
+    expected = "rs_downloadable:rate:#{action}:recording:#{@recording.id}:#{window}"
+
+    RecordingStudioDownloadable::RateLimiter.throttle!(
+      action: action,
+      ip: "127.0.0.1",
+      actor: @user,
+      recording: @recording
+    )
+
+    assert Rails.cache.exist?(expected), "expected cache key #{expected}"
+  end
+
+  test "cache errors fail open like the prior StandardError rescue" do
+    RecordingStudioDownloadable.configuration.rate_limits = {
+      ip: { limit: 1, period: 1.minute },
+      actor: { limit: 1, period: 1.minute },
+      recording: { limit: 1, period: 1.minute }
+    }
+
+    boom = Object.new
+    def boom.increment(*) = raise(StandardError, "cache down")
+    def boom.write(*) = raise(StandardError, "cache down")
+    def boom.read(*) = raise(StandardError, "cache down")
+
+    previous_cache = Rails.cache
+    Rails.cache = boom
+
+    assert RecordingStudioDownloadable::RateLimiter.allowed?(
+      action: @recording.downloadable_action,
+      ip: "127.0.0.1",
+      actor: @user,
+      recording: @recording
+    )
+  ensure
+    Rails.cache = previous_cache
+  end
 end

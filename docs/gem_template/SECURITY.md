@@ -112,6 +112,7 @@ For security issues, please report via GitHub Issues or contact the maintainers 
 
 - **2025-12-04**: Initial security review completed
 - **2026-10-10**: Downloadable signed Active Storage URLs are bearer links until expiry (default 5 minutes). Engine endpoints skip inherited host auth so public audiences can download, then authorize every request. Per-action rate limits need a cache that supports `increment`.
+- **2026-10-13**: Downloadable rate limits go through shared `RecordingStudioCache::RateLimiter` (`recording_studio_cache` v0.5.0) with the same keys, windows, and fail-open `StandardError` handling as before.
 - **2026-10-05**: Dummy credentials use the shared RecordingStudio_* development master key; `master.key` stays gitignored
 - No vulnerabilities identified in current scope
 - Development environment appropriately configured

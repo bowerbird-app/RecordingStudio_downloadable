@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module RecordingStudioDownloadable
+  # Thin adapter over {RecordingStudioCache::RateLimiter}. Public methods, config
+  # keys, cache key shapes, and fail-open error handling stay as before.
   class RateLimiter
     class << self
       def throttle!(action:, ip:, actor:, recording:)
@@ -36,38 +38,25 @@ module RecordingStudioDownloadable
 
       def throttle_bucket!(bucket, key:, action:, limit:, period:)
         return true if limit.blank? || limit.to_i <= 0
+        # Match prior behavior: blank / nil bucket keys skip that bucket.
         return true if key.blank?
 
-        cache = RecordingStudioDownloadable.configuration.cache_store
-        return true unless cache_usable?(cache)
+        result = RecordingStudioCache::RateLimiter.new(
+          key: "#{action}:#{bucket}:#{key}",
+          limit: limit.to_i,
+          period: [period.to_i, 1].max,
+          backend: :rails_cache,
+          strategy: :fixed,
+          store: Rails.cache,
+          fail_closed: false,
+          rescue_errors: [StandardError],
+          prefix: "rs_downloadable:rate",
+          separator: ":"
+        ).throttle
 
-        window = Time.now.to_i / [period.to_i, 1].max
-        cache_key = ["rs_downloadable", "rate", action, bucket, key, window].join(":")
-        count = increment(cache, cache_key, period)
-        return true if count <= limit.to_i
+        return true if result.allowed?
 
         raise RateLimitedError, Copy.t("errors.rate_limited", default: Copy::RATE_LIMITED)
-      end
-
-      def increment(cache, key, period)
-        count = cache.increment(key, 1)
-        if count.nil?
-          cache.write(key, 1, expires_in: period)
-          1
-        else
-          count
-        end
-      rescue StandardError
-        0
-      end
-
-      def cache_usable?(cache)
-        cache.respond_to?(:increment) && cache.respond_to?(:write) &&
-          !null_store?(cache)
-      end
-
-      def null_store?(cache)
-        cache.class.name.to_s.include?("NullStore")
       end
 
       def limit_period(settings)

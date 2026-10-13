@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.4.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.5.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -17,6 +17,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_accessible"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_attachable"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_cache"'
     assert_includes gemspec, 'spec.add_dependency "rubyzip"'
   end
 
@@ -50,6 +51,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.15.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.15.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.8.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0"'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.213"'
@@ -62,7 +64,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute_includes gemfile, 'tag: "v0.7.1"'
     refute_includes gemfile, 'tag: "v0.9.1"'
     refute_includes gemfile, 'tag: "v0.5.1"'
-    refute_includes gemfile, 'tag: "v0.5.0"'
+    refute_includes gemfile, 'tag: "v0.4.3"'
     refute_includes gemfile, 'tag: "v0.1.198"'
     refute_includes gemfile, 'tag: "v0.1.177"'
     refute_includes gemfile, 'tag: "v0.1.133"'
@@ -270,6 +272,8 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "dummy GitHub tag `v0.8.0`"
     assert_includes readme, "dummy GitHub tag `v0.2.0`"
     assert_includes readme, "Attachable `v0.15.0`"
+    assert_includes readme, "dummy GitHub tag `v0.5.0`"
+    assert_includes readme, "Cache to `v0.5.0`"
     refute_includes readme, "dummy GitHub tag `v4.4.0`"
     refute_includes readme, "dummy GitHub tag `v4.3.0`"
     refute_includes readme, "dummy GitHub tag `v0.14.0`"
@@ -280,7 +284,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute_includes readme, "v0.1.177"
     refute_includes readme, "v0.9.1"
     refute_includes readme, "v0.5.1"
-    refute_includes readme, "v0.5.0"
+    refute_includes readme, "v0.4.3"
     refute_includes readme, "v0.1.133"
     refute_includes readme, "v3 declarations"
     refute_includes readme, "RecordingStudio v3"
