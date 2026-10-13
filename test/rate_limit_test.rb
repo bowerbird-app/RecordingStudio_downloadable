@@ -260,4 +260,67 @@ class RateLimitTest < ActionDispatch::IntegrationTest
       :cache_usable?, RecordingStudioDownloadable.configuration.cache_store
     )
   end
+
+  test "period zero normalizes to one-second windows like main" do
+    action = "workspaces.download"
+    memory = ActiveSupport::Cache::MemoryStore.new
+    RecordingStudioDownloadable.configuration.cache = memory
+
+    assert RecordingStudioDownloadable::RateLimiter.send(
+      :throttle_bucket!, :ip, key: "7.7.7.7", action: action, limit: 1, period: 0
+    )
+    assert_raises(RecordingStudioDownloadable::RateLimitedError) do
+      RecordingStudioDownloadable::RateLimiter.send(
+        :throttle_bucket!, :ip, key: "7.7.7.7", action: action, limit: 1, period: 0
+      )
+    end
+
+    window = Time.now.to_i / 1
+    assert memory.exist?("rs_downloadable:rate:#{action}:ip:7.7.7.7:#{window}")
+  end
+
+  test "limit disable and NullStore never call store increment" do
+    action = "workspaces.download"
+    spy = SpyCacheStore.new
+    RecordingStudioDownloadable.configuration.cache = spy
+
+    assert RecordingStudioDownloadable::RateLimiter.send(
+      :throttle_bucket!, :ip, key: "1.1.1.1", action: action, limit: 0, period: 60
+    )
+    assert_equal 0, spy.increment_calls
+
+    RecordingStudioDownloadable.configuration.cache = SpyNullStore.new
+    assert RecordingStudioDownloadable::RateLimiter.send(
+      :throttle_bucket!, :ip, key: "1.1.1.1", action: action, limit: 1, period: 60
+    )
+    assert_equal 0, RecordingStudioDownloadable.configuration.cache.increment_calls
+  end
+
+  class SpyCacheStore < ActiveSupport::Cache::MemoryStore
+    attr_reader :increment_calls
+
+    def initialize(...)
+      super
+      @increment_calls = 0
+    end
+
+    def increment(...)
+      @increment_calls += 1
+      super
+    end
+  end
+
+  class SpyNullStore < ActiveSupport::Cache::NullStore
+    attr_reader :increment_calls
+
+    def initialize(...)
+      super
+      @increment_calls = 0
+    end
+
+    def increment(...)
+      @increment_calls += 1
+      super
+    end
+  end
 end
