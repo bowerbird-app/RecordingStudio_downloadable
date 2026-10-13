@@ -245,4 +245,19 @@ class RateLimitTest < ActionDispatch::IntegrationTest
     assert memory.exist?(expected), "expected key on config.cache store"
     refute Rails.cache.exist?(expected), "must not write to Rails.cache when config.cache is set"
   end
+
+  test "NullStore short-circuits like main and never rate limits" do
+    action = "workspaces.download"
+    RecordingStudioDownloadable.configuration.cache = ActiveSupport::Cache::NullStore.new
+
+    5.times do
+      assert RecordingStudioDownloadable::RateLimiter.send(
+        :throttle_bucket!, :ip, key: "8.8.8.8", action: action, limit: 1, period: 60
+      )
+    end
+
+    refute RecordingStudioDownloadable::RateLimiter.send(
+      :cache_usable?, RecordingStudioDownloadable.configuration.cache_store
+    )
+  end
 end

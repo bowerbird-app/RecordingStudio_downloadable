@@ -2,8 +2,8 @@
 
 module RecordingStudioDownloadable
   # Thin adapter over {RecordingStudioCache::RateLimiter}. Public methods, config
-  # keys, and cache key shapes stay as before. Counter keys now also receive a TTL
-  # equal to the period (shared rails_cache backend).
+  # keys, and counting stay as on main. Counter keys also get a TTL equal to the
+  # period (storage cleanup only; the fixed-window segment is in the key name).
   class RateLimiter
     class << self
       def throttle!(action:, ip:, actor:, recording:)
@@ -38,12 +38,12 @@ module RecordingStudioDownloadable
       private
 
       def throttle_bucket!(bucket, key:, action:, limit:, period:)
-        # Same order as main: disable on blank / non-positive limit, then blank key.
+        # Same order as main: limit guard, blank key, then cache_usable?.
         return true if limit.blank? || limit.to_i <= 0
         return true if key.blank?
 
         cache = RecordingStudioDownloadable.configuration.cache_store
-        return true unless cache
+        return true unless cache_usable?(cache)
 
         # Normalize like main's window math (`[period.to_i, 1].max`) before the
         # shared limiter, which rejects non-positive periods.
@@ -63,6 +63,15 @@ module RecordingStudioDownloadable
         return true if result.allowed?
 
         raise RateLimitedError, Copy.t("errors.rate_limited", default: Copy::RATE_LIMITED)
+      end
+
+      def cache_usable?(cache)
+        cache.respond_to?(:increment) && cache.respond_to?(:write) &&
+          !null_store?(cache)
+      end
+
+      def null_store?(cache)
+        cache.class.name.to_s.include?("NullStore")
       end
 
       def limit_period(settings)
