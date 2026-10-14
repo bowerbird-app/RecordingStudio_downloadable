@@ -15,6 +15,11 @@ module RecordingStudioDownloadable
     scope :recent, -> { order(occurred_at: :desc, created_at: :desc) }
     scope :identified, -> { where.not(actor_id: nil) }
 
+    def self.identified_count(relation)
+      scoped = relation.respond_to?(:except) ? relation.except(:order) : relation
+      scoped.where.not(actor_id: nil).pick(Arel.sql("COUNT(DISTINCT (actor_type, actor_id))")).to_i
+    end
+
     before_validation :truncate_user_agent
     before_validation :assign_defaults
     before_update :raise_append_only_error

@@ -134,7 +134,15 @@ module RecordingStudioDownloadable
     end
 
     def downloadable_history_path_for(recording)
-      downloadable_routes.recording_download_logs_path(recording)
+      return unless defined?(RecordingStudioAdmin)
+
+      key = RecordingStudioDownloadable::Admin::SCREEN_KEY
+      base = if respond_to?(:recording_studio_admin_admin)
+               recording_studio_admin_admin.screen_path(key)
+             else
+               "#{RecordingStudioAdmin.configuration.default_mount_path}/screens/#{key}"
+             end
+      "#{base}?#{Rack::Utils.build_query(recording_id: recording.id)}"
     end
 
     def downloadable_package_status_path_for(recording)

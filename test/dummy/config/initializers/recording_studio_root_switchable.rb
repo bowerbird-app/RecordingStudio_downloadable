@@ -29,8 +29,16 @@ RecordingStudioRootSwitchable.configure do |config|
     end
     scope.access_check = ->(**) { true }
 
-    scope.default_root = lambda do |roots:, **|
-      roots.first
+    # Admin screens refuse an access recording whose root is not the current
+    # root. The home page and its History link are Studio Workspace, so start
+    # there when this person can open it. Otherwise the first root they can
+    # open. The list itself stays every workspace.
+    scope.default_root = lambda do |roots:, actor: nil, **|
+      accessible = roots.select do |recording|
+        actor && RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
+      end
+      studio = accessible.find { |recording| recording.recordable.try(:name) == "Studio Workspace" }
+      studio || accessible.first || roots.first
     end
   end
 end

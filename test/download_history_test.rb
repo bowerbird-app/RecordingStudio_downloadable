@@ -32,7 +32,7 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
 
     sign_in @viewer
     get history_path
-    assert_response :forbidden
+    assert_response :not_found
   end
 
   test "a viewer who can download still cannot open history" do
@@ -43,68 +43,71 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     assert_response :redirect
 
     get history_path
-    assert_response :forbidden
+    assert_response :not_found
   end
 
-  test "anonymous requests are forbidden" do
+  test "anonymous requests are sent to sign in" do
     get history_path
 
-    assert_response :forbidden
+    assert_response :redirect
+    assert_match %r{/users/sign_in}, response.location
   end
 
   test "history stays on this recording and hides ip and user agent" do
     other = create_workspace_recording
-    grant_download_access!(other, @admin)
     secret_ip = "203.0.113.55"
     secret_agent = "SecretAgentToken/#{SecureRandom.hex(4)}"
     log_download!(@recording, actor: @admin, ip_address: secret_ip, user_agent: secret_agent, occurred_at: 1.hour.ago)
     log_download!(other, actor: @admin, action: "workspaces.other-only", occurred_at: 1.hour.ago)
 
     sign_in @admin
-    get history_path
+    fetch_table
 
     assert_response :success
-    assert_includes response.body, @admin.email
-    assert_includes response.body, @recording.downloadable_action.to_s
-    refute_includes response.body, "workspaces.other-only"
-    refute_includes response.body, secret_ip
-    refute_includes response.body, secret_agent
+    assert_includes history_table, @admin.email
+    assert_includes history_table, @recording.downloadable_action.to_s
+    refute_includes history_table, "workspaces.other-only"
+    refute_includes history_table, secret_ip
+    refute_includes history_table, secret_agent
   end
 
-  test "empty history shows the empty state and zero stats" do
+  test "empty history shows the admin summary and no rows" do
     sign_in @admin
     get history_path
 
     assert_response :success
-    assert_includes response.body, "No downloads yet."
-    assert_includes response.body, "All time"
-    assert_includes response.body, "Last 30 days"
+    assert_includes response.body, "Download history"
     assert_includes response.body, "People"
+
+    fetch_chart
+    assert_response :success
+    assert_includes response.body, "Downloads over time"
   end
 
-  test "stats count the window and skip anonymous people" do
+  test "the chart counts the window and people skip anonymous" do
     log_download!(@recording, actor: @admin, occurred_at: 1.day.ago)
     log_download!(@recording, actor: @admin, occurred_at: 2.days.ago)
     log_download!(@recording, actor: @editor, occurred_at: 3.days.ago)
     log_download!(@recording, actor: nil, occurred_at: 4.days.ago)
     log_download!(@recording, actor: @viewer, occurred_at: 45.days.ago)
 
-    stats = RecordingStudioDownloadable::DownloadStats.new(@recording)
-
-    assert_equal 5, stats.total
-    assert_equal 4, stats.last_30_days
-    assert_equal 3, stats.identified_people
-
     sign_in @admin
     get history_path
+    assert_includes response.body, "Signed-in people in this period"
+    assert_includes response.body, ">2<"
 
-    assert_includes response.body, "Anonymous"
-    assert_includes response.body, @viewer.email
+    fetch_table
+    assert_includes history_table, "Anonymous"
+    refute_includes history_table, @viewer.email
+
+    fetch_chart
+    assert_includes response.body, "Downloads over time"
+    assert_includes response.body, ">4<"
+    assert_match(/flat-pack--chart-series-value=.*&quot;y&quot;:1/, response.body)
   end
 
-  test "filters limit the table and pagination keeps the oldest row on the next page" do
+  test "filters limit the table" do
     log_download!(@recording, actor: nil, action: "workspaces.archive", occurred_at: 10.days.ago)
-    log_download!(@recording, actor: @admin, occurred_at: 60.days.ago)
     21.times do |index|
       log_download!(
         @recording,
@@ -115,30 +118,54 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     end
 
     sign_in @admin
-    get history_path, params: { download: "workspaces.archive" }
+    fetch_table(download: "workspaces.archive")
     assert_includes history_table, "workspaces.archive"
     assert_includes history_table, "Anonymous"
     refute_includes history_table, "workspaces.page-two"
+  end
 
-    get history_path, params: { person: "anonymous" }
+  test "person and date filters and page two stay on the filtered rows" do
+    log_download!(@recording, actor: nil, action: "workspaces.archive", occurred_at: 10.days.ago)
+    21.times do |index|
+      log_download!(
+        @recording,
+        actor: @editor,
+        action: index == 20 ? "workspaces.page-two" : "workspaces.download",
+        occurred_at: index.minutes.ago
+      )
+    end
+
+    sign_in @admin
+    fetch_table(person: "anonymous")
     assert_includes history_table, "Anonymous"
     assert_includes history_table, "workspaces.archive"
     refute_includes history_table, "workspaces.page-two"
 
-    get history_path, params: { from: 20.days.ago.to_date.iso8601, to: 5.days.ago.to_date.iso8601 }
+    fetch_table(start_date: 20.days.ago.to_date.iso8601, end_date: 5.days.ago.to_date.iso8601)
     assert_includes history_table, "workspaces.archive"
     refute_includes history_table, "workspaces.page-two"
 
-    get history_path, params: { page: 2 }
+    fetch_table(page: 2)
     assert_response :success
-    assert_includes response.body, "workspaces.page-two"
+    assert_includes history_table, "workspaces.page-two"
+  end
+
+  test "another recording's logs stay closed" do
+    other = create_workspace_recording
+    log_download!(other, actor: @admin, action: "workspaces.other-only", occurred_at: 1.hour.ago)
+
+    sign_in @admin
+    get table_path(other)
+
+    assert_includes [403, 404], response.status
+    refute_includes response.body, "workspaces.other-only"
   end
 
   test "hosts can override history through an action audience" do
     with_action_audience(:"downloadable.view_logs", admin_only_audience) do
       sign_in @editor
       get history_path
-      assert_response :forbidden
+      assert_response :not_found
 
       sign_in @admin
       get history_path
@@ -153,7 +180,28 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
   private
 
   def history_path
-    recording_studio_downloadable.recording_download_logs_path(@recording)
+    screen_path(@recording)
+  end
+
+  def screen_path(recording, extra = {})
+    recording_studio_admin_admin.screen_path(screen_key, extra.merge(recording_id: recording.id))
+  end
+
+  def fetch_table(extra = {})
+    get table_path(@recording, extra), headers: { "Turbo-Frame" => "screen-table" }
+  end
+
+  def fetch_chart
+    get recording_studio_admin_admin.screen_chart_path(screen_key, recording_id: @recording.id),
+        headers: { "Turbo-Frame" => "screen-chart" }
+  end
+
+  def table_path(recording, extra = {})
+    recording_studio_admin_admin.screen_table_path(screen_key, extra.merge(recording_id: recording.id))
+  end
+
+  def screen_key
+    RecordingStudioDownloadable::Admin::SCREEN_KEY
   end
 
   def history_table

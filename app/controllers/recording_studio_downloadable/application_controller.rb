@@ -38,17 +38,6 @@ module RecordingStudioDownloadable
       )
     end
 
-    def authorize_view_logs!(recording)
-      return if RecordingStudioDownloadable::Authorization.view_logs_allowed?(
-        actor: current_downloadable_actor,
-        recording: recording,
-        controller: self
-      )
-
-      raise RecordingStudioDownloadable::Authorization::NotAuthorizedError,
-            Copy.t("errors.history_forbidden", default: Copy::HISTORY_FORBIDDEN)
-    end
-
     def current_downloadable_impersonator
       return unless defined?(Current) && Current.respond_to?(:impersonator)
 

@@ -69,7 +69,7 @@ end
 
 Anonymous requests are first-class. The engine skips inherited host auth and tenant callbacks such as `authenticate_user!` (see `config.skip_host_before_actions`). **Every** engine endpoint (`show`, `create`, `status`, download history) still authorizes. Skipping `authenticate_user!` is not enough on its own — tenant loaders that require a signed-in user must be skipped or written to tolerate a nil actor.
 
-`show`, `create`, and `status` authorize the recording's download action. Download history authorizes `:"downloadable.view_logs"` instead. A person who can download cannot open history unless they can also edit.
+`show`, `create`, and `status` authorize the recording's download action. Download history authorizes `:"downloadable.view_logs"` instead. A person who can download cannot open history unless they can also edit. History is a RecordingStudioAdmin screen, so the actor also has to pass that mount's sign-in.
 
 ## Download logs
 
@@ -112,19 +112,41 @@ The component is initialized with `recording:`, `actor:`, and `action:`. Downloa
 
 ## Download history
 
-History is an engine screen at `GET …/recordings/:recording_id/downloads` (`recording_download_logs_path`). Every request checks `:"downloadable.view_logs"`. The query is always scoped to that recording.
+History is a RecordingStudioAdmin screen, `download_logs`, not an engine controller. Downloadable registers the screen, a `downloads` section, and a People widget when Admin is loaded. It does not mount Admin. The host does:
 
-Downloadable defines the action with a default role of `:edit`, so edit and admin can open it and view cannot. It does not fall back to `:view` and it does not reuse the download check. Hosts override it through Accessible, for example `config.action_audiences[:"downloadable.view_logs"]`.
+```ruby
+recording_studio_admin_for :admin, at: "/admin"
+
+RecordingStudioAdmin.configure do |config|
+  config.authentication_method = :authenticate_user!
+  config.current_actor_method = :current_user
+  config.access_recording_resolver = lambda do |context|
+    if RecordingStudioDownloadable::Admin.recording_id?(context)
+      RecordingStudioDownloadable::Admin.recording_for(context)
+    else
+      context.controller.current_root_recording
+    end
+  end
+end
+```
+
+`recording_id` is the item whose logs you are opening. Without that param, the resolver should return the current root. A missing or trashed id stays unresolved so Admin refuses the page. The query is `access_recording.downloadable_download_logs`.
+
+Admin's own gate is still `required_access_role` (default `:view`) on that recording. Downloadable then requires `:"downloadable.view_logs"` (`visible_if` on the screen, and the query returns nothing when it fails). The action defaults to role `:edit`, so edit and admin can open history and view cannot. It does not fall back to `:view` and it does not reuse the download check. Hosts override it through Accessible, for example `config.action_audiences[:"downloadable.view_logs"]`. A signed-in person who passes Admin's `:view` role and fails `downloadable.view_logs` gets Admin's not-found response. Admin has no per-screen Accessible action.
 
 ```ruby
 recording_studio_downloadable_history_link(recording)
 ```
 
-The helper renders nothing when the current person cannot view history. The screen lists when, who (or “Anonymous”), and the download action, newest first. Optional filters are a date range, the download action, and the person. IP addresses and user agents stay off the screen.
+The helper renders nothing unless Admin is loaded and the current person can view history. The link is `/admin/screens/download_logs?recording_id=…` when the host mounted Admin as `:admin` at `/admin`.
 
-Above the table: all-time total, last 30 days, and distinct signed-in people (`actor_type` + `actor_id`, anonymous excluded). Those numbers are direct queries on `DownloadLog`.
+Admin also requires the current root (Root Switchable) to be that recording's root. A history link for another workspace is refused until the person switches. The dummy starts on Studio Workspace when the signed-in person can open it, so the home page History link matches.
 
-When `RecordingStudio_metrics` is loaded, Downloadable also registers `download_logs.total` (count) and `download_logs.over_time` (timeseries on `occurred_at`). Execute them with `RecordingStudioDownloadable::MetricsRegistration.context_for(recording:, actor:)`, which always passes an `authorized_relation` already limited to that recording. Metrics does not draw the chart. This screen does not either.
+The screen uses Admin's layout, inline filters (date range defaulting to the last 30 days, group by, download action, person), summary count, line chart, and paginated table (20 rows). Columns are when, who (or “Anonymous”), and the download action, newest first. IP addresses and user agents stay off the screen. The People widget counts distinct signed-in people in the filtered relation (`actor_type` + `actor_id`). Anonymous downloads are not people.
+
+When `RecordingStudio_metrics` is loaded, Downloadable registers `download_logs.total` (count) and `download_logs.over_time` (timeseries on `occurred_at`). The chart calls `RecordingStudioMetrics::Admin.chart_series` with `MetricsRegistration.context_for(recording:, actor:, relation:)`. That context uses scope `:root` and an `authorized_relation` already limited to the recording (and to the active filters when the screen draws the chart). Passing the Admin context straight into `chart_series` would also send the root recording, and Metrics would treat the log table as a recordable and return no points.
+
+`chart_series` returns `[date, value]` pairs. Flatpack's line chart does not plot that shape, so the screen turns each pair into `{ x:, y: }` before handing it to Admin. The counts stay the same.
 
 ## Presskits
 
@@ -263,7 +285,7 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 5. List each download action in Accessible `config.action_audiences`.
 6. Opt each recordable in with `.to`.
 
-This dummy pins Recording Studio dummy GitHub tag `v4.6.0`, Accessible dummy GitHub tag `v0.17.0`, Trashable dummy GitHub tag `v0.10.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.0`, Root Switchable dummy GitHub tag `v0.9.0`, Metrics dummy GitHub tag `v0.2.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
+This dummy pins Recording Studio dummy GitHub tag `v4.6.0`, Accessible dummy GitHub tag `v0.17.0`, Trashable dummy GitHub tag `v0.10.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.0`, Root Switchable dummy GitHub tag `v0.9.0`, Metrics dummy GitHub tag `v0.2.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.3.1` (download history screen), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
 
 ## Dummy app
 

@@ -214,5 +214,16 @@ module RecordingStudioDownloadable
         RecordingStudioDownloadable::Engine.register_download_metrics!
       end
     end
+
+    initializer "recording_studio_downloadable.admin",
+                after: "recording_studio_downloadable.load_config" do
+      next unless defined?(RecordingStudioAdmin)
+
+      require "recording_studio_downloadable/admin"
+
+      config.to_prepare do
+        RecordingStudioDownloadable::Admin.register!
+      end
+    end
   end
 end

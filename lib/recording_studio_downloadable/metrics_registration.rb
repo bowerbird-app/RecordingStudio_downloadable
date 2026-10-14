@@ -32,7 +32,7 @@ module RecordingStudioDownloadable
         error.is_a?(RecordingStudioMetrics::Errors::DuplicateRegistration)
     end
 
-    def context_for(recording:, actor:)
+    def context_for(recording:, actor:, relation: nil)
       return unless defined?(RecordingStudioMetrics)
       return if recording.nil?
 
@@ -40,12 +40,13 @@ module RecordingStudioDownloadable
       # recordable (the declaration macro lives on the base class) and then adds
       # `id = recordable_id` for recording scope. That drops every download log.
       # Isolation is the authorized relation, already limited to this recording.
+      # Pass `relation` when a screen has already applied its filters.
       RecordingStudioMetrics::Context.new(
         actor: actor,
         system: actor.nil?,
         scope: :root,
         access_recording: recording,
-        authorized_relation: DownloadLog.where(recording_id: recording.id)
+        authorized_relation: relation || DownloadLog.where(recording_id: recording.id)
       )
     end
 
