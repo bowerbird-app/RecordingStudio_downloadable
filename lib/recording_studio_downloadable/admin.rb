@@ -19,7 +19,6 @@ module RecordingStudioDownloadable
 
       RecordingStudioAdmin.register_screen(DownloadLogsScreen)
       RecordingStudioAdmin.register_section(DownloadsSection)
-      RecordingStudioAdmin.register_widget(DownloadLogsScreen.people_widget)
     end
 
     def recording_id?(context)

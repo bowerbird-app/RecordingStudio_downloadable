@@ -46,10 +46,36 @@ module RecordingStudioDownloadable
       end
 
       def range_bound(context, edge)
-        date = context.filter_value(:date_range)&.public_send(edge)
-        return if date.nil?
+        start_at, end_at = chart_bounds(context)
+        edge == :start_date ? start_at : end_at
+      end
 
-        edge == :start_date ? date.beginning_of_day : date.end_of_day
+      def chart_bounds(context)
+        window = period_window(context.filter_value(:period))
+        return [window.begin, window.end] if window
+
+        all_time_bounds(context)
+      end
+
+      # Metrics refuses a reporting period longer than its maximum. All time on
+      # the table is unbounded; the chart start is pulled forward to fit.
+      def all_time_bounds(context)
+        finish = Time.current.end_of_day
+        start = earliest_occurred_at(context) || (finish - 1.day)
+        start = [start, finish - chart_span_limit].max
+        start = finish - 1.day if start >= finish
+        [start, finish]
+      end
+
+      def earliest_occurred_at(context)
+        relation = context.query_result&.relation
+        return unless relation.respond_to?(:minimum)
+
+        relation.minimum(:occurred_at)
+      end
+
+      def chart_span_limit
+        RecordingStudioMetrics.configuration.max_reporting_period - 1.day
       end
     end
   end

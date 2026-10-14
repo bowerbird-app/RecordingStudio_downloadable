@@ -14,8 +14,6 @@ en:
         anonymous: "Anonymous"
         someone: "Someone"
         downloads: "Downloads"
-        people: "People"
-        people_info: "Signed-in people in this period. Anonymous downloads stay out."
         chart_title: "Downloads over time"
       notices:
         empty: "Nothing to package."

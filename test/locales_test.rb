@@ -18,8 +18,6 @@ class LocalesTest < ActiveSupport::TestCase
     "history.anonymous" => Copy::ANONYMOUS,
     "history.someone" => Copy::SOMEONE,
     "history.downloads" => Copy::STATS_DOWNLOADS,
-    "history.people" => Copy::STATS_PEOPLE,
-    "history.people_info" => Copy::STATS_PEOPLE_INFO,
     "history.chart_title" => Copy::CHART_TITLE,
     "notices.empty" => Copy::EMPTY_NOTICE,
     "notices.ready" => Copy::READY_NOTICE,

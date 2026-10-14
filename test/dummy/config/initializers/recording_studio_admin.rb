@@ -4,9 +4,6 @@ RecordingStudioAdmin.configure do |config|
   config.default_mount_path = "/admin"
   config.authentication_method = :authenticate_user!
   config.current_actor_method = :current_user
-  # The history page is one response: summary, chart frame, table frame, and the
-  # People widget. Async widgets would leave that count as a skeleton.
-  config.async_widgets.enabled = false
 
   config.access_recording_resolver = lambda do |context|
     if RecordingStudioDownloadable::Admin.recording_id?(context)

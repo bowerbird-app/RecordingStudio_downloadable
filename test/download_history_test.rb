@@ -65,7 +65,8 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes history_table, @admin.email
-    assert_includes history_table, @recording.downloadable_action.to_s
+    refute_includes history_table, @recording.downloadable_action.to_s
+    refute_includes table_headers, "Download"
     refute_includes history_table, "workspaces.other-only"
     refute_includes history_table, secret_ip
     refute_includes history_table, secret_agent
@@ -77,14 +78,19 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "Download history"
-    assert_includes response.body, "People"
+    assert_includes response.body, "Last 4 weeks"
+    assert_includes response.body, "All time"
+    assert_match(/value="last_4_weeks" selected="selected"/, response.body)
+    refute_includes response.body, "People"
+    refute_includes response.body, 'name="start_date"'
+    refute_includes response.body, 'name="download"'
 
     fetch_chart
     assert_response :success
     assert_includes response.body, "Downloads over time"
   end
 
-  test "the chart counts the window and people skip anonymous" do
+  test "the chart counts the default four week window" do
     log_download!(@recording, actor: @admin, occurred_at: 1.day.ago)
     log_download!(@recording, actor: @admin, occurred_at: 2.days.ago)
     log_download!(@recording, actor: @editor, occurred_at: 3.days.ago)
@@ -93,8 +99,7 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
 
     sign_in @admin
     get history_path
-    assert_includes response.body, "Signed-in people in this period"
-    assert_includes response.body, ">2<"
+    assert_includes response.body, "Last 4 weeks"
 
     fetch_table
     assert_includes history_table, "Anonymous"
@@ -106,48 +111,38 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     assert_match(/flat-pack--chart-series-value=.*&quot;y&quot;:1/, response.body)
   end
 
-  test "filters limit the table" do
-    log_download!(@recording, actor: nil, action: "workspaces.archive", occurred_at: 10.days.ago)
+  test "period presets and person filters limit the table" do
+    log_download!(@recording, actor: nil, occurred_at: 10.days.ago)
+    log_download!(@recording, actor: @viewer, occurred_at: 400.days.ago)
     21.times do |index|
-      log_download!(
-        @recording,
-        actor: @editor,
-        action: index == 20 ? "workspaces.page-two" : "workspaces.download",
-        occurred_at: index.minutes.ago
-      )
-    end
-
-    sign_in @admin
-    fetch_table(download: "workspaces.archive")
-    assert_includes history_table, "workspaces.archive"
-    assert_includes history_table, "Anonymous"
-    refute_includes history_table, "workspaces.page-two"
-  end
-
-  test "person and date filters and page two stay on the filtered rows" do
-    log_download!(@recording, actor: nil, action: "workspaces.archive", occurred_at: 10.days.ago)
-    21.times do |index|
-      log_download!(
-        @recording,
-        actor: @editor,
-        action: index == 20 ? "workspaces.page-two" : "workspaces.download",
-        occurred_at: index.minutes.ago
-      )
+      log_download!(@recording, actor: @editor, occurred_at: index.minutes.ago)
     end
 
     sign_in @admin
     fetch_table(person: "anonymous")
     assert_includes history_table, "Anonymous"
-    assert_includes history_table, "workspaces.archive"
-    refute_includes history_table, "workspaces.page-two"
+    refute_includes history_table, @editor.email
 
-    fetch_table(start_date: 20.days.ago.to_date.iso8601, end_date: 5.days.ago.to_date.iso8601)
-    assert_includes history_table, "workspaces.archive"
-    refute_includes history_table, "workspaces.page-two"
+    fetch_table(period: "last_7_days")
+    assert_includes history_table, @editor.email
+    refute_includes history_table, "Anonymous"
 
-    fetch_table(page: 2)
+    fetch_table(period: "all_time", page: 2)
     assert_response :success
-    assert_includes history_table, "workspaces.page-two"
+    assert_includes history_table, "Anonymous"
+    assert_includes history_table, @viewer.email
+  end
+
+  test "all time chart stays inside the metrics reporting limit" do
+    log_download!(@recording, actor: @viewer, occurred_at: 400.days.ago)
+    log_download!(@recording, actor: @editor, occurred_at: 1.day.ago)
+
+    sign_in @admin
+    fetch_chart(period: "all_time")
+
+    assert_response :success
+    assert_includes response.body, "Downloads over time"
+    refute_includes response.body, "InvalidDateRange"
   end
 
   test "another recording's logs stay closed" do
@@ -191,9 +186,13 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     get table_path(@recording, extra), headers: { "Turbo-Frame" => "screen-table" }
   end
 
-  def fetch_chart
-    get recording_studio_admin_admin.screen_chart_path(screen_key, recording_id: @recording.id),
+  def fetch_chart(extra = {})
+    get recording_studio_admin_admin.screen_chart_path(screen_key, extra.merge(recording_id: @recording.id)),
         headers: { "Turbo-Frame" => "screen-chart" }
+  end
+
+  def table_headers
+    response.body[%r{<thead.*?</thead>}m].to_s
   end
 
   def table_path(recording, extra = {})

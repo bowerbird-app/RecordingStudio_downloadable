@@ -27,8 +27,6 @@ module RecordingStudioDownloadable
     ANONYMOUS = "Anonymous"
     SOMEONE = "Someone"
     STATS_DOWNLOADS = "Downloads"
-    STATS_PEOPLE = "People"
-    STATS_PEOPLE_INFO = "Signed-in people in this period. Anonymous downloads stay out."
     CHART_TITLE = "Downloads over time"
 
     NOT_AUTHORIZED = "Not authorized to download this package"

@@ -57,8 +57,10 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "Download history"
-    assert_includes response.body, "People"
-    assert_includes response.body, "Signed-in people in this period"
+    assert_includes response.body, "Last 4 weeks"
+    assert_includes response.body, "Last 12 months"
+    refute_includes response.body, "People"
+    refute_includes response.body, 'name="start_date"'
 
     get recording_studio_admin_admin.screen_table_path("download_logs", recording_id: @recording.id),
         headers: { "Turbo-Frame" => "screen-table" }
@@ -66,6 +68,7 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, @user.email
     assert_includes response.body, "Anonymous"
+    refute_includes response.body, ">Download<"
     refute_includes response.body, "203.0.113.10"
     refute_includes response.body, "AnonymousBrowser/1.0"
 

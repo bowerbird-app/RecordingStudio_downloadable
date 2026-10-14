@@ -3,10 +3,6 @@
 module RecordingStudioDownloadable
   module Admin
     module DownloadLogsQueries
-      def people_widget
-        @people_widget ||= build_people_widget
-      end
-
       def allowed?(context)
         recording = context.access_recording
         return false if recording.nil?
@@ -17,16 +13,33 @@ module RecordingStudioDownloadable
       def relation_for(context)
         recording = context.access_recording
         Admin.remember_recording(recording)
+        stamp_default_period!(context)
         return DownloadLog.none if recording.nil? || !allowed?(context)
 
         recording.downloadable_download_logs
       end
 
-      def download_choices
-        recording = Admin.remembered_recording
-        return [] unless recording
+      def apply_period(relation, value, _context)
+        scoped = relation.unscope(where: :occurred_at)
+        window = period_window(value)
+        return scoped unless window
 
-        recording.downloadable_download_logs.distinct.order(:action).pluck(:action)
+        scoped.where(occurred_at: window)
+      end
+
+      def period_window(value)
+        key = value.presence&.to_s || DownloadLogsScreen::DEFAULT_PERIOD
+        return if key == "all_time"
+
+        period = RecordingStudioAdmin::Period.from_preset_key(key)
+        return unless period&.start_date && period.end_date
+
+        period.start_date.beginning_of_day..period.end_date.end_of_day
+      end
+
+      def period_label_for(context)
+        key = context.filter_value(:period).presence || DownloadLogsScreen::DEFAULT_PERIOD
+        key.to_s.humanize
       end
 
       def person_choices
@@ -39,10 +52,6 @@ module RecordingStudioDownloadable
         labels.uniq
       end
 
-      def apply_download(relation, value, _context)
-        relation.where(action: value)
-      end
-
       def apply_person(relation, value, _context)
         return relation.where(actor_id: nil) if value.to_s == "anonymous"
 
@@ -52,24 +61,16 @@ module RecordingStudioDownloadable
         relation.where(actor_type: match.actor_type, actor_id: match.actor_id)
       end
 
-      def people_count(context)
-        relation = context.query_result&.relation
-        return 0 unless relation
-
-        DownloadLog.identified_count(relation)
-      end
-
       private
 
-      def build_people_widget
-        RecordingStudioAdmin::Widget.new("widgets.download_logs.people") do
-          type :number
-          title { Copy.t("history.people", default: Copy::STATS_PEOPLE) }
-          info { Copy.t("history.people_info", default: Copy::STATS_PEOPLE_INFO) }
-          hide_change
-          hide_period
-          value { |context| DownloadLogsScreen.people_count(context) }
-        end
+      # Select filters ignore default:, so a missing param would show "All"
+      # while the rows stayed unfiltered. Stamp the default before filters run.
+      def stamp_default_period!(context)
+        params = context.params
+        return unless params.respond_to?(:[]=)
+        return if params[:period].present? || params["period"].present?
+
+        params["period"] = DownloadLogsScreen::DEFAULT_PERIOD
       end
 
       def person_match(value)
