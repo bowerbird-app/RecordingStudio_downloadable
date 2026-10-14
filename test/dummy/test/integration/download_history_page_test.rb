@@ -22,10 +22,10 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
 
     assert_equal DownloadAccessComponent, component
 
-    studio = Workspace.create!(name: "Studio Workspace")
+    studio = Workspace.find_or_create_by!(name: "Studio Workspace")
     studio_recording = RecordingStudio.root_recording_for(studio)
-    RecordingStudioAccessible.bootstrap_owner_access!(recording: studio_recording, actor: @user)
-    locked_workspace = Workspace.create!(name: "Locked Workspace")
+    grant_studio_download_access!(studio_recording, @user)
+    locked_workspace = Workspace.find_or_create_by!(name: "Locked Workspace")
     RecordingStudio.root_recording_for(locked_workspace)
 
     get root_path
