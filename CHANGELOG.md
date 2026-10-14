@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-14
+
+### Added
+
+- Append-only `recording_studio_downloadable_download_logs` for authorised downloads that were started. One insert in `PackagesController#show`, immediately before the signed archive URL. Insert failures are reported and do not block the ZIP.
+- Access-aware `recording_studio_downloadable_button`. Denied people see the component registered for that action, or nothing.
+- Download history is a RecordingStudioAdmin screen (`download_logs`) when that gem is loaded. It keeps Accessible action `:"downloadable.view_logs"` (default role `:edit`). Filters are period presets (Last 7 days, Last 4 weeks by default, Last 3 months, Last 12 months, All time), group by, and person. The table is when and who. The chart uses `RecordingStudioMetrics::Admin.chart_series`.
+- Optional Metrics registration (`download_logs.total`, `download_logs.over_time`) when RecordingStudio_metrics is loaded. Callers pass `MetricsRegistration.context_for`, which scopes the relation to the recording.
+
+### Upgrade notes
+
+- Bump to `0.6.0` and run the new download-logs migration. Nothing is backfilled. Download logs are new exhaust, not recordings and not `recording_studio_events` rows.
+- Register a denied component per download action if the button should offer something other than silence.
+- History is separate from download permission. Mount RecordingStudioAdmin and resolve `recording_id` to the recording in `access_recording_resolver` (see the README). Override `:"downloadable.view_logs"` through Accessible `action_audiences` when edit/admin is the wrong bar. There is no engine `/downloads` route.
+- History filters are `period` (`last_7_days`, `last_4_weeks`, `last_3_months`, `last_12_months`, `all_time`; missing means `last_4_weeks`), `group_by`, and `person`.
+
 ## [0.5.0] - 2026-10-13
 
 ### Changed

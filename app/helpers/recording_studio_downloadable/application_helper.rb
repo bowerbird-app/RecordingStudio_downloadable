@@ -4,6 +4,17 @@ module RecordingStudioDownloadable
   module ApplicationHelper
     def recording_studio_downloadable_button(recording, **button_options)
       return unless recording.respond_to?(:downloadable?) && recording.downloadable?
+
+      action = recording.downloadable_action
+      actor = downloadable_view_actor
+      unless RecordingStudioDownloadable::Authorization.allowed?(
+        action: action,
+        actor: actor,
+        recording: recording
+      )
+        return downloadable_access_denied_fallback(recording, actor: actor, action: action)
+      end
+
       return unless defined?(FlatPack::Button::Component)
 
       path = downloadable_package_path_for(recording)
@@ -32,7 +43,31 @@ module RecordingStudioDownloadable
       end
     end
 
+    def recording_studio_downloadable_history_link(recording, **options)
+      return unless recording.respond_to?(:downloadable?) && recording.downloadable?
+      return unless RecordingStudioDownloadable::Authorization.view_logs_allowed?(
+        actor: downloadable_view_actor,
+        recording: recording
+      )
+      return unless defined?(FlatPack::Button::Component)
+
+      render FlatPack::Button::Component.new(
+        text: options.fetch(:text, Copy.t("buttons.history", default: Copy::HISTORY_BUTTON)),
+        style: options.fetch(:style, :ghost),
+        size: options.fetch(:size, :md),
+        href: downloadable_history_path_for(recording)
+      )
+    end
+
     private
+
+    def downloadable_access_denied_fallback(recording, actor:, action:)
+      component = RecordingStudioDownloadable.configuration.access_denied_component_for(action)
+      return if component.blank?
+
+      component_class = component.is_a?(String) ? component.constantize : component
+      render component_class.new(recording: recording, actor: actor, action: action)
+    end
 
     def downloadable_button_control(recording, options)
       path = options.fetch(:path)
@@ -96,6 +131,18 @@ module RecordingStudioDownloadable
 
     def downloadable_package_path_for(recording)
       downloadable_routes.recording_package_path(recording)
+    end
+
+    def downloadable_history_path_for(recording)
+      return unless defined?(RecordingStudioAdmin)
+
+      key = RecordingStudioDownloadable::Admin::SCREEN_KEY
+      base = if respond_to?(:recording_studio_admin_admin)
+               recording_studio_admin_admin.screen_path(key)
+             else
+               "#{RecordingStudioAdmin.configuration.default_mount_path}/screens/#{key}"
+             end
+      "#{base}?#{Rack::Utils.build_query(recording_id: recording.id)}"
     end
 
     def downloadable_package_status_path_for(recording)

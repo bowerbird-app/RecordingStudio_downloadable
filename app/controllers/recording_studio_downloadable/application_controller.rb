@@ -38,6 +38,12 @@ module RecordingStudioDownloadable
       )
     end
 
+    def current_downloadable_impersonator
+      return unless defined?(Current) && Current.respond_to?(:impersonator)
+
+      Current.impersonator
+    end
+
     def downloadable_action_for(recording)
       recording.downloadable_action
     end

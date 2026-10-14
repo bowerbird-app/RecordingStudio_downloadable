@@ -32,6 +32,24 @@
     <% if @recording %>
       <% card.footer do %>
         <%= recording_studio_downloadable_button(@recording) %>
+        <%= recording_studio_downloadable_history_link(@recording) %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if @locked_recording %>
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Locked Workspace",
+          subtitle: "No access here, so the download control asks instead.",
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.footer do %>
+        <%= recording_studio_downloadable_button(@locked_recording) %>
       <% end %>
     <% end %>
   <% end %>

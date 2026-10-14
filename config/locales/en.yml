@@ -5,6 +5,16 @@ en:
         download: "Download"
         preparing: "Preparing…"
         retry: "Retry download"
+        history: "History"
+      history:
+        title: "Download history"
+        subtitle: "Newest first."
+        section_title: "Downloads"
+        section_subtitle: "Who grabbed the ZIP."
+        anonymous: "Anonymous"
+        someone: "Someone"
+        downloads: "Downloads"
+        chart_title: "Downloads over time"
       notices:
         empty: "Nothing to package."
         ready: "Download is ready."

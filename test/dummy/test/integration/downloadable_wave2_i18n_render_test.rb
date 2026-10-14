@@ -16,7 +16,7 @@ class DownloadableWave2I18nRenderTest < ActionDispatch::IntegrationTest
     end
     @workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
     @recording = RecordingStudio.root_recording_for(@workspace)
-    RecordingStudioAccessible.bootstrap_owner_access!(recording: @recording, actor: @user)
+    grant_studio_download_access!(@recording, @user)
     Current.actor = @user if defined?(Current)
     sign_in @user
   end

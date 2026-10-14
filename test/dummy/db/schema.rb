@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_000014) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_14_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -138,6 +138,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_000014) do
     t.index ["attachment_recording_id"], name: "idx_on_attachment_recording_id_76c6286907"
   end
 
+  create_table "recording_studio_downloadable_download_logs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "recording_id", null: false
+    t.string "action", null: false
+    t.string "export_scope", default: "public", null: false
+    t.string "actor_type"
+    t.uuid "actor_id"
+    t.string "impersonator_type"
+    t.uuid "impersonator_id"
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "occurred_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "created_at", null: false
+    t.index ["action", "occurred_at"], name: "index_rs_download_logs_on_action_and_occurred_at"
+    t.index ["actor_type", "actor_id", "occurred_at"], name: "index_rs_download_logs_on_actor_and_occurred_at"
+    t.index ["recording_id", "occurred_at", "created_at"], name: "index_rs_download_logs_on_recording_and_timeline", order: { occurred_at: :desc, created_at: :desc }
+    t.index ["recording_id"], name: "idx_on_recording_id_cda7513be2"
+  end
+
   create_table "recording_studio_downloadable_packages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "recording_id", null: false
     t.string "format", default: "zip", null: false
@@ -233,6 +251,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_000014) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "recording_studio_access_invitations", "recording_studio_recordings", column: "recording_id"
+  add_foreign_key "recording_studio_downloadable_download_logs", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"

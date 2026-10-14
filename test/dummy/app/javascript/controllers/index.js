@@ -5,3 +5,4 @@ import { lazyLoadControllersFrom } from "@hotwired/stimulus-loading"
 lazyLoadControllersFrom("controllers", application)
 lazyLoadControllersFrom("controllers/recording_studio_attachable", application)
 lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)
+lazyLoadControllersFrom("controllers/recording_studio_admin", application)

@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.5.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.6.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -54,6 +54,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.9.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.3.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.10.0", require: false'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.213"'
     refute_includes gemfile, "recording_studio/v3.0.0"
@@ -309,6 +310,11 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "downloadable_invalidate!"
     assert_includes readme, "published.recording_studio_publishable"
     assert_includes readme, "unpublished.recording_studio_publishable"
+    assert_includes readme, "recording_studio_downloadable_download_logs"
+    assert_includes readme, "downloadable.view_logs"
+    assert_includes readme, "register_access_denied_component"
+    assert_includes readme, "MetricsRegistration.context_for"
+    assert_includes readme, "ImageArchivesController"
     refute_includes readme, "Non-granted actors never enqueue"
   end
 

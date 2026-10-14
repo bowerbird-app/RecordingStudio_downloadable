@@ -18,6 +18,16 @@ module RecordingStudioDownloadable
     DOWNLOAD_BUTTON = "Download"
     PREPARING_BUTTON = "Preparing…"
     RETRY_BUTTON = "Retry download"
+    HISTORY_BUTTON = "History"
+
+    HISTORY_TITLE = "Download history"
+    HISTORY_SUBTITLE = "Newest first."
+    SECTION_TITLE = "Downloads"
+    SECTION_SUBTITLE = "Who grabbed the ZIP."
+    ANONYMOUS = "Anonymous"
+    SOMEONE = "Someone"
+    STATS_DOWNLOADS = "Downloads"
+    CHART_TITLE = "Downloads over time"
 
     NOT_AUTHORIZED = "Not authorized to download this package"
     CAPABILITY_DISABLED = "Downloads are not enabled for this item"

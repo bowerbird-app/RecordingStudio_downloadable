@@ -5,6 +5,8 @@ module RecordingStudioDownloadable
     class NotAuthorizedError < RecordingStudioDownloadable::Error; end
     class CapabilityNotEnabledError < NotAuthorizedError; end
 
+    VIEW_LOGS_ACTION = :"downloadable.view_logs"
+
     class << self
       def authorize!(action:, actor:, recording:, capability_options: nil, controller: nil)
         assert_downloadable_enabled!(recording: recording, capability_options: capability_options)
@@ -65,6 +67,38 @@ module RecordingStudioDownloadable
         return if downloadable_enabled?(recording: recording, capability_options: capability_options)
 
         raise CapabilityNotEnabledError, Copy.t("errors.capability_disabled", default: Copy::CAPABILITY_DISABLED)
+      end
+
+      def view_logs_allowed?(actor:, recording:, controller: nil)
+        return false unless defined?(RecordingStudioAccessible)
+        return false if recording.nil?
+
+        RecordingStudioAccessible.authorized_action?(
+          actor: actor,
+          action: VIEW_LOGS_ACTION,
+          recording: recording,
+          controller: controller
+        )
+      rescue StandardError
+        false
+      end
+
+      def install_view_logs_action!
+        return unless defined?(RecordingStudioAccessible)
+        return if RecordingStudioAccessible.action_defined?(VIEW_LOGS_ACTION)
+
+        RecordingStudioAccessible.register_action(
+          VIEW_LOGS_ACTION,
+          label: "View download history",
+          description: "See who downloaded this item.",
+          source: "recording_studio_downloadable",
+          recording_required: true
+        )
+        RecordingStudioAccessible.define_action(VIEW_LOGS_ACTION) do |actor:, recording:, **|
+          next false if actor.nil? || recording.nil?
+
+          RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :edit)
+        end
       end
 
       def owner_recording_for(recording)
