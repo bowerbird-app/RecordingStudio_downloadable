@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-14
+
+### Added
+
+- Append-only `recording_studio_downloadable_download_logs` for authorised downloads that were started. One insert in `PackagesController#show`, immediately before the signed archive URL. Insert failures are reported and do not block the ZIP.
+- Access-aware `recording_studio_downloadable_button`. Denied people see the component registered for that action, or nothing.
+- Download history at `GET …/downloads`, gated by Accessible action `:"downloadable.view_logs"` (default role `:edit`). Stats are all-time, last 30 days, and distinct signed-in people.
+- Optional Metrics registration (`download_logs.total`, `download_logs.over_time`) when RecordingStudio_metrics is loaded. Callers pass `MetricsRegistration.context_for`, which scopes the relation to the recording.
+
+### Upgrade notes
+
+- Bump to `0.6.0` and run the new download-logs migration. Nothing is backfilled. Download logs are new exhaust, not recordings and not `recording_studio_events` rows.
+- Register a denied component per download action if the button should offer something other than silence.
+- History is separate from download permission. Override `:"downloadable.view_logs"` through Accessible `action_audiences` when edit/admin is the wrong bar.
+
 ## [0.5.0] - 2026-10-13
 
 ### Changed

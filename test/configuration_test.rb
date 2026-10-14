@@ -63,6 +63,22 @@ class ConfigurationTest < Minitest::Test
     assert_kind_of RecordingStudioDownloadable::Configuration, RecordingStudioDownloadable.configuration
   end
 
+  def test_access_denied_components_register_per_action
+    component = Class.new
+    other = Class.new
+    @configuration.register_access_denied_component(:"presskits.kit_download", component)
+    @configuration.register_access_denied_component(:"workspaces.download", other)
+
+    assert_equal component, @configuration.access_denied_component_for(:"presskits.kit_download")
+    assert_equal other, @configuration.access_denied_component_for("workspaces.download")
+    assert_nil @configuration.access_denied_component_for(:"pages.download")
+  end
+
+  def test_access_denied_component_requires_an_action_and_component
+    assert_raises(ArgumentError) { @configuration.register_access_denied_component(nil, Class.new) }
+    assert_raises(ArgumentError) { @configuration.register_access_denied_component(:download, nil) }
+  end
+
   def test_debounce_wait_clamps_to_thirty_through_sixty_seconds
     @configuration.content_change_debounce = 5.seconds
     assert_equal 30.seconds, @configuration.debounce_wait

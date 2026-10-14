@@ -34,6 +34,27 @@ module RecordingStudioDownloadable
         end
       end
 
+      def install_download_log_association!
+        return unless defined?(RecordingStudio::Recording)
+        return if RecordingStudio::Recording.reflect_on_association(:downloadable_download_logs)
+
+        RecordingStudio::Recording.class_eval do
+          # delete_all bypasses DownloadLog append-only guards when the recording is destroyed.
+          has_many :downloadable_download_logs,
+                   class_name: "RecordingStudioDownloadable::DownloadLog",
+                   inverse_of: :recording,
+                   dependent: :delete_all
+        end
+      end
+
+      def install_view_logs_action!
+        RecordingStudioDownloadable::Authorization.install_view_logs_action!
+      end
+
+      def register_download_metrics!
+        RecordingStudioDownloadable::MetricsRegistration.register!
+      end
+
       def install_recording_observer!
         return unless defined?(RecordingStudio::Recording)
         return if RecordingStudio::Recording.method_defined?(:recording_studio_downloadable_after_commit)
@@ -182,7 +203,15 @@ module RecordingStudioDownloadable
 
     initializer "recording_studio_downloadable.observe_recordings" do
       config.to_prepare do
+        RecordingStudioDownloadable::Engine.install_download_log_association!
+        RecordingStudioDownloadable::Engine.install_view_logs_action!
         RecordingStudioDownloadable::Engine.install_recording_observer!
+      end
+    end
+
+    initializer "recording_studio_downloadable.metrics" do
+      config.after_initialize do
+        RecordingStudioDownloadable::Engine.register_download_metrics!
       end
     end
   end

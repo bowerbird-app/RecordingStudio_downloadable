@@ -46,7 +46,7 @@ module RecordingStudioDownloadable
     def serve_or_prepare!(recording)
       package = recording.downloadable_package
       if serveable_package?(recording, package)
-        redirect_to_archive_url!(package.archive.blob, filename: download_filename(recording))
+        serve_archive!(recording, package)
         return
       end
 
@@ -55,10 +55,42 @@ module RecordingStudioDownloadable
       package = recording.downloadable_package
 
       if serveable_package?(recording, package)
-        redirect_to_archive_url!(package.archive.blob, filename: download_filename(recording))
+        serve_archive!(recording, package)
       else
         respond_not_ready(recording)
       end
+    end
+
+    def serve_archive!(recording, package)
+      log_authorized_download!(recording)
+      redirect_to_archive_url!(package.archive.blob, filename: download_filename(recording))
+    end
+
+    def log_authorized_download!(recording)
+      DownloadLog.record!(
+        recording: recording,
+        action: downloadable_action_for(recording),
+        export_scope: downloadable_export_scope_for(recording),
+        actor: current_downloadable_actor,
+        impersonator: current_downloadable_impersonator,
+        ip_address: request.remote_ip,
+        user_agent: request.user_agent
+      )
+    rescue StandardError => e
+      report_download_log_failure(e)
+    end
+
+    def report_download_log_failure(error)
+      if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+        Rails.logger.error(
+          "[RecordingStudioDownloadable] download log insert failed: #{error.class}: #{error.message}"
+        )
+      end
+      return unless defined?(Rails.error) && Rails.error.respond_to?(:report)
+
+      Rails.error.report(error, handled: true, source: "recording_studio_downloadable")
+    rescue StandardError
+      nil
     end
 
     def serveable_package?(recording, package)

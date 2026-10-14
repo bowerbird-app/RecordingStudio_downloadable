@@ -3,12 +3,12 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Gem Views",
-    subtitle: "Downloadable does not ship host ERB pages. The engine serves the ZIP route and a view helper.",
+    subtitle: "Downloadable does not ship host ERB pages. The engine serves the ZIP route, download history, and view helpers.",
     variant: :h1
   ) %>
 
   <p class="text-sm leading-6 text-(--surface-muted-content-color)">
-    There is no library UI, no attachment editor, and no engine home template.
+    There is no attachment editor and no engine home template. Download history is an engine screen.
     Attachable owns file CRUD. This addon packages attachment originals or a host manifest and streams the archive.
   </p>
 
@@ -35,6 +35,12 @@
       method: "GET",
       path: "/recording_studio_downloadable/recordings/:recording_id/package/status",
       purpose: "JSON package state for the Stimulus poll. Same authorization as show/create. May enqueue only when authorized and nothing is in flight (missing or stale). Includes can_generate."
+    },
+    {
+      helper: "recording_download_logs_path(recording)",
+      method: "GET",
+      path: "/recording_studio_downloadable/recordings/:recording_id/downloads",
+      purpose: "Download history for people who can edit. Totals, filters, and the newest downloads. Download permission does not open this page."
     }
   ] %>
 

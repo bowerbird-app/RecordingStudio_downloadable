@@ -41,6 +41,7 @@ module ApplicationHelper
 
     if recording.downloadable?
       parts << recording_studio_downloadable_button(recording, style: :ghost, size: :sm)
+      parts << recording_studio_downloadable_history_link(recording, style: :ghost, size: :sm)
     end
 
     safe_join(parts, " · ".html_safe)
@@ -61,6 +62,7 @@ module ApplicationHelper
       )
       if recording.downloadable?
         parts << recording_studio_downloadable_button(recording, style: :ghost, size: :sm)
+        parts << recording_studio_downloadable_history_link(recording, style: :ghost, size: :sm)
       end
     end
     parts << link_to("Edit", edit_press_kit_path(press_kit), class: "underline")

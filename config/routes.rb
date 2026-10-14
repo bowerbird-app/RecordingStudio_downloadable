@@ -4,5 +4,6 @@ RecordingStudioDownloadable::Engine.routes.draw do
   resources :recordings, only: [] do
     resource :package, only: %i[show create]
     get "package/status", to: "packages#status", as: :package_status
+    resources :download_logs, only: :index, path: "downloads"
   end
 end

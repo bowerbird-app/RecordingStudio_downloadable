@@ -27,7 +27,8 @@ module RecordingStudioDownloadable
     ].freeze
 
     attr_accessor :authorize_with, :cache, :max_zip_bytes, :max_concurrent_builds
-    attr_reader :hooks, :auth_roles, :rate_limits, :content_change_debounce, :skip_host_before_actions
+    attr_reader :hooks, :auth_roles, :rate_limits, :content_change_debounce, :skip_host_before_actions,
+                :access_denied_components
 
     def initialize
       @hooks = RecordingStudio::Hooks.new
@@ -39,6 +40,20 @@ module RecordingStudioDownloadable
       @content_change_debounce = 45.seconds
       @skip_host_before_actions = DEFAULT_SKIP_HOST_BEFORE_ACTIONS.dup
       @cache = nil
+      @access_denied_components = {}
+    end
+
+    def register_access_denied_component(action, component)
+      raise ArgumentError, "action is required" if action.blank?
+      raise ArgumentError, "component is required" if component.nil?
+
+      access_denied_components[action.to_sym] = component
+    end
+
+    def access_denied_component_for(action)
+      return if action.blank?
+
+      access_denied_components[action.to_sym]
     end
 
     def auth_roles=(roles)

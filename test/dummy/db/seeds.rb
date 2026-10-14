@@ -4,6 +4,30 @@
 
 require "stringio"
 
+seed_download_logs = lambda do |recording, owner, colleague|
+  action = recording.downloadable_action
+  scope = recording.downloadable_export_scope
+  [
+    { actor: owner, occurred_at: 2.hours.ago, ip_address: "203.0.113.10", user_agent: "StudioBrowser/1.0" },
+    { actor: owner, occurred_at: 1.day.ago, ip_address: "203.0.113.10", user_agent: "StudioBrowser/1.0" },
+    { actor: colleague, occurred_at: 3.days.ago, ip_address: "203.0.113.24", user_agent: "StudioBrowser/1.0" },
+    { actor: colleague, occurred_at: 6.days.ago, ip_address: "203.0.113.24", user_agent: "StudioBrowser/1.0" },
+    { actor: nil, occurred_at: 8.days.ago, ip_address: "198.51.100.8", user_agent: "AnonymousBrowser/1.0" },
+    { actor: nil, occurred_at: 12.days.ago, ip_address: "198.51.100.9", user_agent: "AnonymousBrowser/1.0" },
+    { actor: owner, occurred_at: 45.days.ago, ip_address: "203.0.113.10", user_agent: "StudioBrowser/1.0" }
+  ].each do |row|
+    RecordingStudioDownloadable::DownloadLog.record!(
+      recording: recording,
+      action: action,
+      export_scope: scope,
+      actor: row[:actor],
+      ip_address: row[:ip_address],
+      user_agent: row[:user_agent],
+      occurred_at: row[:occurred_at]
+    )
+  end
+end
+
 find_or_record_child = lambda do |recordable, root_recording, parent_recording|
   RecordingStudio::Recording.find_by(
     root_recording: root_recording,
@@ -61,6 +85,18 @@ begin
     RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
   end
 
+  locked_workspace = Workspace.find_or_create_by!(name: "Locked Workspace")
+  locked_recording = RecordingStudio.root_recording_for(locked_workspace)
+
+  colleague = User.find_or_create_by!(email: "colleague@example.com") do |record|
+    record.password = "Password"
+    record.password_confirmation = "Password"
+  end
+
+  if root_recording.downloadable_download_logs.none?
+    seed_download_logs.call(root_recording, user, colleague)
+  end
+
   stored = RecordingStudioDownloadable::Sources::Attachments.call(press_kit_recording)
   if stored.empty?
     blob = ActiveStorage::Blob.create_and_upload!(
@@ -79,9 +115,11 @@ ensure
   Current.actor = previous_actor
 end
 
+puts "Seeded: Locked Workspace (no access for admin, shows the download fallback)"
 puts "Seeded: admin@admin.com / Password"
 puts "Seeded: Workspace '#{workspace.name}' with root recording ##{root_recording.id}"
 puts "Seeded: Workspace '#{accessible_workspace.name}' with root recording ##{accessible_root_recording.id}"
 puts "Seeded: Workspace '#{private_workspace.name}' with root recording ##{private_root_recording.id}"
 puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
 puts "Seeded: Press kit '#{press_kit.name}'"
+puts "Seeded: Locked recording ##{locked_recording.id}"
