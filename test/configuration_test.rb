@@ -79,6 +79,22 @@ class ConfigurationTest < Minitest::Test
     assert_raises(ArgumentError) { @configuration.register_access_denied_component(:download, nil) }
   end
 
+  def test_download_gates_register_per_action
+    gate = Object.new
+    other = Object.new
+    @configuration.register_download_gate(:"presskits.kit_download", gate)
+    @configuration.register_download_gate(:"workspaces.download", other)
+
+    assert_equal gate, @configuration.download_gate_for(:"presskits.kit_download")
+    assert_equal other, @configuration.download_gate_for("workspaces.download")
+    assert_nil @configuration.download_gate_for(:"pages.download")
+  end
+
+  def test_download_gate_requires_an_action_and_gate
+    assert_raises(ArgumentError) { @configuration.register_download_gate(nil, Object.new) }
+    assert_raises(ArgumentError) { @configuration.register_download_gate(:download, nil) }
+  end
+
   def test_debounce_wait_clamps_to_thirty_through_sixty_seconds
     @configuration.content_change_debounce = 5.seconds
     assert_equal 30.seconds, @configuration.debounce_wait

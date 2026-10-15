@@ -111,6 +111,23 @@ begin
     )
     raise "Failed to seed press kit logo" if result.blank?
   end
+
+  gated_workspace = Workspace.find_or_create_by!(name: "Gated Download")
+  gated_recording = RecordingStudio.root_recording_for(gated_workspace)
+  RecordingStudioAccessible.bootstrap_owner_access!(recording: gated_recording, actor: user)
+  if RecordingStudioDownloadable::Sources::Attachments.call(gated_recording).empty?
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: StringIO.new("notes for the gated zip"),
+      filename: "notes.txt",
+      content_type: "text/plain"
+    )
+    result = gated_recording.record_attachment_upload(
+      signed_blob_id: blob.signed_id,
+      actor: user,
+      name: "notes"
+    )
+    raise "Failed to seed gated download file" if result.blank?
+  end
 ensure
   Current.actor = previous_actor
 end
@@ -123,3 +140,4 @@ puts "Seeded: Workspace '#{private_workspace.name}' with root recording ##{priva
 puts "Seeded: Folder '#{folder.name}' and page '#{page.title}'"
 puts "Seeded: Press kit '#{press_kit.name}'"
 puts "Seeded: Locked recording ##{locked_recording.id}"
+puts "Seeded: Gated Download ##{gated_recording.id}"

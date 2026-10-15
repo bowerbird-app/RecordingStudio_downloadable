@@ -15,6 +15,10 @@ module RecordingStudioDownloadable
         return downloadable_access_denied_fallback(recording, actor: actor, action: action)
       end
 
+      if downloadable_gate_blocking?(recording, actor, action)
+        return downloadable_gate_component(recording, actor: actor, action: action)
+      end
+
       return unless defined?(FlatPack::Button::Component)
 
       path = downloadable_package_path_for(recording)
@@ -60,6 +64,27 @@ module RecordingStudioDownloadable
     end
 
     private
+
+    def downloadable_gate_blocking?(recording, actor, action)
+      gate = RecordingStudioDownloadable::DownloadGate.for_action(action)
+      RecordingStudioDownloadable::DownloadGate.blocking?(
+        gate,
+        recording: recording,
+        actor: actor,
+        request: respond_to?(:request, true) ? request : nil
+      )
+    end
+
+    def downloadable_gate_component(recording, actor:, action:)
+      gate = RecordingStudioDownloadable::DownloadGate.for_action(action)
+      return unless gate.respond_to?(:component)
+
+      component = gate.component
+      return if component.blank?
+
+      component_class = component.is_a?(String) ? component.constantize : component
+      render component_class.new(recording: recording, actor: actor, action: action)
+    end
 
     def downloadable_access_denied_fallback(recording, actor:, action:)
       component = RecordingStudioDownloadable.configuration.access_denied_component_for(action)

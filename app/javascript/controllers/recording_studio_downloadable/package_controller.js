@@ -3,7 +3,9 @@ import { Controller } from "@hotwired/stimulus"
 // Download clicks never navigate the top window to GET /package.
 // Status is polled at package/status until a current (non-stale) archive is
 // ready, then the authorized GET runs in a hidden iframe so a 302 to the
-// signed blob URL does not replace the Pages UI. Stale/missing packages POST
+// signed blob URL does not replace the Pages UI. A 409 from that GET carries
+// continuation_url for a host pre-download step; the top window follows it.
+// The form is never loaded in the hidden iframe. Stale/missing packages POST
 // generate when the actor is authorized for the download action.
 export default class extends Controller {
   static values = {
@@ -158,9 +160,29 @@ export default class extends Controller {
     const iframe = document.createElement("iframe")
     iframe.hidden = true
     iframe.setAttribute("data-turbo", "false")
+    iframe.addEventListener("load", () => this.leaveForDownloadGate(iframe))
     iframe.src = url
     document.body.appendChild(iframe)
     window.setTimeout(() => iframe.remove(), 60_000)
+  }
+
+  leaveForDownloadGate(iframe) {
+    let continuationUrl
+    try {
+      const text = iframe.contentDocument?.body?.innerText || ""
+      const start = text.indexOf("{")
+      const end = text.lastIndexOf("}")
+      if (start === -1 || end <= start) return
+
+      continuationUrl = JSON.parse(text.slice(start, end + 1)).continuation_url
+    } catch (_error) {
+      return
+    }
+
+    if (typeof continuationUrl !== "string" || continuationUrl.length === 0) return
+
+    iframe.remove()
+    window.top.location.assign(continuationUrl)
   }
 
   showReady() {

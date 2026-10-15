@@ -18,6 +18,16 @@ module DownloadableTestHelper
     RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: actor)
   end
 
+  def with_download_gate(action, gate)
+    config = RecordingStudioDownloadable.configuration
+    previous = config.download_gates.dup
+    config.download_gates.clear
+    config.register_download_gate(action, gate) unless gate.nil?
+    yield
+  ensure
+    config.download_gates.replace(previous)
+  end
+
   def with_action_audience(action, settings)
     audiences = RecordingStudioAccessible.configuration.action_audiences
     previous = audiences.to_h

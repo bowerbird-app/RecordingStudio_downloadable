@@ -1,0 +1,10 @@
+<% dummy_page_nav(title: "Before you download", back_url: root_path) %>
+
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Before you download",
+  subtitle: "Tell us who you are, then confirm.",
+  variant: :h1
+) %>
+
+<%= recording_studio_downloadable_button(@recording) %>
+<%= recording_studio_downloadable_history_link(@recording) %>

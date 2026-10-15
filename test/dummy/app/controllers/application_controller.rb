@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
 
   before_action :authenticate_user!
   before_action :set_current_actor
+  before_action :remember_download_gate
 
   private
 
@@ -21,5 +22,9 @@ class ApplicationController < ActionController::Base
 
   def set_current_actor
     Current.actor = current_user
+  end
+
+  def remember_download_gate
+    Current.download_gate = session[WorkspaceDownloadGate::SESSION_KEY]
   end
 end

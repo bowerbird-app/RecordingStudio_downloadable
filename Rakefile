@@ -18,6 +18,7 @@ DUMMY_TEST_FILES = [
   File.expand_path("test/domain_hook_test.rb", __dir__),
   File.expand_path("test/locales_test.rb", __dir__),
   File.expand_path("test/download_logs_test.rb", __dir__),
+  File.expand_path("test/download_gate_test.rb", __dir__),
   File.expand_path("test/download_history_test.rb", __dir__)
 ].freeze
 DUMMY_GEMFILE = File.expand_path("test/dummy/Gemfile", __dir__)
@@ -39,6 +40,7 @@ ROOT_TEST_EXCLUSIONS = %w[
   test/domain_hook_test.rb
   test/locales_test.rb
   test/download_logs_test.rb
+  test/download_gate_test.rb
   test/download_history_test.rb
   test/rename_verification_test.rb
 ].freeze

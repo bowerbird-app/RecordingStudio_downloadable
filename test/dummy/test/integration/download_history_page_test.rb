@@ -42,7 +42,8 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
                              password_confirmation: "Password")
     RecordingStudioDownloadable::DownloadLog.record!(
       recording: @recording, action: @recording.downloadable_action, export_scope: "public",
-      actor: @user, occurred_at: 1.day.ago, ip_address: "203.0.113.10", user_agent: "StudioBrowser/1.0"
+      actor: @user, occurred_at: 1.day.ago, ip_address: "203.0.113.10", user_agent: "StudioBrowser/1.0",
+      metadata: { "recipient" => "zigzag-recipient", "confirmed" => true }
     )
     RecordingStudioDownloadable::DownloadLog.record!(
       recording: @recording, action: @recording.downloadable_action, export_scope: "public",
@@ -71,6 +72,7 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, ">Download<"
     refute_includes response.body, "203.0.113.10"
     refute_includes response.body, "AnonymousBrowser/1.0"
+    refute_includes response.body, "zigzag-recipient"
 
     get recording_studio_admin_admin.screen_chart_path("download_logs", recording_id: @recording.id),
         headers: { "Turbo-Frame" => "screen-chart" }

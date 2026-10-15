@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-15
+
+### Added
+
+- `register_download_gate` so a host can pause `PackagesController#show` until its own steps are done. HTML redirects to `continuation_url`. Iframe and XHR requests get `409` with `{ "continuation_url": "..." }`. The autostart flag is cleared. Rate limits, enqueue, and the download log wait until the gate is satisfied. `create` and `status` stay gate-free.
+- The download button renders the gate component, and does not mount the poller, while the person is allowed and the gate is unsatisfied.
+- The package Stimulus controller sends the top window to `continuation_url` on a `409` from `show`.
+- `jsonb` `metadata` on `recording_studio_downloadable_download_logs` (default `{}`, no GIN index). `DownloadLog.record!` keeps a flat sanitized snapshot from `metadata_for` at the existing log point, immediately before the signed archive URL. Bad entries are dropped and reported. The download still proceeds. History stays when and who.
+
+### Upgrade notes
+
+- Bump to `0.7.0` and run the new download-logs migration (`metadata jsonb`, default `{}`). Existing rows get `{}`. Nothing else is backfilled.
+- Actions with no registered gate behave as before. Hosts that want a pre-download step call `register_download_gate`. In-progress answers stay on the host. Downloadable does not open a draft row.
+- Metadata keys must match `[a-z0-9_]{1,40}` (at most 32), values must be scalars, strings at most 200 characters, and the document at most 2KB. History and metrics do not show metadata.
+- Presskits image archives still bypass the gate until Presskits routes them through a Downloadable action. Presskits builds the form and registers `Presskits::KitDownloadGate`.
+
 ## [0.6.0] - 2026-10-14
 
 ### Added

@@ -28,6 +28,8 @@ Rails.application.routes.draw do
   get "docs/methods", to: "docs#methods", as: :docs_methods
   resources :pages, only: [ :index, :new, :create ]
   resources :press_kits, only: [ :index, :edit, :update ]
+  get "download_gate", to: "download_gates#show", as: :download_gate
+  patch "download_gate", to: "download_gates#update"
 
   # Defines the root path route ("/")
   root "home#index"
