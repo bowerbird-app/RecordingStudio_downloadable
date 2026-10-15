@@ -25,7 +25,7 @@ module RecordingStudioDownloadable
       style = button_options.fetch(:style, :primary)
       size = button_options.fetch(:size, :md)
       pending = downloadable_pending?(recording)
-      auto_download = downloadable_autostart?(recording) && recording.downloadable_ready?
+      auto_download = downloadable_should_autostart?(recording, button_options.delete(:autostart))
       can_generate = downloadable_can_generate?(recording)
 
       control_options = button_options.merge(
@@ -172,6 +172,12 @@ module RecordingStudioDownloadable
 
     def downloadable_package_status_path_for(recording)
       downloadable_routes.recording_package_status_path(recording)
+    end
+
+    def downloadable_should_autostart?(recording, forced)
+      return true if forced
+
+      downloadable_autostart?(recording) && recording.downloadable_ready?
     end
 
     def downloadable_autostart?(recording)

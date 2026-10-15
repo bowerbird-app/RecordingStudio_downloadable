@@ -1,0 +1,27 @@
+<% if WorkspaceDownloadGate.confirmed?(WorkspaceDownloadGate.entry_for(recording, WorkspaceDownloadGate.entries(Current.download_gate))) %>
+  <%= render FlatPack::Alert::Component.new(
+    title: "Your download is ready.",
+    description: "The ZIP is starting now.",
+    style: :success
+  ) %>
+  <%= recording_studio_downloadable_button(recording, autostart: true) %>
+<% else %>
+  <% if flash[:alert].present? %>
+    <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :warning) %>
+  <% end %>
+  <%= form_with url: download_gate_path, method: :patch do %>
+    <%= hidden_field_tag :recording_id, recording.id %>
+    <%= render FlatPack::Checkbox::Component.new(
+      name: "confirmed",
+      label: "Send me the ZIP",
+      help_text: "One check, then the files.",
+      required: true
+    ) %>
+    <%= render FlatPack::Button::Component.new(
+      text: "Continue",
+      style: :primary,
+      size: :md,
+      type: "submit"
+    ) %>
+  <% end %>
+<% end %>

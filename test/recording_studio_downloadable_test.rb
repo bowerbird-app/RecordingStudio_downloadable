@@ -180,6 +180,8 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes controller, "triggerDownload"
     assert_includes controller, "canGenerate"
     assert_includes controller, "continuation_url"
+    assert_includes controller, "recording-studio-downloadable:download-gate"
+    assert_includes controller, "defaultPrevented"
     assert_includes controller, "window.top.location.assign"
   end
 

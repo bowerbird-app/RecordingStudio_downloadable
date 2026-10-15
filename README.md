@@ -137,9 +137,9 @@ Register a class or any object. Every method is optional:
 - The autostart session flag is cleared, so the next render does not iframe the form.
 - The rate limit is not incremented, nothing is enqueued, and no download log is written.
 
-`create` and `status` stay gate-free. The Stimulus controller, on a `409` from `show`, sends the top window to `continuation_url`. It does not load the form in the hidden iframe.
+`create` and `status` stay gate-free. The Stimulus controller, on a `409` from `show`, fires a cancelable `recording-studio-downloadable:download-gate` event with `detail.continuationUrl`. If the page calls `preventDefault`, the top window stays put and the host can open its own UI (a modal, for example). Otherwise the top window goes to `continuation_url`. The form is never loaded in the hidden iframe.
 
-When the person is allowed and the gate is unsatisfied, `recording_studio_downloadable_button` renders `component` (if the gate provides one) instead of the download control, and it does not mount the poller. Allowed and satisfied keeps the current button. Denied still uses the access-denied component.
+When the person is allowed and the gate is unsatisfied, `recording_studio_downloadable_button` renders `component` (if the gate provides one) instead of the download control, and it does not mount the poller. That component can be an ordinary Download button which opens the host's modal. Allowed and satisfied keeps the current button. Denied still uses the access-denied component. The dummy's Gated Download workspace does this: the button opens a confirmation modal, and the ready step in that modal starts the ZIP.
 
 In-progress answers stay with the host. Downloadable does not open a draft row.
 

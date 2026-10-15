@@ -4,8 +4,10 @@ import { Controller } from "@hotwired/stimulus"
 // Status is polled at package/status until a current (non-stale) archive is
 // ready, then the authorized GET runs in a hidden iframe so a 302 to the
 // signed blob URL does not replace the Pages UI. A 409 from that GET carries
-// continuation_url for a host pre-download step; the top window follows it.
-// The form is never loaded in the hidden iframe. Stale/missing packages POST
+// continuation_url. The page can cancel
+// recording-studio-downloadable:download-gate and open its own UI; otherwise
+// the top window follows continuation_url. The form is never loaded in the
+// hidden iframe. Stale/missing packages POST
 // generate when the actor is authorized for the download action.
 export default class extends Controller {
   static values = {
@@ -27,7 +29,7 @@ export default class extends Controller {
     this.maxAttempts = 90
 
     if (this.autoDownloadValue && this.downloadUrlValue && !this.pollValue) {
-      this.triggerDownload(this.downloadUrlValue)
+      this.beginDownload()
       return
     }
 
@@ -182,7 +184,19 @@ export default class extends Controller {
     if (typeof continuationUrl !== "string" || continuationUrl.length === 0) return
 
     iframe.remove()
+    if (this.holdDownloadGate(continuationUrl)) return
+
     window.top.location.assign(continuationUrl)
+  }
+
+  holdDownloadGate(continuationUrl) {
+    const event = new CustomEvent("recording-studio-downloadable:download-gate", {
+      bubbles: true,
+      cancelable: true,
+      detail: { continuationUrl }
+    })
+    this.element.dispatchEvent(event)
+    return event.defaultPrevented
   }
 
   showReady() {

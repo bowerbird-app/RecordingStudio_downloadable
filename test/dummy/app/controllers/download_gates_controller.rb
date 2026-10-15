@@ -10,14 +10,11 @@ class DownloadGatesController < ApplicationController
     recording = gated_recording
     return if performed?
 
-    entries = WorkspaceDownloadGate.entries(session[WorkspaceDownloadGate::SESSION_KEY])
-    entry = entries[recording.id.to_s] || {}
-    message, flash = store_step(entry)
-    entries[recording.id.to_s] = entry
-    session[WorkspaceDownloadGate::SESSION_KEY] = entries
-    Current.download_gate = entries
+    remember_confirmation(recording)
+    @recording = recording
+    return render_step(recording) if turbo_frame_request?
 
-    redirect_to download_gate_path(recording_id: recording.id), flash => message
+    redirect_to download_gate_path(recording_id: recording.id)
   end
 
   private
@@ -40,34 +37,23 @@ class DownloadGatesController < ApplicationController
     recording
   end
 
-  def store_step(entry)
-    if params[:step].to_s == "confirm"
-      confirm_step(entry)
-    else
-      name_step(entry)
-    end
-  end
-
-  def name_step(entry)
-    recipient = params[:recipient].to_s.strip
-    if recipient.blank?
-      entry["recipient"] = nil
-      entry["confirmed"] = false
-      return ["Add your name first.", :alert]
-    end
-
-    entry["recipient"] = recipient[0, 200]
-    entry["confirmed"] = false
-    ["One more step.", :notice]
-  end
-
-  def confirm_step(entry)
-    if entry["recipient"].present? && params[:confirmed].to_s == "1"
+  def remember_confirmation(recording)
+    entries = WorkspaceDownloadGate.entries(session[WorkspaceDownloadGate::SESSION_KEY])
+    entry = entries[recording.id.to_s] || {}
+    if params[:confirmed].to_s == "1"
       entry["confirmed"] = true
-      ["You can download it now.", :notice]
+      session[:recording_studio_downloadable_autostart] = recording.id
+      flash.now[:notice] = "Your download is ready."
     else
       entry["confirmed"] = false
-      ["Confirm to continue.", :alert]
+      flash.now[:alert] = "Check the box to continue."
     end
+    entries[recording.id.to_s] = entry
+    session[WorkspaceDownloadGate::SESSION_KEY] = entries
+    Current.download_gate = entries
+  end
+
+  def render_step(recording)
+    render partial: "download_gates/frame", locals: { recording: recording }
   end
 end

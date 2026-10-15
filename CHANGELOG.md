@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `register_download_gate` so a host can pause `PackagesController#show` until its own steps are done. HTML redirects to `continuation_url`. Iframe and XHR requests get `409` with `{ "continuation_url": "..." }`. The autostart flag is cleared. Rate limits, enqueue, and the download log wait until the gate is satisfied. `create` and `status` stay gate-free.
 - The download button renders the gate component, and does not mount the poller, while the person is allowed and the gate is unsatisfied.
-- The package Stimulus controller sends the top window to `continuation_url` on a `409` from `show`.
+- The package Stimulus controller sends the top window to `continuation_url` on a `409` from `show`, unless the page cancels `recording-studio-downloadable:download-gate` and keeps the person there (for example to open a modal).
 - `jsonb` `metadata` on `recording_studio_downloadable_download_logs` (default `{}`, no GIN index). `DownloadLog.record!` keeps a flat sanitized snapshot from `metadata_for` at the existing log point, immediately before the signed archive URL. Bad entries are dropped and reported. The download still proceeds. History stays when and who.
 
 ### Upgrade notes

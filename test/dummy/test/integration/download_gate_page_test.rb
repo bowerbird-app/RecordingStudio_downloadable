@@ -18,42 +18,43 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     sign_in @user
   end
 
-  test "the dummy gate form blocks then logs metadata the history screen hides" do
+  test "the dummy gate button opens a confirmation modal then logs a ready download" do
     get download_gate_path(recording_id: @recording.id)
 
     assert_response :success
+    assert_includes response.body, "Gated Download"
+    assert_includes response.body, ">Download<"
     assert_includes response.body, "Before you download"
-    assert_includes response.body, "Your name"
-    refute_includes response.body, "recording-studio-downloadable--package"
-
-    patch download_gate_path, params: { recording_id: @recording.id, step: "name", recipient: " " }
-    follow_redirect!
-    assert_includes response.body, "Add your name first."
-
-    patch download_gate_path, params: {
-      recording_id: @recording.id, step: "name", recipient: "zigzag-recipient"
-    }
-    follow_redirect!
     assert_includes response.body, "Send me the ZIP"
-    assert_includes response.body, "For zigzag-recipient."
+    assert_includes response.body, %(data-modal-id="#{WorkspaceDownloadGate.modal_id(@recording)}")
+    refute_includes response.body, "recording-studio-downloadable--package"
+    refute_includes response.body, "Your name"
+
+    assert_no_difference -> { logs.count } do
+      patch frame_path, params: { recording_id: @recording.id }, headers: frame_headers
+    end
+    assert_includes response.body, "Check the box to continue."
+    refute_includes response.body, "Your download is ready."
 
     assert_no_difference -> { logs.count } do
       get recording_studio_downloadable.recording_package_path(@recording)
     end
     assert_redirected_to "/download_gate?recording_id=#{@recording.id}"
 
-    patch "/download_gate", params: { recording_id: @recording.id, step: "confirm", confirmed: "1" }
-    follow_redirect!
-    assert_includes response.body, "Download"
+    patch frame_path, params: { recording_id: @recording.id, confirmed: "1" }, headers: frame_headers
+
+    assert_response :success
+    assert_includes response.body, "Your download is ready."
+    assert_includes response.body, "The ZIP is starting now."
     assert_includes response.body, "recording-studio-downloadable--package"
+    assert_includes response.body, 'auto-download-value="true"'
 
     perform_enqueued_jobs { @recording.downloadable_generate! }
 
     assert_difference -> { logs.count }, 1 do
       get recording_studio_downloadable.recording_package_path(@recording)
     end
-    assert_equal "zigzag-recipient", logs.order(:created_at).last.metadata["recipient"]
-    assert_equal true, logs.order(:created_at).last.metadata["confirmed"]
+    assert_equal({ "confirmed" => true }, logs.order(:created_at).last.metadata)
 
     get recording_studio_downloadable.recording_package_path(@recording)
     assert_equal 2, logs.count
@@ -63,7 +64,17 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, @user.email
-    refute_includes response.body, "zigzag-recipient"
+    refute_includes response.body, "Send me the ZIP"
+  end
+
+  test "a full page confirm returns to the download button" do
+    patch "/download_gate", params: { recording_id: @recording.id, confirmed: "1" }
+
+    assert_redirected_to "/download_gate?recording_id=#{@recording.id}"
+    follow_redirect!
+    assert_includes response.body, "recording-studio-downloadable--package"
+    assert_includes response.body, ">Download<"
+    refute_includes response.body, "Send me the ZIP"
   end
 
   test "someone without access cannot open the gate form" do
@@ -77,6 +88,14 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def frame_path
+    "/download_gate"
+  end
+
+  def frame_headers
+    { "Turbo-Frame" => WorkspaceDownloadGate.frame_id(@recording) }
+  end
 
   def logs
     RecordingStudioDownloadable::DownloadLog.where(recording_id: @recording.id)

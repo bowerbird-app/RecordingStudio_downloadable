@@ -31,7 +31,7 @@ class WorkspaceDownloadGate
     entry = entry_for(recording, entries(Current.download_gate))
     return {} unless confirmed?(entry)
 
-    { "recipient" => entry["recipient"].to_s, "confirmed" => true }
+    { "confirmed" => true }
   end
 
   def self.entries(store)
@@ -49,6 +49,14 @@ class WorkspaceDownloadGate
   end
 
   def self.confirmed?(entry)
-    entry["confirmed"] == true && entry["recipient"].present?
+    entry["confirmed"] == true
+  end
+
+  def self.modal_id(recording)
+    "download-gate-modal-#{recording.id}"
+  end
+
+  def self.frame_id(recording)
+    "download-gate-step-#{recording.id}"
   end
 end
