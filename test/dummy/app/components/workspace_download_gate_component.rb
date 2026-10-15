@@ -40,10 +40,14 @@ class WorkspaceDownloadGateComponent < ViewComponent::Base
       FlatPack::Modal::Component.new(
         id: WorkspaceDownloadGate.modal_id(@recording),
         title: "Before you download",
-        size: :sm
+        size: :md
       )
     ) do |modal|
-      modal.body { helpers.render("download_gates/frame", recording: @recording) }
+      modal.body do
+        helpers.render(FlatPack::Card::Body::Component.new(padding: :lg)) do
+          helpers.render("download_gates/frame", recording: @recording)
+        end
+      end
     end
   end
 end

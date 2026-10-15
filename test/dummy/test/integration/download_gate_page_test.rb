@@ -27,6 +27,8 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Before you download"
     assert_includes response.body, "Send me the ZIP"
     assert_includes response.body, %(data-modal-id="#{WorkspaceDownloadGate.modal_id(@recording)}")
+    assert_includes response.body, "p-[var(--card-padding-lg)]"
+    assert_includes response.body, "gap-6"
     refute_includes response.body, "recording-studio-downloadable--package"
     refute_includes response.body, "Your name"
 
@@ -46,6 +48,7 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Your download is ready."
     assert_includes response.body, "The ZIP is starting now."
+    assert_includes response.body, "gap-6"
     assert_includes response.body, "recording-studio-downloadable--package"
     assert_includes response.body, 'auto-download-value="true"'
 
