@@ -22,6 +22,7 @@ module RecordingStudioDownloadable
 
     before_validation :truncate_user_agent
     before_validation :assign_defaults
+    before_validation :sanitize_metadata_column
     before_update :raise_append_only_error
     before_destroy :raise_append_only_error
 
@@ -31,7 +32,7 @@ module RecordingStudioDownloadable
 
     # rubocop:disable-next Metrics/ParameterLists
     def self.record!(recording:, action:, export_scope:, actor: nil, impersonator: nil,
-                     ip_address: nil, user_agent: nil, occurred_at: nil)
+                     ip_address: nil, user_agent: nil, occurred_at: nil, metadata: nil)
       create!(
         recording: recording,
         action: action.to_s,
@@ -40,8 +41,12 @@ module RecordingStudioDownloadable
         impersonator: impersonator,
         ip_address: ip_address,
         user_agent: user_agent,
-        occurred_at: occurred_at || Time.current
+        occurred_at: occurred_at || Time.current, metadata: metadata
       )
+    end
+
+    def metadata=(raw)
+      super(DownloadLogMetadata.clean(raw))
     end
 
     def readonly?
@@ -71,6 +76,11 @@ module RecordingStudioDownloadable
     def assign_defaults
       self.export_scope = "public" if export_scope.blank?
       self.occurred_at ||= Time.current
+      self.metadata = {} if metadata.nil?
+    end
+
+    def sanitize_metadata_column
+      self.metadata = DownloadLogMetadata.clean(metadata)
     end
 
     def raise_append_only_error

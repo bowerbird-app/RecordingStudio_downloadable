@@ -22,4 +22,8 @@ RecordingStudioDownloadable.configure do |config|
   # Host before_actions inherited from ApplicationController that would block
   # anonymous downloads. Authorization still runs on every engine endpoint.
   # config.skip_host_before_actions = %i[authenticate_user!]
+
+  # Optional pre-download step. The host owns the form. Unregistered actions
+  # download as usual. See README "Pre-download gate".
+  # config.register_download_gate :"presskits.kit_download", Presskits::KitDownloadGate
 end

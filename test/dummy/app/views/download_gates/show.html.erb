@@ -1,0 +1,10 @@
+<% dummy_page_nav(title: "Gated Download", back_url: root_path) %>
+
+<%= render FlatPack::PageTitle::Component.new(
+  title: "Gated Download",
+  subtitle: "Click Download, then confirm.",
+  variant: :h1
+) %>
+
+<%= recording_studio_downloadable_button(@recording) %>
+<%= recording_studio_downloadable_history_link(@recording) %>

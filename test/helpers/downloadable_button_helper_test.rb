@@ -70,6 +70,15 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     assert_includes html, "package-timeout-text-value="
   end
 
+  test "a block keeps package polling and skips the download button" do
+    html = recording_studio_downloadable_button(@recording, autostart: true) { "Fetching your files…" }
+
+    assert_includes html, "Fetching your files…"
+    assert_includes html, "recording-studio-downloadable--package"
+    assert_includes html, 'auto-download-value="true"'
+    refute_includes html, ">Download<"
+  end
+
   test "ready package button is a turbo-free zip get" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
     html = recording_studio_downloadable_button(@recording.reload)
@@ -142,6 +151,43 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     refute_includes html, "Ask for access"
   end
 
+  test "an unsatisfied gate replaces the download control and does not mount the poller" do
+    with_download_gate(:"workspaces.download", UnsatisfiedDownloadGate) do
+      html = recording_studio_downloadable_button(@recording.reload).to_s
+
+      assert_includes html, "gate-form:workspaces.download"
+      refute_includes html, "recording-studio-downloadable--package"
+      refute_includes html, "Download"
+    end
+  end
+
+  test "a satisfied gate still renders the download button" do
+    with_download_gate(:"workspaces.download", SatisfiedDownloadGate) do
+      html = recording_studio_downloadable_button(@recording.reload).to_s
+
+      assert_includes html, "Download"
+      refute_includes html, "gate-form"
+    end
+  end
+
+  test "an unsatisfied gate with no component renders nothing" do
+    with_download_gate(:"workspaces.download", MetadataOnlyDownloadGate) do
+      html = recording_studio_downloadable_button(@recording.reload).to_s
+
+      assert_equal "", html
+    end
+  end
+
+  test "a denied download ignores an unsatisfied gate" do
+    with_download_gate(:"workspaces.download", UnsatisfiedDownloadGate) do
+      Current.actor = nil
+      html = recording_studio_downloadable_button(@recording.reload).to_s
+
+      assert_includes html, "Ask for access"
+      refute_includes html, "gate-form"
+    end
+  end
+
   test "history link is shown to editors and hidden from viewers" do
     html = recording_studio_downloadable_history_link(@recording).to_s
 
@@ -198,6 +244,45 @@ class DownloadableButtonHelperTest < ActionView::TestCase
       manager_actor: @actor
     )
     raise result.error if result.failure?
+  end
+end
+
+class UnsatisfiedDownloadGate
+  def self.satisfied?(**)
+    false
+  end
+
+  def self.component
+    GateFormComponent
+  end
+end
+
+class SatisfiedDownloadGate
+  def self.satisfied?(**)
+    true
+  end
+
+  def self.component
+    GateFormComponent
+  end
+end
+
+class MetadataOnlyDownloadGate
+  def self.satisfied?(**)
+    false
+  end
+end
+
+class GateFormComponent < ViewComponent::Base
+  def initialize(recording:, actor:, action:)
+    super()
+    @action = action
+    @recording = recording
+    @actor = actor
+  end
+
+  def call
+    "gate-form:#{@action}".html_safe
   end
 end
 

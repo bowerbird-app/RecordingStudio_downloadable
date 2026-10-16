@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_14_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_15_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -150,6 +150,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_000003) do
     t.string "user_agent"
     t.datetime "occurred_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "created_at", null: false
+    t.jsonb "metadata", default: {}, null: false
     t.index ["action", "occurred_at"], name: "index_rs_download_logs_on_action_and_occurred_at"
     t.index ["actor_type", "actor_id", "occurred_at"], name: "index_rs_download_logs_on_actor_and_occurred_at"
     t.index ["recording_id", "occurred_at", "created_at"], name: "index_rs_download_logs_on_recording_and_timeline", order: { occurred_at: :desc, created_at: :desc }

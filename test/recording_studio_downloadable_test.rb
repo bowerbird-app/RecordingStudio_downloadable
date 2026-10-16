@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.6.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.7.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -92,6 +92,15 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes schema, 't.string "action"'
     assert_includes schema, 't.string "export_scope"'
     assert_includes schema, "idx_rs_downloadable_packages_identity"
+    assert_includes schema, 't.jsonb "metadata", default: {}, null: false'
+    metadata_migration = File.read(
+      File.expand_path(
+        "../db/migrate/20261015000004_add_metadata_to_recording_studio_downloadable_download_logs.rb",
+        __dir__
+      )
+    )
+    assert_includes metadata_migration, "add_column :recording_studio_downloadable_download_logs, :metadata, :jsonb"
+    refute_includes metadata_migration, "gin"
     assert_includes schema, 'create_table "recording_studio_access_constraints"'
     assert_includes schema, 'create_table "recording_studio_access_rules"'
     invitation_migration = File.read(
@@ -170,6 +179,22 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes controller, "package/status"
     assert_includes controller, "triggerDownload"
     assert_includes controller, "canGenerate"
+    assert_includes controller, "continuation_url"
+    assert_includes controller, "recording-studio-downloadable:download-gate"
+    assert_includes controller, "defaultPrevented"
+    assert_includes controller, "window.top.location.assign"
+    assert_includes controller, "data-downloadable-progress"
+    assert_includes controller, "data-downloadable-started"
+    assert_includes controller, "data-downloadable-progress-label"
+    assert_includes controller, 'missing: [20, "Fetching your files…"]'
+    assert_includes controller, 'pending: [35, "Boxing them up…"]'
+    assert_includes controller, 'processing: [70, "Adding some bubble wrap…"]'
+    assert_includes controller, 'ready: [100, "Writing you a sentimental note…"]'
+    refute_includes controller, "data-downloadable-progress-ready"
+    refute_includes controller, "Getting your files together."
+    refute_includes controller, '"Preparing"'
+    refute_includes controller, '"Ready."'
+    assert_includes controller, "showProgress"
   end
 
   def test_packages_show_redirects_to_signed_blob_url_instead_of_buffering
@@ -313,6 +338,10 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "recording_studio_downloadable_download_logs"
     assert_includes readme, "downloadable.view_logs"
     assert_includes readme, "register_access_denied_component"
+    assert_includes readme, "register_download_gate"
+    assert_includes readme, "continuation_url"
+    assert_includes readme, "metadata_for"
+    assert_includes readme, "[a-z0-9_]{1,40}"
     assert_includes readme, "MetricsRegistration.context_for"
     assert_includes readme, "ImageArchivesController"
     refute_includes readme, "Non-granted actors never enqueue"

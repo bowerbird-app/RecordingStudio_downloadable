@@ -54,6 +54,24 @@
     <% end %>
   <% end %>
 
+  <% if @gated_recording %>
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+      <% card.header do %>
+        <%= render FlatPack::PageTitle::Component.new(
+          title: "Gated Download",
+          subtitle: "Click Download, then confirm.",
+          variant: :h3,
+          class: "mb-0 pb-0"
+        ) %>
+      <% end %>
+
+      <% card.footer do %>
+        <%= recording_studio_downloadable_button(@gated_recording) %>
+        <%= recording_studio_downloadable_history_link(@gated_recording) %>
+      <% end %>
+    <% end %>
+  <% end %>
+
   <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
     <% card.header do %>
       <%= render FlatPack::PageTitle::Component.new(

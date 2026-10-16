@@ -9,4 +9,8 @@ Rails.application.config.to_prepare do
     :"workspaces.download",
     DownloadAccessComponent
   )
+  RecordingStudioDownloadable.configuration.register_download_gate(
+    :"workspaces.download",
+    WorkspaceDownloadGate
+  )
 end

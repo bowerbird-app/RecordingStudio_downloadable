@@ -52,6 +52,7 @@ class DownloadLogsTest < ActionDispatch::IntegrationTest
     log = logs_for(@recording).first
     assert_equal @recording.downloadable_action.to_s, log.action
     assert_equal "public", log.export_scope
+    assert_equal({}, log.metadata)
     assert_equal @user, log.actor
     assert_nil log.impersonator
     assert_predicate log.ip_address, :present?
@@ -91,6 +92,67 @@ class DownloadLogsTest < ActionDispatch::IntegrationTest
     assert_equal @other, logs_for(@recording).sole.impersonator
   end
 
+  test "metadata keeps scalars and drops the rest" do
+    log = nil
+    warnings = capture_metadata_warnings do
+      log = RecordingStudioDownloadable::DownloadLog.record!(
+        recording: @recording, action: "workspaces.download", export_scope: "public",
+        actor: @user, metadata: mixed_metadata
+      )
+    end
+
+    assert_equal(
+      { "purpose" => "launch", "confirmed" => false, "count" => 2, "ratio" => 1.5, "note" => nil },
+      log.reload.metadata
+    )
+    assert_includes warnings, "download log metadata dropped"
+  end
+
+  test "metadata keeps at most 32 keys and 2KB" do
+    wide = 40.times.to_h { |index| [format("key_%02d", index), index] }
+    long = 16.times.to_h { |index| [format("blob_%02d", index), "b" * 200] }
+
+    warnings = capture_metadata_warnings do
+      wide_log = RecordingStudioDownloadable::DownloadLog.record!(
+        recording: @recording, action: "workspaces.download", export_scope: "public", metadata: wide
+      )
+      long_log = RecordingStudioDownloadable::DownloadLog.record!(
+        recording: @recording, action: "workspaces.download", export_scope: "public", metadata: long
+      )
+
+      assert_equal 32, wide_log.reload.metadata.size
+      assert_equal 0, wide_log.metadata["key_00"]
+      refute wide_log.metadata.key?("key_32")
+      assert_operator long_log.reload.metadata.size, :<, 16
+      assert_operator ActiveSupport::JSON.encode(long_log.metadata).bytesize, :<=, 2_048
+    end
+
+    assert_includes warnings, "download log metadata dropped"
+  end
+
+  test "metadata has no index" do
+    indexes = RecordingStudioDownloadable::DownloadLog.connection.indexes(
+      RecordingStudioDownloadable::DownloadLog.table_name
+    )
+
+    refute(indexes.any? { |index| Array(index.columns).include?("metadata") })
+  end
+
+  test "a non-hash metadata value is dropped and the row is still written" do
+    warnings = capture_metadata_warnings do
+      log = RecordingStudioDownloadable::DownloadLog.record!(
+        recording: @recording,
+        action: "workspaces.download",
+        export_scope: "public",
+        metadata: "nope"
+      )
+
+      assert_equal({}, log.reload.metadata)
+    end
+
+    assert_includes warnings, "expected a hash"
+  end
+
   test "user agents are truncated before save" do
     agent = "x" * (RecordingStudioDownloadable::DownloadLog::USER_AGENT_LIMIT + 40)
     log = RecordingStudioDownloadable::DownloadLog.record!(
@@ -112,6 +174,7 @@ class DownloadLogsTest < ActionDispatch::IntegrationTest
       actor: @user
     )
 
+    assert_raises(ActiveRecord::ReadOnlyRecord) { log.update!(metadata: { "purpose" => "nope" }) }
     assert_raises(ActiveRecord::ReadOnlyRecord) { log.update!(action: "nope") }
     assert_raises(ActiveRecord::ReadOnlyRecord) { log.destroy! }
     assert_raises(ActiveRecord::ReadOnlyRecord) { log.delete }
@@ -255,6 +318,32 @@ class DownloadLogsTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def mixed_metadata
+    {
+      purpose: "launch",
+      "confirmed" => false,
+      "count" => 2,
+      "ratio" => 1.5,
+      "note" => nil,
+      "Bad-Key" => "nope",
+      "nested" => { "a" => 1 },
+      "list" => [1],
+      "essay" => "e" * 201,
+      "infinite" => Float::INFINITY,
+      12 => "nope"
+    }
+  end
+
+  def capture_metadata_warnings
+    previous = Rails.logger
+    io = StringIO.new
+    Rails.logger = ActiveSupport::Logger.new(io)
+    yield
+    io.string
+  ensure
+    Rails.logger = previous
+  end
 
   def logs_for(recording)
     RecordingStudioDownloadable::DownloadLog.where(recording_id: recording.id)

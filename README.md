@@ -86,9 +86,10 @@ Rows live in `recording_studio_downloadable_download_logs` (`RecordingStudioDown
 | `impersonator_type` / `impersonator_id` | `Current.impersonator`, when set |
 | `ip_address` | Stored, never shown on the history screen |
 | `user_agent` | Stored, truncated to 512 characters, never shown on the history screen |
+| `metadata` | Opaque host snapshot from the download gate. Flat JSON, sanitized. Never shown on the history screen |
 | `occurred_at` | When the download started. Sort key |
 
-The only insert is in `PackagesController#show`, immediately before the signed `blob.url` redirect. By then the recording exists and is downloadable, the actor is authorized, the rate limit passed, and the package is ready and fingerprint-current. Nothing else writes a row: enqueue, status polling, ZIP jobs, denied requests, 429s, empty or stale or failed packages, button impressions, sign-in, or access-request clicks.
+The only insert is in `PackagesController#show`, immediately before the signed `blob.url` redirect. By then the recording exists and is downloadable, the actor is authorized, any download gate is satisfied, the rate limit passed, and the package is ready and fingerprint-current. Nothing else writes a row: enqueue, status polling, ZIP jobs, denied requests, 429s, an unsatisfied gate, empty or stale or failed packages, button impressions, sign-in, or access-request clicks. The insert includes sanitized `metadata` from the gate when the gate implements `metadata_for`.
 
 A row means the download was started. It does not mean the transfer finished. Repeats are logged again. A failed insert is reported and does not block the ZIP. The signed URL is never stored.
 
@@ -109,6 +110,50 @@ end
 ```
 
 The component is initialized with `recording:`, `actor:`, and `action:`. Downloadable only knows allowed versus denied. It does not invent an access-state machine. Hosts decide what “ask for access” looks like.
+
+## Pre-download gate
+
+A host can pause a download until its own steps are done. Downloadable does not know the questions. An action with no registered gate behaves as before.
+
+```ruby
+RecordingStudioDownloadable.configure do |config|
+  config.register_download_gate :"presskits.kit_download", Presskits::KitDownloadGate
+end
+```
+
+Register a class or any object. Every method is optional:
+
+| Method | Role |
+| --- | --- |
+| `satisfied?(recording:, actor:, request:)` | `true` when the host steps are done. Omit it and the gate does not block. |
+| `continuation_url(recording:, actor:, request:)` | Where an HTML `GET` of the package goes while the gate is still open. |
+| `component` | ViewComponent class, initialized with `recording:`, `actor:`, and `action:`. |
+| `metadata_for(recording:, actor:)` | Flat hash copied onto the download log when a real download starts. |
+
+`PackagesController#show` checks the gate after authorization and before the rate limit, the empty check, enqueue, and the log. While the gate is unsatisfied:
+
+- HTML `GET` redirects to `continuation_url`.
+- An iframe or XHR (`Accept: application/json`, `Sec-Fetch-Dest: iframe`, or `X-Requested-With`) gets `409` with `{ "continuation_url": "..." }`.
+- The autostart session flag is cleared, so the next render does not iframe the form.
+- The rate limit is not incremented, nothing is enqueued, and no download log is written.
+
+`create` and `status` stay gate-free. The Stimulus controller, on a `409` from `show`, fires a cancelable `recording-studio-downloadable:download-gate` event with `detail.continuationUrl`. If the page calls `preventDefault`, the top window stays put and the host can open its own UI (a modal, for example). Otherwise the top window goes to `continuation_url`. The form is never loaded in the hidden iframe.
+
+When the person is allowed and the gate is unsatisfied, `recording_studio_downloadable_button` renders `component` (if the gate provides one) instead of the download control, and it does not mount the poller. That component can be an ordinary Download button which opens the host's modal. Allowed and satisfied keeps the current button. Denied still uses the access-denied component. The dummy's Gated Download workspace does this: the button opens a confirmation modal. After the checkbox, that modal mounts the same package poller and shows a progress bar for waiting, building, and ready. When the archive download starts, the bar is replaced with a started confirmation. Pass a block to `recording_studio_downloadable_button` to supply that chrome; without a block the helper still renders the Download button. A `data-downloadable-progress` element inside the poller opts into this status UI. A cached ZIP may cross the bar quickly, then still shows the ready line before the confirmation. The poller writes every status, including ready, into `[data-downloadable-progress-label]`.
+
+In-progress answers stay with the host. Downloadable does not open a draft row.
+
+### Metadata
+
+`metadata` is `jsonb`, default `{}`, with no GIN index. `DownloadLog.record!` keeps a flat snapshot and drops the rest:
+
+- at most 32 keys
+- each key matches `[a-z0-9_]{1,40}`
+- values are scalars: string, number, boolean, or null
+- strings at most 200 characters
+- the JSON document at most 2KB
+
+Dropped data is reported. The download still proceeds. Downloadable does not interpret the keys. History stays when and who, the same way it hides IP addresses. Metrics are unchanged. Rows stay append-only.
 
 ## Download history
 
@@ -142,7 +187,7 @@ The helper renders nothing unless Admin is loaded and the current person can vie
 
 Admin also requires the current root (Root Switchable) to be that recording's root. A history link for another workspace is refused until the person switches. The dummy starts on Studio Workspace when the signed-in person can open it, so the home page History link matches.
 
-The screen uses Admin's layout, inline filters, summary count, line chart, and paginated table (20 rows). Filters are a period preset, group by, and person. The presets are Last 7 days, Last 4 weeks (the default), Last 3 months, Last 12 months, and All time. Columns are when and who (or “Anonymous”), newest first. IP addresses, user agents, and the download action stay off the screen.
+The screen uses Admin's layout, inline filters, summary count, line chart, and paginated table (20 rows). Filters are a period preset, group by, and person. The presets are Last 7 days, Last 4 weeks (the default), Last 3 months, Last 12 months, and All time. Columns are when and who (or “Anonymous”), newest first. IP addresses, user agents, metadata, and the download action stay off the screen.
 
 Admin's `date_range` filter always renders a free start/end calendar, and its preset list cannot be replaced from a screen. `Period` also has no all-time key (`last_7_days`, `last_4_weeks`, `last_3_months`, and `last_12_months` do parse). The screen therefore uses a select whose values are those Period keys plus `all_time`. Select filters do not apply `default:`, and a missing `period` param would show “All” over an unfiltered table, so the query stamps `last_4_weeks` before the filters run. `last_4_weeks` is Period's window: today minus 28 days through today. All time leaves `occurred_at` unbounded. The chart still has to hand Metrics a start and end, and Metrics refuses a reporting period longer than its maximum (about a year), so an All time chart start is pulled forward to fit.
 
@@ -162,7 +207,17 @@ end
 
 `PressKits::DownloadAccessComponent` should accept `recording:`, `actor:`, and `action:`. `PublicShowComponent#show_download?` should keep rendering `recording_studio_downloadable_button` for people who are denied, and let the helper choose the button or the fallback. The editor Downloads section can drop in `recording_studio_downloadable_history_link(recording)`.
 
-`ImageArchivesController` still sends image archives with `send_data` and a `kit_view_full` check. That path skips Downloadable authorization, rate limits, and the download log. Routing those archives through a Downloadable action (or calling the same authorize, rate-limit, and log hook) is a Presskits change, and it is larger than a registration line, so it is not done in this gem.
+Presskits also owns the pre-download form. Register it on the same action:
+
+```ruby
+RecordingStudioDownloadable.configure do |config|
+  config.register_download_gate :"presskits.kit_download", Presskits::KitDownloadGate
+end
+```
+
+`KitDownloadGate` answers `satisfied?`, sends people to `continuation_url`, optionally renders `component`, and returns `metadata_for` when the ZIP actually starts. The form and any in-progress answers stay in Presskits. Downloadable only stores the sanitized snapshot on the download log.
+
+`ImageArchivesController` still sends image archives with `send_data` and a `kit_view_full` check. That path skips Downloadable authorization, rate limits, the download gate, and the download log. Routing those archives through a Downloadable action (or calling the same authorize, gate, rate-limit, and log hook) is a Presskits change, and it is larger than a registration line, so it is not done in this gem.
 
 ### Who may generate a ZIP
 

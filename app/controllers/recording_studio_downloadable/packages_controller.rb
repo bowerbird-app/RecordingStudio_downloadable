@@ -5,6 +5,12 @@ module RecordingStudioDownloadable
     def show
       recording = find_recording
       authorize_download!(recording)
+      gate = download_gate_for(recording)
+      if download_gate_blocking?(gate, recording)
+        respond_to_download_gate!(recording, gate)
+        return
+      end
+
       throttle_download!(recording)
 
       raise ActiveRecord::RecordNotFound if recording.downloadable_empty?
@@ -67,6 +73,7 @@ module RecordingStudioDownloadable
     end
 
     def log_authorized_download!(recording)
+      gate = download_gate_for(recording)
       DownloadLog.record!(
         recording: recording,
         action: downloadable_action_for(recording),
@@ -74,10 +81,46 @@ module RecordingStudioDownloadable
         actor: current_downloadable_actor,
         impersonator: current_downloadable_impersonator,
         ip_address: request.remote_ip,
-        user_agent: request.user_agent
+        user_agent: request.user_agent,
+        metadata: RecordingStudioDownloadable::DownloadGate.metadata_for(
+          gate,
+          recording: recording,
+          actor: current_downloadable_actor
+        )
       )
     rescue StandardError => e
       report_download_log_failure(e)
+    end
+
+    def download_gate_for(recording)
+      RecordingStudioDownloadable::DownloadGate.for_action(downloadable_action_for(recording))
+    end
+
+    def download_gate_blocking?(gate, recording)
+      RecordingStudioDownloadable::DownloadGate.blocking?(
+        gate,
+        recording: recording,
+        actor: current_downloadable_actor,
+        request: request
+      )
+    end
+
+    def respond_to_download_gate!(recording, gate)
+      session.delete(:recording_studio_downloadable_autostart)
+      url = RecordingStudioDownloadable::DownloadGate.continuation_url(
+        gate,
+        recording: recording,
+        actor: current_downloadable_actor,
+        request: request
+      )
+
+      if iframe_or_async_download_request?
+        render json: { continuation_url: url }, status: :conflict
+      elsif url.present?
+        redirect_to url, allow_other_host: true
+      else
+        head :conflict
+      end
     end
 
     def report_download_log_failure(error)

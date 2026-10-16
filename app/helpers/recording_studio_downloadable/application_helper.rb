@@ -2,7 +2,7 @@
 
 module RecordingStudioDownloadable
   module ApplicationHelper
-    def recording_studio_downloadable_button(recording, **button_options)
+    def recording_studio_downloadable_button(recording, **button_options, &block)
       return unless recording.respond_to?(:downloadable?) && recording.downloadable?
 
       action = recording.downloadable_action
@@ -15,13 +15,17 @@ module RecordingStudioDownloadable
         return downloadable_access_denied_fallback(recording, actor: actor, action: action)
       end
 
+      if downloadable_gate_blocking?(recording, actor, action)
+        return downloadable_gate_component(recording, actor: actor, action: action)
+      end
+
       return unless defined?(FlatPack::Button::Component)
 
       path = downloadable_package_path_for(recording)
       style = button_options.fetch(:style, :primary)
       size = button_options.fetch(:size, :md)
       pending = downloadable_pending?(recording)
-      auto_download = downloadable_autostart?(recording) && recording.downloadable_ready?
+      auto_download = downloadable_should_autostart?(recording, button_options.delete(:autostart))
       can_generate = downloadable_can_generate?(recording)
 
       control_options = button_options.merge(
@@ -39,7 +43,11 @@ module RecordingStudioDownloadable
           can_generate: can_generate
         )
       ) do
-        downloadable_button_control(recording, control_options)
+        if block
+          capture(&block)
+        else
+          downloadable_button_control(recording, control_options)
+        end
       end
     end
 
@@ -60,6 +68,27 @@ module RecordingStudioDownloadable
     end
 
     private
+
+    def downloadable_gate_blocking?(recording, actor, action)
+      gate = RecordingStudioDownloadable::DownloadGate.for_action(action)
+      RecordingStudioDownloadable::DownloadGate.blocking?(
+        gate,
+        recording: recording,
+        actor: actor,
+        request: respond_to?(:request, true) ? request : nil
+      )
+    end
+
+    def downloadable_gate_component(recording, actor:, action:)
+      gate = RecordingStudioDownloadable::DownloadGate.for_action(action)
+      return unless gate.respond_to?(:component)
+
+      component = gate.component
+      return if component.blank?
+
+      component_class = component.is_a?(String) ? component.constantize : component
+      render component_class.new(recording: recording, actor: actor, action: action)
+    end
 
     def downloadable_access_denied_fallback(recording, actor:, action:)
       component = RecordingStudioDownloadable.configuration.access_denied_component_for(action)
@@ -147,6 +176,12 @@ module RecordingStudioDownloadable
 
     def downloadable_package_status_path_for(recording)
       downloadable_routes.recording_package_status_path(recording)
+    end
+
+    def downloadable_should_autostart?(recording, forced)
+      return true if forced
+
+      downloadable_autostart?(recording) && recording.downloadable_ready?
     end
 
     def downloadable_autostart?(recording)
