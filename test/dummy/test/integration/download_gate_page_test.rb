@@ -24,7 +24,7 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Gated Download"
     assert_includes response.body, ">Download<"
-    assert_includes response.body, "Before you download"
+    refute_includes response.body, "Before you download"
     assert_includes response.body, "Send me the ZIP"
     assert_includes response.body, %(data-modal-id="#{WorkspaceDownloadGate.modal_id(@recording)}")
     assert_includes response.body, "p-[var(--card-padding-lg)]"
@@ -49,7 +49,16 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Getting your files together."
     assert_includes response.body, "role=\"progressbar\""
     assert_includes response.body, "data-downloadable-progress"
-    assert_includes response.body, "Download started."
+    assert_includes response.body, "Download started"
+    refute_includes response.body, "Download started."
+    refute_includes response.body, "Your ZIP is on its way."
+    refute_includes response.body, "Before you download"
+    refute_includes response.body, "role=\"alert\""
+    assert_includes response.body, "fp-empty-state"
+    assert_includes response.body, "items-center"
+    assert_includes response.body, 'data-flat-pack--icon-name-value="check-circle"'
+    assert_includes response.body, 'data-flat-pack--icon-variant-value="solid"'
+    assert_includes response.body, "text-[var(--color-success-background-color)]"
     assert_includes response.body, "data-downloadable-started"
     assert_includes response.body, "hidden"
     assert_includes response.body, "gap-6"

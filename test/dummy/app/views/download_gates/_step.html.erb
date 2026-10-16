@@ -10,11 +10,20 @@
         ) %>
       </div>
       <div data-downloadable-started hidden>
-        <%= render FlatPack::Alert::Component.new(
-          title: "Download started.",
-          description: "Your ZIP is on its way.",
-          style: :success
-        ) %>
+        <%= render FlatPack::EmptyState::Component.new(
+          title: "Download started",
+          icon: false,
+          size: :sm
+        ) do |empty| %>
+          <% empty.graphic do %>
+            <%= render FlatPack::Shared::IconComponent.new(
+              name: "check-circle",
+              variant: :solid,
+              size: :xl,
+              class: "text-[var(--color-success-background-color)]"
+            ) %>
+          <% end %>
+        <% end %>
       </div>
     <% end %>
   <% end %>

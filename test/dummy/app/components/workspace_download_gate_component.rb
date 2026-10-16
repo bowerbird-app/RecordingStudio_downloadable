@@ -39,7 +39,6 @@ class WorkspaceDownloadGateComponent < ViewComponent::Base
     helpers.render(
       FlatPack::Modal::Component.new(
         id: WorkspaceDownloadGate.modal_id(@recording),
-        title: "Before you download",
         size: :md
       )
     ) do |modal|
