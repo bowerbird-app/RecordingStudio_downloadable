@@ -239,14 +239,17 @@ export default class extends Controller {
       stale: [20, "Getting your files together."],
       pending: [35, "Waiting to build the ZIP."],
       processing: [70, "Building the ZIP."],
-      ready: [100, "Ready."]
+      ready: [100, "Preparing"]
     }
     const [value, label] = marks[state] || marks.missing
     const bar = panel.querySelector("[role='progressbar']")
     const fill = bar?.firstElementChild
-    const labelEl = panel.querySelector(".text-sm")
+    const labelEl = panel.querySelector("[data-downloadable-progress-label]")
+    const heading = labelEl?.matches("h1, h2, h3, h4, h5, h6")
+      ? labelEl
+      : labelEl?.querySelector("h1, h2, h3, h4, h5, h6")
 
-    if (labelEl) labelEl.textContent = label
+    if (heading) heading.textContent = label
     if (bar) {
       bar.setAttribute("aria-valuenow", String(value))
       bar.setAttribute("aria-label", label)
