@@ -43,7 +43,6 @@ class DownloadGatesController < ApplicationController
     if params[:confirmed].to_s == "1"
       entry["confirmed"] = true
       session[:recording_studio_downloadable_autostart] = recording.id
-      flash.now[:notice] = "Your download is ready."
     else
       entry["confirmed"] = false
       flash.now[:alert] = "Check the box to continue."

@@ -183,6 +183,9 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes controller, "recording-studio-downloadable:download-gate"
     assert_includes controller, "defaultPrevented"
     assert_includes controller, "window.top.location.assign"
+    assert_includes controller, "data-downloadable-progress"
+    assert_includes controller, "data-downloadable-started"
+    assert_includes controller, "showProgress"
   end
 
   def test_packages_show_redirects_to_signed_blob_url_instead_of_buffering

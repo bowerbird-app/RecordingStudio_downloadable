@@ -1,11 +1,22 @@
 <% if WorkspaceDownloadGate.confirmed?(WorkspaceDownloadGate.entry_for(recording, WorkspaceDownloadGate.entries(Current.download_gate))) %>
-  <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg, align: :start) do %>
-    <%= render FlatPack::Alert::Component.new(
-      title: "Your download is ready.",
-      description: "The ZIP is starting now.",
-      style: :success
-    ) %>
-    <%= recording_studio_downloadable_button(recording, autostart: true) %>
+  <%= recording_studio_downloadable_button(recording, autostart: true) do %>
+    <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg, align: :start) do %>
+      <div data-downloadable-progress>
+        <%= render FlatPack::Progress::Component.new(
+          value: 20,
+          max: 100,
+          size: :lg,
+          label: "Getting your files together."
+        ) %>
+      </div>
+      <div data-downloadable-started hidden>
+        <%= render FlatPack::Alert::Component.new(
+          title: "Download started.",
+          description: "Your ZIP is on its way.",
+          style: :success
+        ) %>
+      </div>
+    <% end %>
   <% end %>
 <% else %>
   <%= form_with url: download_gate_path, method: :patch do %>

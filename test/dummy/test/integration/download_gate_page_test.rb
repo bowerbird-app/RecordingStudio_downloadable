@@ -46,11 +46,17 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     patch frame_path, params: { recording_id: @recording.id, confirmed: "1" }, headers: frame_headers
 
     assert_response :success
-    assert_includes response.body, "Your download is ready."
-    assert_includes response.body, "The ZIP is starting now."
+    assert_includes response.body, "Getting your files together."
+    assert_includes response.body, "role=\"progressbar\""
+    assert_includes response.body, "data-downloadable-progress"
+    assert_includes response.body, "Download started."
+    assert_includes response.body, "data-downloadable-started"
+    assert_includes response.body, "hidden"
     assert_includes response.body, "gap-6"
     assert_includes response.body, "recording-studio-downloadable--package"
     assert_includes response.body, 'auto-download-value="true"'
+    refute_includes response.body, ">Download<"
+    refute_includes response.body, "Your download is ready."
 
     perform_enqueued_jobs { @recording.downloadable_generate! }
 

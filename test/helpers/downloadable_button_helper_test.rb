@@ -70,6 +70,15 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     assert_includes html, "package-timeout-text-value="
   end
 
+  test "a block keeps package polling and skips the download button" do
+    html = recording_studio_downloadable_button(@recording, autostart: true) { "Getting your files together." }
+
+    assert_includes html, "Getting your files together."
+    assert_includes html, "recording-studio-downloadable--package"
+    assert_includes html, 'auto-download-value="true"'
+    refute_includes html, ">Download<"
+  end
+
   test "ready package button is a turbo-free zip get" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
     html = recording_studio_downloadable_button(@recording.reload)

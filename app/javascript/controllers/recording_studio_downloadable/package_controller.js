@@ -27,6 +27,7 @@ export default class extends Controller {
   connect() {
     this.attempts = 0
     this.maxAttempts = 90
+    this.downloadStarted = false
 
     if (this.autoDownloadValue && this.downloadUrlValue && !this.pollValue) {
       this.beginDownload()
@@ -38,10 +39,14 @@ export default class extends Controller {
 
   disconnect() {
     this.stopPolling()
+    if (this.readyHold) {
+      window.clearTimeout(this.readyHold)
+      this.readyHold = null
+    }
   }
 
   startDownload(event) {
-    if (this.pollValue) return
+    if (this.pollValue || this.downloadStarted) return
 
     event.preventDefault()
     this.beginDownload()
@@ -104,6 +109,8 @@ export default class extends Controller {
       this.showFailure(data.failure_message || this.retryTextValue)
       return
     }
+
+    this.showProgress(data.state)
 
     if ((data.stale || data.state === "missing") && !this.requeued && this.canGenerateFrom(data)) {
       this.requeued = true
@@ -200,16 +207,76 @@ export default class extends Controller {
   }
 
   showReady() {
+    if (this.showProgress("ready")) {
+      this.holdReadyBriefly()
+      return
+    }
+
     this.replaceWithLink(this.downloadUrlValue, this.readyTextValue, { turbo: "false" })
   }
 
   showPreparing() {
+    if (this.showProgress("pending")) return
+
     const button = document.createElement("button")
     button.type = "button"
     button.disabled = true
     button.className = this.linkClassName()
     button.textContent = this.preparingTextValue
     this.element.replaceChildren(button)
+  }
+
+  showProgress(state) {
+    const panel = this.element.querySelector("[data-downloadable-progress]")
+    if (!panel) return false
+
+    panel.hidden = false
+    const started = this.element.querySelector("[data-downloadable-started]")
+    if (started) started.hidden = true
+
+    const marks = {
+      missing: [20, "Getting your files together."],
+      stale: [20, "Getting your files together."],
+      pending: [35, "Waiting to build the ZIP."],
+      processing: [70, "Building the ZIP."],
+      ready: [100, "Ready."]
+    }
+    const [value, label] = marks[state] || marks.missing
+    const bar = panel.querySelector("[role='progressbar']")
+    const fill = bar?.firstElementChild
+    const labelEl = panel.querySelector(".text-sm")
+
+    if (labelEl) labelEl.textContent = label
+    if (bar) {
+      bar.setAttribute("aria-valuenow", String(value))
+      bar.setAttribute("aria-label", label)
+    }
+    if (fill) {
+      fill.style.width = `${value}%`
+      const sr = fill.querySelector(".sr-only")
+      if (sr) sr.textContent = `${value}%`
+    }
+
+    return true
+  }
+
+  holdReadyBriefly() {
+    if (this.readyHold) return
+
+    this.readyHold = window.setTimeout(() => {
+      this.readyHold = null
+      this.revealDownloadStarted()
+    }, 900)
+  }
+
+  revealDownloadStarted() {
+    const started = this.element.querySelector("[data-downloadable-started]")
+    if (!started || !this.element.isConnected) return
+
+    this.downloadStarted = true
+    const progress = this.element.querySelector("[data-downloadable-progress]")
+    if (progress) progress.hidden = true
+    started.hidden = false
   }
 
   showNotReady() {

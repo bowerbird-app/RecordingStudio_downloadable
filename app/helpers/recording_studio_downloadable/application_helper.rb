@@ -2,7 +2,7 @@
 
 module RecordingStudioDownloadable
   module ApplicationHelper
-    def recording_studio_downloadable_button(recording, **button_options)
+    def recording_studio_downloadable_button(recording, **button_options, &block)
       return unless recording.respond_to?(:downloadable?) && recording.downloadable?
 
       action = recording.downloadable_action
@@ -43,7 +43,11 @@ module RecordingStudioDownloadable
           can_generate: can_generate
         )
       ) do
-        downloadable_button_control(recording, control_options)
+        if block
+          capture(&block)
+        else
+          downloadable_button_control(recording, control_options)
+        end
       end
     end
 
