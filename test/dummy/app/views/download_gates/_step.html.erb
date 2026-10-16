@@ -2,22 +2,32 @@
   <%= recording_studio_downloadable_button(recording, autostart: true) do %>
     <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg, align: :start) do %>
       <div data-downloadable-progress>
-        <%= render FlatPack::Grid::Component.new(cols: 1, gap: :sm, align: :start) do %>
-          <%= render FlatPack::SectionTitle::Component.new(
-            title: "Getting your files together.",
-            size: :md,
-            spacing: :none,
-            level: :h3,
-            data: { downloadable_progress_label: true }
-          ) %>
+        <div data-downloadable-progress-active>
+          <%= render FlatPack::Grid::Component.new(cols: 1, gap: :sm, align: :start) do %>
+            <%= render FlatPack::SectionTitle::Component.new(
+              title: "Getting your files together.",
+              size: :md,
+              spacing: :none,
+              level: :h3,
+              data: { downloadable_progress_label: true }
+            ) %>
+            <%= render FlatPack::Progress::Component.new(
+              value: 20,
+              max: 100,
+              size: :lg,
+              label: "Getting your files together.",
+              label_visible: false
+            ) %>
+          <% end %>
+        </div>
+        <div data-downloadable-progress-ready hidden>
           <%= render FlatPack::Progress::Component.new(
-            value: 20,
+            value: 100,
             max: 100,
             size: :lg,
-            label: "Getting your files together.",
-            label_visible: false
+            label: "Preparing"
           ) %>
-        <% end %>
+        </div>
       </div>
       <div data-downloadable-started hidden>
         <%= render FlatPack::EmptyState::Component.new(

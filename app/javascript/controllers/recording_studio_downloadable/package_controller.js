@@ -242,23 +242,33 @@ export default class extends Controller {
       ready: [100, "Preparing"]
     }
     const [value, label] = marks[state] || marks.missing
-    const bar = panel.querySelector("[role='progressbar']")
-    const fill = bar?.firstElementChild
-    const labelEl = panel.querySelector("[data-downloadable-progress-label]")
-    const heading = labelEl?.matches("h1, h2, h3, h4, h5, h6")
-      ? labelEl
-      : labelEl?.querySelector("h1, h2, h3, h4, h5, h6")
+    const ready = state === "ready"
+    const active = panel.querySelector("[data-downloadable-progress-active]")
+    const readyPanel = panel.querySelector("[data-downloadable-progress-ready]")
+    if (active) active.hidden = ready
+    if (readyPanel) readyPanel.hidden = !ready
 
-    if (heading) heading.textContent = label
-    if (bar) {
+    if (!ready) {
+      const labelEl = panel.querySelector("[data-downloadable-progress-label]")
+      const heading = labelEl?.matches("h1, h2, h3, h4, h5, h6")
+        ? labelEl
+        : labelEl?.querySelector("h1, h2, h3, h4, h5, h6")
+      if (heading) heading.textContent = label
+    } else {
+      const small = readyPanel?.querySelector(".text-sm")
+      if (small) small.textContent = label
+    }
+
+    panel.querySelectorAll("[role='progressbar']").forEach((bar) => {
       bar.setAttribute("aria-valuenow", String(value))
       bar.setAttribute("aria-label", label)
-    }
-    if (fill) {
+      const fill = bar.firstElementChild
+      if (!fill) return
+
       fill.style.width = `${value}%`
       const sr = fill.querySelector(".sr-only")
       if (sr) sr.textContent = `${value}%`
-    }
+    })
 
     return true
   }
