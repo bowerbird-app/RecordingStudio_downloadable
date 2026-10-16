@@ -71,9 +71,9 @@ class DownloadableButtonHelperTest < ActionView::TestCase
   end
 
   test "a block keeps package polling and skips the download button" do
-    html = recording_studio_downloadable_button(@recording, autostart: true) { "Getting your files together." }
+    html = recording_studio_downloadable_button(@recording, autostart: true) { "Fetching your files…" }
 
-    assert_includes html, "Getting your files together."
+    assert_includes html, "Fetching your files…"
     assert_includes html, "recording-studio-downloadable--package"
     assert_includes html, 'auto-download-value="true"'
     refute_includes html, ">Download<"

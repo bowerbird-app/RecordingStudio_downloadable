@@ -235,40 +235,30 @@ export default class extends Controller {
     if (started) started.hidden = true
 
     const marks = {
-      missing: [20, "Getting your files together."],
-      stale: [20, "Getting your files together."],
-      pending: [35, "Waiting to build the ZIP."],
-      processing: [70, "Building the ZIP."],
-      ready: [100, "Preparing"]
+      missing: [20, "Fetching your files…"],
+      stale: [20, "Fetching your files…"],
+      pending: [35, "Boxing them up…"],
+      processing: [70, "Adding some bubble wrap…"],
+      ready: [100, "Writing you a sentimental note…"]
     }
     const [value, label] = marks[state] || marks.missing
-    const ready = state === "ready"
-    const active = panel.querySelector("[data-downloadable-progress-active]")
-    const readyPanel = panel.querySelector("[data-downloadable-progress-ready]")
-    if (active) active.hidden = ready
-    if (readyPanel) readyPanel.hidden = !ready
+    const labelEl = panel.querySelector("[data-downloadable-progress-label]")
+    const heading = labelEl?.matches("h1, h2, h3, h4, h5, h6")
+      ? labelEl
+      : labelEl?.querySelector("h1, h2, h3, h4, h5, h6")
+    if (heading) heading.textContent = label
 
-    if (!ready) {
-      const labelEl = panel.querySelector("[data-downloadable-progress-label]")
-      const heading = labelEl?.matches("h1, h2, h3, h4, h5, h6")
-        ? labelEl
-        : labelEl?.querySelector("h1, h2, h3, h4, h5, h6")
-      if (heading) heading.textContent = label
-    } else {
-      const small = readyPanel?.querySelector(".text-sm")
-      if (small) small.textContent = label
-    }
-
-    panel.querySelectorAll("[role='progressbar']").forEach((bar) => {
+    const bar = panel.querySelector("[role='progressbar']")
+    const fill = bar?.firstElementChild
+    if (bar) {
       bar.setAttribute("aria-valuenow", String(value))
       bar.setAttribute("aria-label", label)
-      const fill = bar.firstElementChild
-      if (!fill) return
-
+    }
+    if (fill) {
       fill.style.width = `${value}%`
       const sr = fill.querySelector(".sr-only")
       if (sr) sr.textContent = `${value}%`
-    })
+    }
 
     return true
   }

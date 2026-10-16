@@ -46,15 +46,14 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     patch frame_path, params: { recording_id: @recording.id, confirmed: "1" }, headers: frame_headers
 
     assert_response :success
-    assert_includes response.body, "Getting your files together."
+    assert_includes response.body, "Fetching your files…"
     assert_includes response.body, "role=\"progressbar\""
     assert_includes response.body, "data-downloadable-progress"
     assert_includes response.body, "data-downloadable-progress-label"
-    assert_includes response.body, "data-downloadable-progress-active"
-    assert_includes response.body, "data-downloadable-progress-ready"
     assert_includes response.body, "text-lg"
-    assert_includes response.body, "text-sm font-medium"
-    assert_includes response.body, "Preparing"
+    refute_includes response.body, "data-downloadable-progress-ready"
+    refute_includes response.body, "text-sm font-medium"
+    refute_includes response.body, "Getting your files together."
     refute_includes response.body, "Ready."
     assert_includes response.body, "Download started"
     refute_includes response.body, "Download started."

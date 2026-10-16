@@ -186,14 +186,14 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes controller, "data-downloadable-progress"
     assert_includes controller, "data-downloadable-started"
     assert_includes controller, "data-downloadable-progress-label"
-    assert_includes controller, "data-downloadable-progress-ready"
-    assert_includes controller, 'readyPanel?.querySelector(".text-sm")'
-    assert_includes controller, 'ready: [100, "Preparing"]'
-    assert_includes controller, "Getting your files together."
-    assert_includes controller, "Waiting to build the ZIP."
-    assert_includes controller, "Building the ZIP."
+    assert_includes controller, 'missing: [20, "Fetching your files…"]'
+    assert_includes controller, 'pending: [35, "Boxing them up…"]'
+    assert_includes controller, 'processing: [70, "Adding some bubble wrap…"]'
+    assert_includes controller, 'ready: [100, "Writing you a sentimental note…"]'
+    refute_includes controller, "data-downloadable-progress-ready"
+    refute_includes controller, "Getting your files together."
+    refute_includes controller, '"Preparing"'
     refute_includes controller, '"Ready."'
-    refute_includes controller, "Downloading"
     assert_includes controller, "showProgress"
   end
 
