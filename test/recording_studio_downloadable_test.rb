@@ -48,14 +48,14 @@ class RecordingStudioDownloadableTest < Minitest::Test
   def test_dummy_gemfile_pins_verified_4x_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.6.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.7.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.18.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.15.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.9.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.3.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.10.0", require: false'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.11.0", require: false'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.213"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.5.0"'
@@ -270,10 +270,10 @@ class RecordingStudioDownloadableTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v4.6.0`"
+    assert_includes readme, "dummy GitHub tag `v4.7.0`"
     assert_includes readme, "dummy GitHub tag `v0.1.213`"
     assert_includes readme, "dummy GitHub tag `v0.18.0`"
-    assert_includes readme, "dummy GitHub tag `v0.10.0`"
+    assert_includes readme, "dummy GitHub tag `v0.11.0`"
     assert_includes readme, "dummy GitHub tag `v0.9.0`"
     assert_includes readme, "dummy GitHub tag `v0.2.0`"
     assert_includes readme, "Attachable `v0.15.0`"
