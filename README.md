@@ -193,7 +193,7 @@ Admin's `date_range` filter always renders a free start/end calendar, and its pr
 
 When `RecordingStudio_metrics` is loaded, Downloadable registers `download_logs.total` (count) and `download_logs.over_time` (timeseries on `occurred_at`). The chart calls `RecordingStudioMetrics::Admin.chart_series` with `MetricsRegistration.context_for(recording:, actor:, relation:)`. That context uses scope `:root` and an `authorized_relation` already limited to the recording (and to the active filters when the screen draws the chart). Passing the Admin context straight into `chart_series` would also send the root recording, and Metrics would treat the log table as a recordable and return no points.
 
-`chart_series` returns `[date, value]` pairs. Flatpack's line chart does not plot that shape, so the screen turns each pair into `{ x:, y: }` before handing it to Admin. The counts stay the same.
+`chart_series` returns `{ x:, y: }` points (RecordingStudio_metrics 0.5.0). The screen hands that series to Admin. The counts stay the same.
 
 ## Presskits
 
@@ -342,7 +342,7 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 5. List each download action in Accessible `config.action_audiences`.
 6. Opt each recordable in with `.to`.
 
-This dummy pins Recording Studio dummy GitHub tag `v4.7.0`, Accessible dummy GitHub tag `v0.18.0`, Trashable dummy GitHub tag `v0.11.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.0`, Root Switchable dummy GitHub tag `v0.9.0`, Metrics dummy GitHub tag `v0.2.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.3.1` (download history screen), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
+This dummy pins Recording Studio dummy GitHub tag `v4.7.0`, Accessible dummy GitHub tag `v0.18.0`, Trashable dummy GitHub tag `v0.11.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.0`, Root Switchable dummy GitHub tag `v0.9.0`, Metrics dummy GitHub tag `v0.5.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.3.1` (download history screen), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
 
 ## Dummy app
 

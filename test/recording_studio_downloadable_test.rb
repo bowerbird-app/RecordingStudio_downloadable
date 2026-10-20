@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.7.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.7.1", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -18,6 +18,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemspec, 'spec.add_dependency "recording_studio_accessible"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_attachable"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_metrics", ">= 0.5.0"'
     assert_includes gemspec, 'spec.add_dependency "rubyzip"'
   end
 
@@ -53,7 +54,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.15.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.9.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.3.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.11.0", require: false'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.213"'
@@ -300,7 +301,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "dummy GitHub tag `v0.18.0`"
     assert_includes readme, "dummy GitHub tag `v0.11.0`"
     assert_includes readme, "dummy GitHub tag `v0.9.0`"
-    assert_includes readme, "dummy GitHub tag `v0.2.0`"
+    assert_includes readme, "dummy GitHub tag `v0.5.0`"
     assert_includes readme, "Attachable `v0.15.0`"
     assert_includes readme, "dummy GitHub tag `v0.5.0`"
     assert_includes readme, "Cache to `v0.5.0`"

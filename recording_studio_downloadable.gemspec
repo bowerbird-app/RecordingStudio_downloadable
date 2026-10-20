@@ -30,5 +30,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "recording_studio_accessible"
   spec.add_dependency "recording_studio_attachable"
   spec.add_dependency "recording_studio_cache", "~> 0.5"
+  spec.add_dependency "recording_studio_metrics", ">= 0.5.0"
   spec.add_dependency "rubyzip", ">= 2.3"
 end

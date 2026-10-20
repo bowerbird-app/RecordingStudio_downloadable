@@ -108,7 +108,9 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     fetch_chart
     assert_includes response.body, "Downloads over time"
     assert_includes response.body, ">4<"
+    assert_match(/flat-pack--chart-series-value=.*&quot;x&quot;:/, response.body)
     assert_match(/flat-pack--chart-series-value=.*&quot;y&quot;:1/, response.body)
+    refute_match(/flat-pack--chart-series-value=.*\[\d{4}-\d{2}-\d{2}/, response.body)
   end
 
   test "period presets and person filters limit the table" do
