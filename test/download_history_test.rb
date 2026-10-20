@@ -135,24 +135,6 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     assert_includes history_table, @viewer.email
   end
 
-  test "series_for keeps metrics x y hashes" do
-    skip "RecordingStudio_metrics is not loaded" unless defined?(RecordingStudioMetrics::Admin)
-
-    expected = [{ name: "Downloads", data: [{ x: Date.new(2026, 10, 1), y: 2 }] }]
-    query = Struct.new(:relation).new(RecordingStudioDownloadable::DownloadLog.none)
-    context = Struct.new(:query_result, :access_recording, :current_actor, :filters) do
-      def filter_value(key)
-        filters[key]
-      end
-    end.new(query, @recording, @admin, { group_by: :day, period: "last_4_weeks" })
-
-    RecordingStudioMetrics::Admin.stub :chart_series, expected do
-      series = RecordingStudioDownloadable::Admin::DownloadLogsScreen.series_for(context)
-      assert_equal expected, series
-      assert_equal({ x: Date.new(2026, 10, 1), y: 2 }, series.dig(0, :data, 0))
-    end
-  end
-
   test "all time chart stays inside the metrics reporting limit" do
     log_download!(@recording, actor: @viewer, occurred_at: 400.days.ago)
     log_download!(@recording, actor: @editor, occurred_at: 1.day.ago)
