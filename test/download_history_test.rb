@@ -108,7 +108,9 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     fetch_chart
     assert_includes response.body, "Downloads over time"
     assert_includes response.body, ">4<"
+    assert_match(/flat-pack--chart-series-value=.*&quot;x&quot;:/, response.body)
     assert_match(/flat-pack--chart-series-value=.*&quot;y&quot;:1/, response.body)
+    refute_match(/flat-pack--chart-series-value=.*\[\d{4}-\d{2}-\d{2}/, response.body)
   end
 
   test "period presets and person filters limit the table" do
@@ -131,6 +133,24 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes history_table, "Anonymous"
     assert_includes history_table, @viewer.email
+  end
+
+  test "series_for keeps metrics x y hashes" do
+    skip "RecordingStudio_metrics is not loaded" unless defined?(RecordingStudioMetrics::Admin)
+
+    expected = [{ name: "Downloads", data: [{ x: Date.new(2026, 10, 1), y: 2 }] }]
+    query = Struct.new(:relation).new(RecordingStudioDownloadable::DownloadLog.none)
+    context = Struct.new(:query_result, :access_recording, :current_actor, :filters) do
+      def filter_value(key)
+        filters[key]
+      end
+    end.new(query, @recording, @admin, { group_by: :day, period: "last_4_weeks" })
+
+    RecordingStudioMetrics::Admin.stub :chart_series, expected do
+      series = RecordingStudioDownloadable::Admin::DownloadLogsScreen.series_for(context)
+      assert_equal expected, series
+      assert_equal({ x: Date.new(2026, 10, 1), y: 2 }, series.dig(0, :data, 0))
+    end
   end
 
   test "all time chart stays inside the metrics reporting limit" do
