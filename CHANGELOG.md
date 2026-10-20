@@ -7,16 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.7.1] - 2026-10-20
+## [0.7.2] - 2026-10-20
 
 ### Changed
 
-- Download history charts pass `RecordingStudioMetrics::Admin.chart_series` through unchanged. Metrics 0.5.0 already emits `{ x:, y: }` points, so this gem no longer remaps `[date, value]` pairs.
+- 0.7.2 carries the Metrics 0.5 `{ x:, y: }` chart series change from #23. Download history charts pass `RecordingStudioMetrics::Admin.chart_series` through unchanged; Metrics 0.5.0 already emits `{ x:, y: }` points, so this gem no longer remaps `[date, value]` pairs. GitHub tag `v0.7.1` was published on an earlier commit, so that change ships here.
 
 ### Upgrade notes
 
-- Bump to `0.7.1`. No migration.
+- Bump to `0.7.2`. No migration.
 - The gemspec now depends on `recording_studio_metrics >= 0.5.0`. Pin the GitHub tag `v0.5.0`. History charts expect `{ x:, y: }` points from `chart_series`.
+
+## [0.7.1] - 2026-10-20
+
+### Note
+
+- Main briefly numbered this gem `0.7.1` after #23, but tag `v0.7.1` and its GitHub release already pointed at an earlier commit. Use `0.7.2`.
 
 ## [0.7.0] - 2026-10-15
 
@@ -156,7 +162,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.7.2
 [0.7.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.7.1
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.7.0
 [0.5.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.5.0
