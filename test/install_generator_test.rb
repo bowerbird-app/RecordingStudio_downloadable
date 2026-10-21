@@ -163,7 +163,9 @@ class InstallGeneratorTest < Minitest::Test
   def test_install_guide_includes_migration_and_host_setup_steps
     install_guide = File.read(INSTALL_TEMPLATE_PATH)
 
+    assert_includes install_guide, "bin/rails generate recording_studio_logs:migrations"
     assert_includes install_guide, "bin/rails generate recording_studio_downloadable:migrations"
+    refute_includes install_guide, "logs_summaries_enabled"
     assert_includes install_guide, "bin/rails db:migrate"
     assert_includes install_guide, "auth, layout, and current actor integration"
     assert_includes install_guide, "recording_studio_recordable"

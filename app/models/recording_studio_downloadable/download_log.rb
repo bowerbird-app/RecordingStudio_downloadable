@@ -77,6 +77,11 @@ module RecordingStudioDownloadable
       self.export_scope = "public" if export_scope.blank?
       self.occurred_at ||= Time.current
       self.metadata = {} if metadata.nil?
+      assign_root_recording_id
+    end
+
+    def assign_root_recording_id
+      self.root_recording_id ||= recording&.root_recording_id.presence || recording&.id
     end
 
     def sanitize_metadata_column

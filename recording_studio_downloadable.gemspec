@@ -20,7 +20,8 @@ Gem::Specification.new do |spec|
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"].reject do |path|
+    extra = %w[CHANGELOG.md MIT-LICENSE Rakefile README.md UPGRADING.md]
+    Dir["{app,config,db,lib}/**/*", *extra].reject do |path|
       path == ".cursor" || path.start_with?(".cursor/")
     end
   end
@@ -30,6 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "recording_studio_accessible"
   spec.add_dependency "recording_studio_attachable"
   spec.add_dependency "recording_studio_cache", "~> 0.5"
+  spec.add_dependency "recording_studio_logs", ">= 0.4.1", "< 0.6"
   spec.add_dependency "recording_studio_metrics", ">= 0.5.0"
   spec.add_dependency "rubyzip", ">= 2.3"
 end

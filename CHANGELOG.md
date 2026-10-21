@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-21
+
+### Added
+
+- `recording_studio_logs` (`>= 0.4.1, < 0.6`). Development and dummy Gemfiles pin GitHub tag `v0.5.0`.
+- RecordingStudioLogs registration for the existing download log only (`partition_interval: nil`, `root_column: :root_recording_id`, retention `:indefinite`). No daily summary table.
+- `root_recording_id` on `recording_studio_downloadable_download_logs`, backfilled from the recording root. New inserts stamp it. Existing rows stay in the same unpartitioned table.
+
+### Changed
+
+- Lint and Security GitHub Actions use Ruby `3.3` instead of `.ruby-version` (`3.3.6`), so `ubuntu-latest` can install a current 3.3 patch.
+
+### Upgrade notes
+
+- Bump to `0.8.0`. Pin `recording_studio_logs` to GitHub tag `v0.5.0`.
+- Run `bin/rails generate recording_studio_logs:migrations` if Logs run tables are not already present, then `recording_studio_downloadable:migrations` and `db:migrate`.
+- Do not schedule Logs partition jobs. This log has no aggregations, so Logs retention never drops its rows. The gem's own pruner still deletes.
+
 ## [0.7.2] - 2026-10-20
 
 ### Changed
@@ -162,7 +180,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.7.2
 [0.7.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.7.1
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.7.0

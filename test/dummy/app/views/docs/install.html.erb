@@ -31,6 +31,7 @@
       gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.18.0"
       gem "recording_studio_trashable", github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.11.0", require: false
       gem "recording_studio_attachable", github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.15.0"
+      gem "recording_studio_logs", github: "bowerbird-app/RecordingStudio_logs", tag: "v0.5.0"
       gem "recording_studio_downloadable", github: "bowerbird-app/RecordingStudio_downloadable"
     CODE
   ) %>
@@ -44,13 +45,14 @@
 
   <%= render FlatPack::SectionTitle::Component.new(
     title: "Run the generators",
-    subtitle: "Install mounts the engine and copies the initializer. Migrations create recording_studio_downloadable_packages."
+    subtitle: "Install mounts the engine and copies the initializer. Also install Logs run tables, then Downloadable migrations."
   ) %>
 
   <%= render FlatPack::CodeBlock::Component.new(
     language: :bash,
     code: <<~CODE
       bin/rails generate recording_studio_downloadable:install
+      bin/rails generate recording_studio_logs:migrations
       bin/rails generate recording_studio_downloadable:migrations
       bin/rails db:migrate
     CODE
