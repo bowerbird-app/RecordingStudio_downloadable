@@ -20,7 +20,8 @@ Gem::Specification.new do |spec|
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    Dir["{app,config,db,lib}/**/*", "CHANGELOG.md", "MIT-LICENSE", "Rakefile", "README.md", "UPGRADING.md"].reject do |path|
+    extra = %w[CHANGELOG.md MIT-LICENSE Rakefile README.md UPGRADING.md]
+    Dir["{app,config,db,lib}/**/*", *extra].reject do |path|
       path == ".cursor" || path.start_with?(".cursor/")
     end
   end
