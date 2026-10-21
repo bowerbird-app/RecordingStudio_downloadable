@@ -6,14 +6,13 @@ Next steps:
 2. Install Logs run tables with `bin/rails generate recording_studio_logs:migrations` if they are not already present.
 3. Install migrations with `bin/rails generate recording_studio_downloadable:migrations`.
 4. Apply them with `bin/rails db:migrate`.
-5. Leave `config.logs_summaries_enabled` false unless you have rebuilt `downloadable/download_counts`.
-6. Ensure Active Storage is installed so package archives can be stored. Attachable is required for
+5. Ensure Active Storage is installed so package archives can be stored. Attachable is required for
    `source: :attachments`. `source: :manifest` uses a host `#downloadable_manifest` of DownloadFile objects.
-7. Opt host recordables in with `include RecordingStudio::Capabilities::Downloadable.to`.
+6. Opt host recordables in with `include RecordingStudio::Capabilities::Downloadable.to`.
    Installing this gem does not enable `:downloadable`. Pass `action:` for a named Accessible action
    (default is derived from the recordable type, e.g. `workspaces.download`). Use `source: :attachments`
    (default) or `source: :manifest`.
-8. Configure each download action on Accessible 0.14+:
+7. Configure each download action on Accessible 0.14+:
 
    ```ruby
    RecordingStudioAccessible.configure do |config|
@@ -29,16 +28,16 @@ Next steps:
 
    Add `public` to `allowed` only when anonymous downloads should succeed. Domain conditions belong on
    the recordable as `downloadable_available_for?(actor:, action:)`.
-9. Mount routes are added at the configured mount path. Adjust auth, layout, and current actor integration
+8. Mount routes are added at the configured mount path. Adjust auth, layout, and current actor integration
    to match your host app. The engine skips common host auth/tenant callbacks (`authenticate_user!` and
    similar) so public audiences can reach show/create/status. Every endpoint still authorizes through
    Accessible `authorized_action?`. Keep `recording_studio_recordable` declarations on host types.
-10. Pin the Stimulus package controller so “Preparing…” polls `GET …/package/status` (same authorization
+9. Pin the Stimulus package controller so “Preparing…” polls `GET …/package/status` (same authorization
    as the ZIP) and starts the authorized `GET …/package` when the package is `ready`. Anyone who passes
    that authorization (including anonymous when the audience is `public`) may enqueue a build when the
    package is missing or stale. Concurrent requests share one in-flight job. Unauthorized requests never
    enqueue. Failed packages show Retry (rate-limited `POST`) instead of spinning forever. The installer
    adds the importmap pin and `lazyLoadControllersFrom` when those host files exist.
-11. Large ZIP downloads: authorized `GET …/package` redirects to a short-lived signed Active Storage URL
+10. Large ZIP downloads: authorized `GET …/package` redirects to a short-lived signed Active Storage URL
    (`blob.url`, default 5 minutes). That URL is a bearer link until it expires, even if access is later
    revoked. Bytes stream from Disk or R2/S3. The app does not buffer the archive with `blob.download`.

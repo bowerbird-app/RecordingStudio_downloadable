@@ -3,7 +3,6 @@
 module RecordingStudioDownloadable
   module LogsRegistration
     SOURCE_MODEL = "RecordingStudioDownloadable::DownloadLog"
-    DOWNLOAD_COUNTS = "downloadable/download_counts"
     OWNER = "RecordingStudioDownloadable"
     AGGREGATABLE = {
       root_recording_id: { filter: [:eq], group: true },
@@ -12,19 +11,10 @@ module RecordingStudioDownloadable
 
     module_function
 
-    def summaries_enabled?
-      RecordingStudioDownloadable.configuration.logs_summaries_enabled
-    end
-
-    def logging_connection
-      DownloadLog.connection
-    end
-
     def register!
       return unless defined?(RecordingStudioLogs)
 
       register_source!
-      register_download_counts!
       RecordingStudioLogs.finalize!
     end
 
@@ -38,23 +28,6 @@ module RecordingStudioDownloadable
         retention: :indefinite,
         aggregatable: AGGREGATABLE
       )
-    end
-
-    def register_download_counts!
-      RecordingStudioLogs.aggregate(
-        source: SOURCE_MODEL,
-        name: DOWNLOAD_COUNTS,
-        summary_model: "RecordingStudioDownloadable::DownloadDaySummary",
-        owner: OWNER,
-        group_by: %i[root_recording_id recording_id],
-        measurements: {
-          download_count: :count
-        }
-      )
-    end
-
-    def download_counts_definition
-      RecordingStudioLogs.registry.aggregation(DOWNLOAD_COUNTS)
     end
   end
 end

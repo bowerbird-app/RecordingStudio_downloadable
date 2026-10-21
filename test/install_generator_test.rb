@@ -165,7 +165,7 @@ class InstallGeneratorTest < Minitest::Test
 
     assert_includes install_guide, "bin/rails generate recording_studio_logs:migrations"
     assert_includes install_guide, "bin/rails generate recording_studio_downloadable:migrations"
-    assert_includes install_guide, "config.logs_summaries_enabled"
+    refute_includes install_guide, "logs_summaries_enabled"
     assert_includes install_guide, "bin/rails db:migrate"
     assert_includes install_guide, "auth, layout, and current actor integration"
     assert_includes install_guide, "recording_studio_recordable"

@@ -26,7 +26,7 @@ module RecordingStudioDownloadable
       require_workspace
     ].freeze
 
-    attr_accessor :authorize_with, :cache, :max_zip_bytes, :max_concurrent_builds, :logs_summaries_enabled
+    attr_accessor :authorize_with, :cache, :max_zip_bytes, :max_concurrent_builds
     attr_reader :hooks, :auth_roles, :rate_limits, :content_change_debounce, :skip_host_before_actions,
                 :access_denied_components, :download_gates
 
@@ -125,11 +125,7 @@ module RecordingStudioDownloadable
         content_change_debounce: content_change_debounce,
         skip_host_before_actions: skip_host_before_actions,
         hooks_registered: hooks.instance_variable_get(:@registry).transform_values(&:size)
-      }.merge(logs_settings)
-    end
-
-    def logs_settings
-      { logs_summaries_enabled: logs_summaries_enabled }
+      }
     end
 
     def merge!(hash)
@@ -143,7 +139,6 @@ module RecordingStudioDownloadable
     private
 
     def assign_registries
-      @logs_summaries_enabled = false
       @access_denied_components = {}
       @download_gates = {}
     end

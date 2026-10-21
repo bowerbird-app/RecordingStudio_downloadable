@@ -97,7 +97,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes schema, "idx_rs_downloadable_packages_identity"
     assert_includes schema, 't.jsonb "metadata", default: {}, null: false'
     assert_includes schema, 't.uuid "root_recording_id"'
-    assert_includes schema, 'create_table "recording_studio_downloadable_download_day_summaries"'
+    refute_includes schema, "recording_studio_downloadable_download_day_summaries"
     assert_includes schema, 'create_table "recording_studio_logs_aggregation_runs"'
     assert_includes schema, 'create_table "recording_studio_logs_maintenance_runs"'
     metadata_migration = File.read(
@@ -359,7 +359,6 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "metadata_for"
     assert_includes readme, "[a-z0-9_]{1,40}"
     assert_includes readme, "MetricsRegistration.context_for"
-    assert_includes readme, "logs_summaries_enabled"
     assert_includes readme, "recording_studio_logs:migrations"
     assert_includes readme, "Logs dummy GitHub tag `v0.5.0`"
     assert_includes readme, "ImageArchivesController"

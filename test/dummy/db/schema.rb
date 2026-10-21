@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_21_000006) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -136,18 +136,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_000006) do
     t.uuid "attachment_recording_id", null: false
     t.datetime "created_at", null: false
     t.index ["attachment_recording_id"], name: "idx_on_attachment_recording_id_76c6286907"
-  end
-
-  create_table "recording_studio_downloadable_download_day_summaries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.date "day", null: false
-    t.uuid "root_recording_id"
-    t.uuid "recording_id"
-    t.bigint "download_count", default: 0, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["day", "root_recording_id", "recording_id"], name: "index_rs_download_day_summaries_identity", unique: true, nulls_not_distinct: true
-    t.index ["recording_id", "day"], name: "index_rs_download_day_summaries_on_recording_and_day"
-    t.index ["root_recording_id", "day"], name: "index_rs_download_day_summaries_on_root_and_day"
   end
 
   create_table "recording_studio_downloadable_download_logs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

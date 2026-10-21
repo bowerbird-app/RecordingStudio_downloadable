@@ -98,15 +98,9 @@ A row means the download was started. It does not mean the transfer finished. Re
 recording.downloadable_download_logs # newest last in the association; history sorts newest first
 ```
 
-Downloadable registers this table with RecordingStudioLogs as an unpartitioned, indefinite raw log (`partition_interval: nil`, `root_column: :root_recording_id`). Existing rows stay in `recording_studio_downloadable_download_logs`. The table is not copied or partitioned. Daily summaries live in `recording_studio_downloadable_download_day_summaries` (`downloadable/download_counts`), grouped by root and recording.
+Downloadable registers this table with RecordingStudioLogs as an unpartitioned, indefinite raw log (`partition_interval: nil`, `root_column: :root_recording_id`). Existing rows stay in `recording_studio_downloadable_download_logs`. The table is not copied or partitioned. There is no daily summary table.
 
-`config.logs_summaries_enabled` defaults to false. Leave it off. History, Metrics charts, the pre-download gate, and rate limits keep reading raw download logs. Turn the flag on only after you have installed Logs run tables, migrated, and rebuilt summaries:
-
-```sh
-FROM=2026-10-01 TO=2026-10-20 bin/rails recording_studio_downloadable:download_logs:backfill_summaries
-```
-
-Do not schedule Logs partition jobs for this table.
+History, Metrics charts, the pre-download gate, and rate limits read raw download logs. Do not schedule Logs partition jobs for this table. Logs retention never drops a log with no aggregations. The gem's own pruner still deletes.
 
 ## Access-aware button
 
@@ -353,7 +347,6 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 5. `bin/rails db:migrate`
 6. List each download action in Accessible `config.action_audiences`.
 7. Opt each recordable in with `.to`.
-8. Leave `config.logs_summaries_enabled` false unless you have rebuilt `downloadable/download_counts`.
 
 This dummy pins Recording Studio dummy GitHub tag `v4.7.0`, Accessible dummy GitHub tag `v0.18.0`, Trashable dummy GitHub tag `v0.11.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.0`, Logs dummy GitHub tag `v0.5.0`, Root Switchable dummy GitHub tag `v0.9.0`, Metrics dummy GitHub tag `v0.5.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.3.1` (download history screen), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
 
