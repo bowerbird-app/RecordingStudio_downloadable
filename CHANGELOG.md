@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `config.logs_summaries_enabled` (default false). History, Metrics charts, the pre-download gate, and rate limits stay on raw download logs while the flag is off.
 - `rake recording_studio_downloadable:download_logs:backfill_summaries` rebuilds those summaries for an inclusive UTC `FROM`/`TO` range.
 
+### Changed
+
+- Lint and Security GitHub Actions use Ruby `3.3` instead of `.ruby-version` (`3.3.6`), so `ubuntu-latest` can install a current 3.3 patch.
+
 ### Upgrade notes
 
 - Bump to `0.8.0`. Pin `recording_studio_logs` to GitHub tag `v0.5.0`.
