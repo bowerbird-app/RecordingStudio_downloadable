@@ -40,7 +40,6 @@ module RecordingStudioDownloadable
       @content_change_debounce = 45.seconds
       @skip_host_before_actions = DEFAULT_SKIP_HOST_BEFORE_ACTIONS.dup
       @cache = nil
-      @logs_summaries_enabled = false
       assign_registries
     end
 
@@ -125,9 +124,12 @@ module RecordingStudioDownloadable
         max_concurrent_builds: max_concurrent_builds,
         content_change_debounce: content_change_debounce,
         skip_host_before_actions: skip_host_before_actions,
-        logs_summaries_enabled: logs_summaries_enabled,
         hooks_registered: hooks.instance_variable_get(:@registry).transform_values(&:size)
-      }
+      }.merge(logs_settings)
+    end
+
+    def logs_settings
+      { logs_summaries_enabled: logs_summaries_enabled }
     end
 
     def merge!(hash)
@@ -141,6 +143,7 @@ module RecordingStudioDownloadable
     private
 
     def assign_registries
+      @logs_summaries_enabled = false
       @access_denied_components = {}
       @download_gates = {}
     end

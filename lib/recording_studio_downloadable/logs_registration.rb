@@ -5,6 +5,10 @@ module RecordingStudioDownloadable
     SOURCE_MODEL = "RecordingStudioDownloadable::DownloadLog"
     DOWNLOAD_COUNTS = "downloadable/download_counts"
     OWNER = "RecordingStudioDownloadable"
+    AGGREGATABLE = {
+      root_recording_id: { filter: [:eq], group: true },
+      recording_id: { filter: [:eq], group: true }
+    }.freeze
 
     module_function
 
@@ -19,6 +23,12 @@ module RecordingStudioDownloadable
     def register!
       return unless defined?(RecordingStudioLogs)
 
+      register_source!
+      register_download_counts!
+      RecordingStudioLogs.finalize!
+    end
+
+    def register_source!
       RecordingStudioLogs.register(
         model: SOURCE_MODEL,
         timestamp_column: :occurred_at,
@@ -26,12 +36,11 @@ module RecordingStudioDownloadable
         root_column: :root_recording_id,
         owner: OWNER,
         retention: :indefinite,
-        aggregatable: {
-          root_recording_id: { filter: [:eq], group: true },
-          recording_id: { filter: [:eq], group: true }
-        }
+        aggregatable: AGGREGATABLE
       )
+    end
 
+    def register_download_counts!
       RecordingStudioLogs.aggregate(
         source: SOURCE_MODEL,
         name: DOWNLOAD_COUNTS,
@@ -42,8 +51,6 @@ module RecordingStudioDownloadable
           download_count: :count
         }
       )
-
-      RecordingStudioLogs.finalize!
     end
 
     def download_counts_definition
