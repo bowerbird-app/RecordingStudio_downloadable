@@ -166,6 +166,18 @@ class DownloadLogsTest < ActionDispatch::IntegrationTest
     assert_equal RecordingStudioDownloadable::DownloadLog::USER_AGENT_LIMIT, log.user_agent.length
   end
 
+  test "record! stamps the recording root" do
+    log = RecordingStudioDownloadable::DownloadLog.record!(
+      recording: @recording,
+      action: "workspaces.download",
+      export_scope: "public",
+      actor: @user
+    )
+
+    assert_equal @recording.id, log.root_recording_id
+    assert_equal @recording.id, @recording.root_recording_id
+  end
+
   test "rows are append-only" do
     log = RecordingStudioDownloadable::DownloadLog.record!(
       recording: @recording,

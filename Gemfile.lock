@@ -37,6 +37,15 @@ GIT
       recording_studio (~> 4.2)
 
 GIT
+  remote: https://github.com/bowerbird-app/RecordingStudio_logs.git
+  revision: e4f2d254d9325f98340360bb7545d7f6fe7009c6
+  tag: v0.5.0
+  specs:
+    recording_studio_logs (0.5.0)
+      rails (~> 8.1.0)
+      recording_studio (~> 4.2)
+
+GIT
   remote: https://github.com/bowerbird-app/RecordingStudio_metrics.git
   revision: b3ff62dbee7e4e1107e3e41cdae7b2481893ca51
   tag: v0.5.0
@@ -70,12 +79,13 @@ GIT
 PATH
   remote: .
   specs:
-    recording_studio_downloadable (0.7.2)
+    recording_studio_downloadable (0.8.0)
       rails (~> 8.1.0)
       recording_studio (~> 4.2)
       recording_studio_accessible
       recording_studio_attachable
       recording_studio_cache (~> 0.5)
+      recording_studio_logs (>= 0.4.1, < 0.6)
       recording_studio_metrics (>= 0.5.0)
       rubyzip (>= 2.3)
 
@@ -378,6 +388,7 @@ DEPENDENCIES
   recording_studio_attachable!
   recording_studio_cache!
   recording_studio_downloadable!
+  recording_studio_logs!
   recording_studio_metrics!
   recording_studio_trashable!
   rubocop
@@ -465,7 +476,8 @@ CHECKSUMS
   recording_studio_accessible (0.18.0)
   recording_studio_attachable (0.15.0)
   recording_studio_cache (0.5.0)
-  recording_studio_downloadable (0.7.2)
+  recording_studio_downloadable (0.8.0)
+  recording_studio_logs (0.5.0)
   recording_studio_metrics (0.5.0)
   recording_studio_trashable (0.11.0)
   regexp_parser (2.13.1) sha256=5aedb6b7c35688f51e86eef17a15374dfd287c83f4ca644b2c5f3ec50a33b44b

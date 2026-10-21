@@ -26,4 +26,9 @@ RecordingStudioDownloadable.configure do |config|
   # Optional pre-download step. The host owns the form. Unregistered actions
   # download as usual. See README "Pre-download gate".
   # config.register_download_gate :"presskits.kit_download", Presskits::KitDownloadGate
+
+  # Daily Logs summaries stay off until you install Logs run tables, migrate,
+  # and rebuild downloadable/download_counts. History and Metrics stay on raw
+  # download logs while this is false.
+  # config.logs_summaries_enabled = false
 end

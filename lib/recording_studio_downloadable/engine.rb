@@ -209,6 +209,10 @@ module RecordingStudioDownloadable
       end
     end
 
+    initializer "recording_studio_downloadable.logs" do
+      config.to_prepare { RecordingStudioDownloadable::LogsRegistration.register! }
+    end
+
     initializer "recording_studio_downloadable.metrics" do
       config.after_initialize do
         RecordingStudioDownloadable::Engine.register_download_metrics!

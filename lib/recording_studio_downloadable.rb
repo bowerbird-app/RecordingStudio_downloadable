@@ -3,6 +3,7 @@
 require "recording_studio"
 require "recording_studio_accessible"
 require "recording_studio_cache"
+require "recording_studio_logs"
 
 module RecordingStudioDownloadable
   class Error < StandardError; end
@@ -44,6 +45,8 @@ require "recording_studio_downloadable/fingerprint"
 require "recording_studio_downloadable/zip_builder"
 require "recording_studio_downloadable/rate_limiter"
 require "recording_studio_downloadable/authorization"
+require "recording_studio_downloadable/logs_registration"
+require "recording_studio_downloadable/services/rebuild_download_log_summaries"
 require "recording_studio_downloadable/metrics_registration"
 require "recording_studio_downloadable/invalidation"
 require "recording_studio_downloadable/sources"

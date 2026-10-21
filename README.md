@@ -80,6 +80,7 @@ Rows live in `recording_studio_downloadable_download_logs` (`RecordingStudioDown
 | Column | Notes |
 | --- | --- |
 | `recording_id` | The item that was downloaded |
+| `root_recording_id` | The recording's root, backfilled from `recording_studio_recordings`. New rows stamp it on insert. |
 | `action` | The download action, such as `presskits.kit_download` |
 | `export_scope` | Package identity, default `public` |
 | `actor_type` / `actor_id` | Who downloaded. Null means anonymous |
@@ -96,6 +97,16 @@ A row means the download was started. It does not mean the transfer finished. Re
 ```ruby
 recording.downloadable_download_logs # newest last in the association; history sorts newest first
 ```
+
+Downloadable registers this table with RecordingStudioLogs as an unpartitioned, indefinite raw log (`partition_interval: nil`, `root_column: :root_recording_id`). Existing rows stay in `recording_studio_downloadable_download_logs`. The table is not copied or partitioned. Daily summaries live in `recording_studio_downloadable_download_day_summaries` (`downloadable/download_counts`), grouped by root and recording.
+
+`config.logs_summaries_enabled` defaults to false. Leave it off. History, Metrics charts, the pre-download gate, and rate limits keep reading raw download logs. Turn the flag on only after you have installed Logs run tables, migrated, and rebuilt summaries:
+
+```sh
+FROM=2026-10-01 TO=2026-10-20 bin/rails recording_studio_downloadable:download_logs:backfill_summaries
+```
+
+Do not schedule Logs partition jobs for this table.
 
 ## Access-aware button
 
@@ -335,14 +346,16 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 
 ## Install
 
-1. Add the gem (and Attachable + Accessible 0.14+) to the host app.
+1. Add the gem (and Attachable + Accessible 0.14+ + Logs) to the host app.
 2. `bin/rails generate recording_studio_downloadable:install`
-3. `bin/rails generate recording_studio_downloadable:migrations`
-4. `bin/rails db:migrate`
-5. List each download action in Accessible `config.action_audiences`.
-6. Opt each recordable in with `.to`.
+3. `bin/rails generate recording_studio_logs:migrations` if Logs run tables are not already present
+4. `bin/rails generate recording_studio_downloadable:migrations`
+5. `bin/rails db:migrate`
+6. List each download action in Accessible `config.action_audiences`.
+7. Opt each recordable in with `.to`.
+8. Leave `config.logs_summaries_enabled` false unless you have rebuilt `downloadable/download_counts`.
 
-This dummy pins Recording Studio dummy GitHub tag `v4.7.0`, Accessible dummy GitHub tag `v0.18.0`, Trashable dummy GitHub tag `v0.11.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.0`, Root Switchable dummy GitHub tag `v0.9.0`, Metrics dummy GitHub tag `v0.5.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.3.1` (download history screen), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
+This dummy pins Recording Studio dummy GitHub tag `v4.7.0`, Accessible dummy GitHub tag `v0.18.0`, Trashable dummy GitHub tag `v0.11.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.0`, Logs dummy GitHub tag `v0.5.0`, Root Switchable dummy GitHub tag `v0.9.0`, Metrics dummy GitHub tag `v0.5.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.3.1` (download history screen), FlatPack dummy GitHub tag `v0.1.213`, and Attachable `v0.15.0`.
 
 ## Dummy app
 
@@ -384,6 +397,8 @@ Rate limiting is a thin adapter over `RecordingStudioCache::RateLimiter` (fixed 
 
 Hosts on 0.2.x need a new migration (`action` + `export_scope` on `recording_studio_downloadable_packages`). Existing packages are backfilled to the default action for that recording's type and `public` scope.
 
-Pin Accessible to GitHub tag `v0.18.0`, Trashable to `v0.11.0` (`require: false`; needs Recording Studio `~> 4.7`), and Cache to `v0.5.0`. List each download action in `config.action_audiences`. Until an action is configured, Downloadable keeps the previous role mapping (`auth_roles`, default `download: :view`) so existing granted users can still download.
+Pin Accessible to GitHub tag `v0.18.0`, Trashable to `v0.11.0` (`require: false`; needs Recording Studio `~> 4.7`), Cache to `v0.5.0`, and Logs to `v0.5.0` (gemspec `>= 0.4.1, < 0.6`). List each download action in `config.action_audiences`. Until an action is configured, Downloadable keeps the previous role mapping (`auth_roles`, default `download: :view`) so existing granted users can still download.
+
+Hosts moving to 0.8.0 keep their download log rows. See [UPGRADING.md](UPGRADING.md).
 
 `source: :attachments` and `source: :manifest` are unchanged. Pass `action:` on `.to` when the derived name is not the Accessible action you configured.

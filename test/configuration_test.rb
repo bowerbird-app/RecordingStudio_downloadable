@@ -38,6 +38,15 @@ class ConfigurationTest < Minitest::Test
     assert_equal 5, @configuration.max_concurrent_builds
     assert_includes @configuration.skip_host_before_actions, :authenticate_user!
     assert_includes @configuration.skip_host_before_actions, :set_current_actor
+    assert_equal false, @configuration.logs_summaries_enabled
+  end
+
+  def test_logs_summaries_enabled_defaults_off_and_merges
+    assert_equal false, @configuration.to_h.fetch(:logs_summaries_enabled)
+
+    @configuration.merge!(logs_summaries_enabled: true)
+
+    assert_equal true, @configuration.logs_summaries_enabled
   end
 
   def test_merge_accepts_string_keys_and_role_aliases

@@ -26,7 +26,7 @@ module RecordingStudioDownloadable
       require_workspace
     ].freeze
 
-    attr_accessor :authorize_with, :cache, :max_zip_bytes, :max_concurrent_builds
+    attr_accessor :authorize_with, :cache, :max_zip_bytes, :max_concurrent_builds, :logs_summaries_enabled
     attr_reader :hooks, :auth_roles, :rate_limits, :content_change_debounce, :skip_host_before_actions,
                 :access_denied_components, :download_gates
 
@@ -40,6 +40,7 @@ module RecordingStudioDownloadable
       @content_change_debounce = 45.seconds
       @skip_host_before_actions = DEFAULT_SKIP_HOST_BEFORE_ACTIONS.dup
       @cache = nil
+      @logs_summaries_enabled = false
       assign_registries
     end
 
@@ -124,6 +125,7 @@ module RecordingStudioDownloadable
         max_concurrent_builds: max_concurrent_builds,
         content_change_debounce: content_change_debounce,
         skip_host_before_actions: skip_host_before_actions,
+        logs_summaries_enabled: logs_summaries_enabled,
         hooks_registered: hooks.instance_variable_get(:@registry).transform_values(&:size)
       }
     end
