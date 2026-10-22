@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-10-22
+
+### Changed
+
+- Lifted the `recording_studio_logs` gemspec ceiling to `< 1.0` (`>= 0.4.1`, `< 1.0`). CI tested with Logs 0.5.0. No code change.
+
+### Upgrade notes
+
+- Bump to `0.8.1`. No migration. Pin `recording_studio_logs` as before (GitHub tag `v0.5.0` still matches). Hosts may take any Logs release in `>= 0.4.1, < 1.0`.
+
 ## [0.8.0] - 2026-10-21
 
 ### Added
@@ -180,7 +190,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.7.2
 [0.7.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.7.1

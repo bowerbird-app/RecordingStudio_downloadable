@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.8.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.8.1", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -18,7 +18,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemspec, 'spec.add_dependency "recording_studio_accessible"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_attachable"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_logs", ">= 0.4.1", "< 0.6"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_logs", ">= 0.4.1", "< 1.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_metrics", ">= 0.5.0"'
     assert_includes gemspec, 'spec.add_dependency "rubyzip"'
   end
