@@ -1,11 +1,11 @@
-<% dummy_page_nav(title: "New page", back_url: pages_path, back_label: "Pages") %>
+<% dummy_page_nav(
+  title: "New page",
+  subtitle: "Creates a Page under Product Docs (or Studio Workspace). After save you upload files with Attachable.",
+  back_url: pages_path,
+  back_label: "Pages"
+) %>
 
 <div class="flex w-full max-w-xl flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "New page",
-    subtitle: "Creates a Page under Product Docs (or Studio Workspace). After save you upload files with Attachable.",
-    variant: :h1
-  ) %>
 
   <%= form_with model: @page, url: pages_path, class: "flex flex-col gap-4" do %>
     <%= render FlatPack::TextInput::Component.new(

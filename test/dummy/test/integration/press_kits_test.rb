@@ -103,15 +103,12 @@ class PressKitsTest < ActionDispatch::IntegrationTest
   private
 
   def attach_text!(parent_recording, filename:, contents:)
-    blob = ActiveStorage::Blob.create_and_upload!(
-      io: StringIO.new(contents),
-      filename: filename,
-      content_type: "text/plain"
-    )
-    parent_recording.record_attachment_upload(
-      signed_blob_id: blob.signed_id,
+    require Rails.root.join("../support/attachable_direct_upload")
+    AttachableDirectUpload.upload!(
+      recording: parent_recording,
       actor: @user,
-      name: File.basename(filename, ".*")
+      filename: filename,
+      content: contents
     )
   end
 

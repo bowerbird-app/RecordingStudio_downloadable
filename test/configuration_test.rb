@@ -95,6 +95,46 @@ class ConfigurationTest < Minitest::Test
     assert_raises(ArgumentError) { @configuration.register_download_gate(:download, nil) }
   end
 
+  def test_layout_defaults_to_nil_and_accepts_a_name_false_or_keyword_callable
+    assert_nil @configuration.layout
+
+    @configuration.layout = "admin"
+    assert_equal "admin", @configuration.layout
+
+    @configuration.layout = false
+    assert_equal false, @configuration.layout
+
+    @configuration.layout = nil
+    assert_nil @configuration.layout
+
+    callable = ->(controller:) { controller ? "flat_pack_sidebar" : "application" }
+    @configuration.layout = callable
+    assert_equal callable, @configuration.layout
+    assert_equal "flat_pack_sidebar", RecordingStudio::Layout.resolve(@configuration.layout, controller: Object.new)
+  end
+
+  def test_layout_assignment_rejects_a_blank_name_and_a_positional_callable
+    assert_raises(ArgumentError) { @configuration.layout = "   " }
+    assert_raises(ArgumentError) { @configuration.layout = ->(_controller) { "application" } }
+  end
+
+  def test_nil_layout_falls_through_to_recording_studio_configuration
+    previous = RecordingStudio.configuration.layout
+    @configuration.layout = nil
+    RecordingStudio.configuration.layout = nil
+
+    assert_equal(
+      RecordingStudio::DEFAULT_LAYOUT,
+      RecordingStudio.configuration.resolved_layout(controller: Object.new)
+    )
+
+    RecordingStudio.configuration.layout = "host_shell"
+    assert_nil @configuration.layout
+    assert_equal "host_shell", RecordingStudio.configuration.resolved_layout(controller: Object.new)
+  ensure
+    RecordingStudio.configuration.layout = previous
+  end
+
   def test_debounce_wait_clamps_to_thirty_through_sixty_seconds
     @configuration.content_change_debounce = 5.seconds
     assert_equal 30.seconds, @configuration.debounce_wait

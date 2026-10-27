@@ -3,6 +3,7 @@
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
 require "stringio"
+require_relative "../../support/attachable_direct_upload"
 
 seed_download_logs = lambda do |recording, owner, colleague|
   action = recording.downloadable_action
@@ -99,15 +100,11 @@ begin
 
   stored = RecordingStudioDownloadable::Sources::Attachments.call(press_kit_recording)
   if stored.empty?
-    blob = ActiveStorage::Blob.create_and_upload!(
-      io: StringIO.new("studio mark"),
-      filename: "logo.txt",
-      content_type: "text/plain"
-    )
-    result = press_kit_recording.record_attachment_upload(
-      signed_blob_id: blob.signed_id,
+    result = AttachableDirectUpload.upload!(
+      recording: press_kit_recording,
       actor: user,
-      name: "logo"
+      filename: "logo.txt",
+      content: "studio mark"
     )
     raise "Failed to seed press kit logo" if result.blank?
   end
@@ -116,15 +113,11 @@ begin
   gated_recording = RecordingStudio.root_recording_for(gated_workspace)
   RecordingStudioAccessible.bootstrap_owner_access!(recording: gated_recording, actor: user)
   if RecordingStudioDownloadable::Sources::Attachments.call(gated_recording).empty?
-    blob = ActiveStorage::Blob.create_and_upload!(
-      io: StringIO.new("notes for the gated zip"),
-      filename: "notes.txt",
-      content_type: "text/plain"
-    )
-    result = gated_recording.record_attachment_upload(
-      signed_blob_id: blob.signed_id,
+    result = AttachableDirectUpload.upload!(
+      recording: gated_recording,
       actor: user,
-      name: "notes"
+      filename: "notes.txt",
+      content: "notes for the gated zip"
     )
     raise "Failed to seed gated download file" if result.blank?
   end

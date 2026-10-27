@@ -78,15 +78,13 @@ module DownloadableTestHelper
   end
 
   def attach_file!(parent_recording, filename:, contents:, actor:, content_type: "text/plain")
-    blob = ActiveStorage::Blob.create_and_upload!(
-      io: StringIO.new(contents),
-      filename: filename,
-      content_type: content_type
-    )
-    parent_recording.record_attachment_upload(
-      signed_blob_id: blob.signed_id,
+    require_relative "support/attachable_direct_upload"
+    AttachableDirectUpload.upload!(
+      recording: parent_recording,
       actor: actor,
-      name: File.basename(filename, ".*").presence || filename
+      filename: filename,
+      content: contents,
+      content_type: content_type
     )
   end
 end

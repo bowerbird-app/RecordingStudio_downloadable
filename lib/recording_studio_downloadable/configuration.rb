@@ -28,7 +28,7 @@ module RecordingStudioDownloadable
 
     attr_accessor :authorize_with, :cache, :max_zip_bytes, :max_concurrent_builds
     attr_reader :hooks, :auth_roles, :rate_limits, :content_change_debounce, :skip_host_before_actions,
-                :access_denied_components, :download_gates
+                :access_denied_components, :download_gates, :layout
 
     def initialize
       @hooks = RecordingStudio::Hooks.new
@@ -41,6 +41,10 @@ module RecordingStudioDownloadable
       @skip_host_before_actions = DEFAULT_SKIP_HOST_BEFORE_ACTIONS.dup
       @cache = nil
       assign_registries
+    end
+
+    def layout=(value)
+      @layout = RecordingStudio::Layout.accept(value)
     end
 
     def register_access_denied_component(action, component)
@@ -141,6 +145,7 @@ module RecordingStudioDownloadable
     def assign_registries
       @access_denied_components = {}
       @download_gates = {}
+      @layout = nil
     end
 
     def default_auth_roles

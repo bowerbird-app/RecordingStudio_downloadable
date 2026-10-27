@@ -1,11 +1,10 @@
-<% dummy_page_nav(title: "Gem Views", back_url: root_path) %>
+<% dummy_page_nav(
+  title: "Gem Views",
+  subtitle: "Downloadable does not ship host ERB pages. The engine serves the ZIP route. Download history is an Admin screen.",
+  back_url: root_path
+) %>
 
 <div class="flex w-full flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Gem Views",
-    subtitle: "Downloadable does not ship host ERB pages. The engine serves the ZIP route. Download history is an Admin screen.",
-    variant: :h1
-  ) %>
 
   <p class="text-sm leading-6 text-(--surface-muted-content-color)">
     There is no attachment editor and no engine home template. Download history is the Admin `download_logs` screen.
