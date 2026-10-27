@@ -43,8 +43,8 @@
               ) %>
             </div>
           <% end %>
-          <% heading = content_for(:title).to_s.strip.presence %>
-          <% subtitle = content_for(:subtitle).to_s.strip.presence %>
+          <% heading = dummy_content_text(:title) %>
+          <% subtitle = dummy_content_text(:subtitle) %>
           <% if heading %>
             <%= render FlatPack::PageTitle::Component.new(title: heading, subtitle: subtitle) %>
           <% end %>

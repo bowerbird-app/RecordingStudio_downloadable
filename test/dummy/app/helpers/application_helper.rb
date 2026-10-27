@@ -10,6 +10,15 @@ module ApplicationHelper
     )
   end
 
+  # content_for escapes plain text, then String#strip drops html_safe.
+  # PageTitle escapes again, so an apostrophe would show as &#39;.
+  def dummy_content_text(name)
+    value = content_for(name).to_s
+    return if value.blank?
+
+    CGI.unescapeHTML(value).strip.presence
+  end
+
   def dummy_page_nav(title:, subtitle: nil, back_url: nil, back_label: "Home")
     content_for(:title, title)
     content_for(:subtitle, subtitle) if subtitle.present?
