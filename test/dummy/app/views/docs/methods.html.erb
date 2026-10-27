@@ -1,11 +1,10 @@
-<% dummy_page_nav(title: "Methods", back_url: root_path) %>
+<% dummy_page_nav(
+  title: "Methods",
+  subtitle: "Public recording API from RecordingStudio::Capabilities::Downloadable::RecordingMethods.",
+  back_url: root_path
+) %>
 
 <div class="flex w-full flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Methods",
-    subtitle: "Public recording API from RecordingStudio::Capabilities::Downloadable::RecordingMethods.",
-    variant: :h1
-  ) %>
 
   <p class="text-sm leading-6 text-(--surface-muted-content-color)">
     Installing the gem does not enable Downloadable. These methods are on recordings whose recordable type

@@ -2,7 +2,10 @@
 
 module RecordingStudioDownloadable
   class ApplicationController < (defined?(::ApplicationController) ? ::ApplicationController : ActionController::Base)
+    include RecordingStudio::ControllerLayout
+
     protect_from_forgery with: :exception
+    recording_studio_layout { RecordingStudioDownloadable.configuration.layout }
 
     rescue_from RecordingStudioDownloadable::Authorization::NotAuthorizedError, with: :handle_not_authorized
     rescue_from RecordingStudioDownloadable::RateLimitedError, with: :handle_rate_limited

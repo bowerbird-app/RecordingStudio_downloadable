@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-27
+
+### Changed
+
+- Require `recording_studio >= 6.1.0`. Development and dummy Gemfiles pin GitHub tag `v6.1.0` and Flatpack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`0.1.319`). Flatpack stays out of this gemspec. `view_component` stays `>= 4.14, < 5` via Flatpack.
+- `RecordingStudioDownloadable::Configuration#layout` defaults to `nil`. `nil` uses `RecordingStudio.configuration.layout`, then `recording_studio/default_layout`. The engine controller calls `recording_studio_layout`.
+- Dummy pages set `content_for :title` and `content_for :subtitle`. Back uses `flat_pack_page_nav`. The sidebar shell renders one page heading. `FlatPack::Card` calls no longer pass `style:`.
+- Accessible pin is `v0.22.0`. Attachable pin is `v0.22.0`. Trashable pin is `v0.12.0`. Admin pin is `v2.7.0`. Root Switchable pin is `v0.11.0`. Cache pin is `v0.5.1`. Logs pin is `v0.7.0`. Metrics pin is `v0.6.1`. Cache, Logs, and Metrics still declare `recording_studio ~> 4.2`, so the test bundle widens that requirement.
+
+### Upgrade notes
+
+- Bump to `0.9.0`. No migration. Hosts on Recording Studio 4 cannot install this version.
+- See [UPGRADING.md](UPGRADING.md).
+
 ## [0.8.1] - 2026-10-22
 
 ### Changed
@@ -190,7 +204,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/releases/tag/v0.7.2

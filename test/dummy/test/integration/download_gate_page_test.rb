@@ -126,11 +126,12 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
   end
 
   def attach_notes!
-    blob = ActiveStorage::Blob.create_and_upload!(
-      io: StringIO.new("notes for the gated zip"),
+    require Rails.root.join("../support/attachable_direct_upload")
+    AttachableDirectUpload.upload!(
+      recording: @recording,
+      actor: @user,
       filename: "notes.txt",
-      content_type: "text/plain"
+      content: "notes for the gated zip"
     )
-    @recording.record_attachment_upload(signed_blob_id: blob.signed_id, actor: @user, name: "notes")
   end
 end

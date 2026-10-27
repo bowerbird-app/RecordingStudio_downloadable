@@ -1,11 +1,10 @@
-<% dummy_page_nav(title: "Config", back_url: root_path) %>
+<% dummy_page_nav(
+  title: "Config",
+  subtitle: "Capability options on Downloadable.to and the host initializer.",
+  back_url: root_path
+) %>
 
 <div class="flex w-full flex-col gap-6">
-  <%= render FlatPack::PageTitle::Component.new(
-    title: "Config",
-    subtitle: "Capability options on Downloadable.to and the host initializer.",
-    variant: :h1
-  ) %>
 
   <%= render FlatPack::SectionTitle::Component.new(
     title: "Downloadable.to",

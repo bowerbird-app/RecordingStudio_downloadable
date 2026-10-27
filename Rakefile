@@ -115,4 +115,20 @@ namespace :app do
   task test: "test:all"
 end
 
+namespace :recording_studio do
+  desc "Fail when app/controllers hard-code layout \"recording_studio/...\""
+  task :check_layouts do
+    require "recording_studio/layout"
+
+    roots = [__dir__, File.expand_path("test/dummy", __dir__)]
+    paths = roots.flat_map { |root| RecordingStudio::Layout.hardcoded_layout_paths(root) }
+    next if paths.empty?
+
+    abort <<~MESSAGE
+      Hard-coded Recording Studio layout. Call recording_studio_layout on the controller instead.
+      #{paths.join("\n")}
+    MESSAGE
+  end
+end
+
 task default: :test

@@ -25,7 +25,7 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     html = recording_studio_downloadable_button(@recording.reload)
 
     assert_includes html, "recording-studio-downloadable--package"
-    assert_match(/<span>Preparing/, html)
+    assert_match(/>Preparing…</, html)
     assert_includes html, "package/status"
     refute_includes html, "data-turbo-method"
   end
@@ -42,7 +42,7 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     assert_includes html, "Retry download"
     assert_includes html, "turbo-method"
     assert_includes html, "Source set is empty"
-    refute_match(/<span>Preparing/, html)
+    refute_match(/>Preparing…</, html)
   end
 
   test "failed package button title shows persisted failure message as-is" do
@@ -87,7 +87,7 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     assert_includes html, "data-turbo=\"false\""
     assert_includes html, "recording-studio-downloadable--package"
     assert_includes html, "startDownload"
-    refute_match(/<span>Preparing/, html)
+    refute_match(/>Preparing…</, html)
     refute_includes html, "package-poll-value=\"true\""
   end
 
@@ -99,7 +99,7 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     assert_includes html, "Download"
     assert_includes html, "turbo-method"
     assert_includes html, "startDownload"
-    refute_match(/<span>Preparing/, html)
+    refute_match(/>Preparing…</, html)
   end
 
   test "anonymous visitors see the registered fallback instead of a generate post" do

@@ -35,6 +35,9 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     assert_includes response.body, workspace.name
     assert_includes response.body, "flat-pack-sidebar-layout"
     assert_select "nav[aria-label='Main navigation']", count: 1
+    assert_select "h1", text: "Downloadable Demo", count: 1
+    assert_select "p", text: "Package a recording's Attachable files into a ZIP."
+    refute_includes response.body, "&amp;#39;"
   end
 
   test "root switch page renders with the host default layout" do

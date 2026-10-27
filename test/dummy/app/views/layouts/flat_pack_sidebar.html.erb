@@ -43,6 +43,11 @@
               ) %>
             </div>
           <% end %>
+          <% heading = dummy_content_text(:title) %>
+          <% subtitle = dummy_content_text(:subtitle) %>
+          <% if heading %>
+            <%= render FlatPack::PageTitle::Component.new(title: heading, subtitle: subtitle) %>
+          <% end %>
           <%= yield %>
         </main>
       <% end %>
