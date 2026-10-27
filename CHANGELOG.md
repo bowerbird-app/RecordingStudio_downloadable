@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Require `recording_studio >= 6.1.0`. Development and dummy Gemfiles pin GitHub tag `v6.1.0` and Flatpack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`0.1.319`). Flatpack stays out of this gemspec. `view_component` stays `>= 4.14, < 5` via Flatpack.
 - `RecordingStudioDownloadable::Configuration#layout` defaults to `nil`. `nil` uses `RecordingStudio.configuration.layout`, then `recording_studio/default_layout`. The engine controller calls `recording_studio_layout`.
 - Dummy pages set `content_for :title` and `content_for :subtitle`. Back uses `flat_pack_page_nav`. The sidebar shell renders one page heading. `FlatPack::Card` calls no longer pass `style:`.
-- Accessible pin is `v0.22.0`. Attachable pin is `v0.22.0`. Trashable pin is `v0.12.0`. Admin pin is `v2.7.0`. Root Switchable pin is commit `8dd47257db449120496ad64ed2ce68af600dd6cd`. Cache, Logs, and Metrics stay on `v0.5.0` and still require `recording_studio` below 6, so the test bundle widens that requirement.
+- Accessible pin is `v0.22.0`. Attachable pin is `v0.22.0`. Trashable pin is `v0.12.0`. Admin pin is `v2.7.0`. Root Switchable pin is `v0.11.0`. Cache pin is `v0.5.1`. Logs pin is `v0.7.0`. Metrics pin is `v0.6.1`. Cache, Logs, and Metrics still declare `recording_studio ~> 4.2`, so the test bundle widens that requirement.
 
 ### Upgrade notes
 

@@ -53,11 +53,11 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.22.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.22.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_logs", tag: "v0.5.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.1"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_logs", tag: "v0.7.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable"'
-    assert_includes gemfile, 'ref: "8dd47257db449120496ad64ed2ce68af600dd6cd"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.5.0"'
+    assert_includes gemfile, 'tag: "v0.11.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.6.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.7.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.12.0", require: false'
     assert_includes gemfile, 'github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"'
@@ -71,7 +71,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute_includes gemfile, 'tag: "v0.8.0"'
     refute_includes gemfile, 'tag: "v0.7.1"'
     refute_includes gemfile, 'tag: "v0.9.1"'
-    refute_includes gemfile, 'tag: "v0.5.1"'
+    refute_includes gemfile, 'tag: "v0.5.0"'
     refute_includes gemfile, 'tag: "v0.4.3"'
     refute_includes gemfile, 'tag: "v0.1.198"'
     refute_includes gemfile, 'tag: "v0.1.177"'
@@ -316,11 +316,12 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
     assert_includes readme, "dummy GitHub tag `v0.22.0`"
     assert_includes readme, "dummy GitHub tag `v0.12.0`"
-    assert_includes readme, "8dd47257db449120496ad64ed2ce68af600dd6cd"
-    assert_includes readme, "dummy GitHub tag `v0.5.0`"
+    assert_includes readme, "dummy GitHub tag `v0.11.0`"
+    assert_includes readme, "dummy GitHub tag `v0.5.1`"
     assert_includes readme, "Attachable `v0.22.0`"
-    assert_includes readme, "dummy GitHub tag `v0.5.0`"
-    assert_includes readme, "Cache to `v0.5.0`"
+    assert_includes readme, "dummy GitHub tag `v0.7.0`"
+    assert_includes readme, "dummy GitHub tag `v0.6.1`"
+    assert_includes readme, "Cache to `v0.5.1`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"
     refute_includes readme, "dummy GitHub tag `v4.4.0`"
     refute_includes readme, "dummy GitHub tag `v4.3.0`"
@@ -334,7 +335,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute_includes readme, "v0.7.1"
     refute_includes readme, "v0.1.177"
     refute_includes readme, "v0.9.1"
-    refute_includes readme, "v0.5.1"
+    refute_includes readme, "Cache to `v0.5.0`"
     refute_includes readme, "v0.4.3"
     refute_includes readme, "v0.1.133"
     refute_includes readme, "v3 declarations"
@@ -361,7 +362,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "[a-z0-9_]{1,40}"
     assert_includes readme, "MetricsRegistration.context_for"
     assert_includes readme, "recording_studio_logs:migrations"
-    assert_includes readme, "Logs dummy GitHub tag `v0.5.0`"
+    assert_includes readme, "Logs dummy GitHub tag `v0.7.0`"
     assert_includes readme, ">= 0.4.1, < 1.0"
     assert_includes readme, "ImageArchivesController"
     refute_includes readme, "Non-granted actors never enqueue"
