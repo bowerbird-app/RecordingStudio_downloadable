@@ -17,7 +17,7 @@ No Downloadable migration.
 
 `0.8.0` registers the existing download log with RecordingStudioLogs. There is no daily summary table.
 
-1. Pin `recording_studio_logs` to GitHub tag `v0.5.0` (allowed range `>= 0.4.1, < 0.6`).
+1. Pin `recording_studio_logs` to GitHub tag `v0.5.0` (allowed range `>= 0.4.1, < 1.0`).
 2. Install Logs run tables if the host does not already have them:
 
 ```sh

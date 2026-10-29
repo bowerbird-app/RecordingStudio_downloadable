@@ -1,6 +1,6 @@
 # Recording Studio Downloadable
 
-Recording Studio 4.2 addon that packages files into a downloadable ZIP.
+Recording Studio 6.1 addon that packages files into a downloadable ZIP.
 
 Installing this gem does **not** enable the capability. Host recordables opt in:
 
