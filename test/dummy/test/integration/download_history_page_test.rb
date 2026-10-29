@@ -61,6 +61,7 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Last 4 weeks"
     assert_includes response.body, "Last 12 months"
     refute_includes response.body, "People"
+    refute_includes response.body, 'name="recordable_type"'
     refute_includes response.body, 'name="start_date"'
 
     get recording_studio_admin_admin.screen_table_path("download_logs", recording_id: @recording.id),
@@ -95,6 +96,16 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
       actor: @user, occurred_at: 1.day.ago
     )
 
+    get recording_studio_admin_admin.screen_path(
+      "download_logs",
+      recording_id: @recording.id,
+      scope: "subtree"
+    )
+
+    assert_response :success
+    assert_includes response.body, 'name="recordable_type"'
+    assert_includes response.body, ">What<"
+
     get recording_studio_admin_admin.screen_table_path(
       "download_logs",
       recording_id: @recording.id,
@@ -105,5 +116,15 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, kit.name
     assert_includes response.body, @user.email
     assert_includes response.body, "What"
+
+    get recording_studio_admin_admin.screen_path(
+      "download_logs",
+      recording_id: @recording.id,
+      scope: "subtree",
+      recordable_type: "PressKit"
+    )
+
+    assert_response :success
+    assert_match(/value="PressKit" selected="selected"/, response.body)
   end
 end

@@ -86,6 +86,10 @@ module RecordingStudioDownloadable
       subtree ? SUBTREE_COLUMNS : ITEM_COLUMNS
     end
 
+    def type_choices(recording)
+      (descendant_declared_types(recording) | declared_types).sort
+    end
+
     private
 
     def declared_type_name(name)
@@ -102,6 +106,17 @@ module RecordingStudioDownloadable
 
     def query_type_value
       requested_types.size == 1 ? requested_types.first : requested_types
+    end
+
+    def descendant_declared_types(recording)
+      return [] unless recording.respond_to?(:descendant_ids)
+
+      ids = recording.descendant_ids(include_self: true)
+      return [] if ids.empty?
+      return [] unless defined?(RecordingStudio::Recording)
+
+      names = RecordingStudio::Recording.unscoped.where(id: ids).distinct.pluck(:recordable_type)
+      names.select { |name| declared_type_name(name) }
     end
   end
 end

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Admin download history can open an authorized **anchor** recording plus its Core descendants (`scope=subtree`). Optional `recordable_type` limits that tree to declared types. Auth stays `downloadable.view_logs` on the anchor. The anchor does not need to be downloadable.
+- Admin download history can open an authorized **anchor** recording plus its Core descendants (`scope=subtree`). Optional `recordable_type` limits that tree to declared types. The subtree screen has a What filter on that param. The URL value is the starting selection. Auth stays `downloadable.view_logs` on the anchor. The anchor does not need to be downloadable.
 - `recording_studio_downloadable_history_link` accepts `scope:` and `recordable_type:`. Omit them and the link is unchanged.
 - Subtree tables add a What column with the item name.
 

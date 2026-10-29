@@ -65,6 +65,17 @@ module RecordingStudioDownloadable
         relation.where(actor_type: match.actor_type, actor_id: match.actor_id)
       end
 
+      def recordable_type_choices
+        scope = Admin.remembered_history_scope
+        return [] unless scope&.subtree
+
+        scope.type_choices(Admin.remembered_recording)
+      end
+
+      def apply_recordable_type(relation, _value, _context)
+        relation
+      end
+
       def item_label(log)
         recording = log.recording
         return Copy.t("history.unknown_item", default: Copy::UNKNOWN_ITEM) if recording.nil?

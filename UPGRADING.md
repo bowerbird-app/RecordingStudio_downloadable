@@ -20,7 +20,7 @@ recording_studio_downloadable_history_link(
 /admin/screens/download_logs?recording_id=:press_center_id&scope=subtree&recordable_type[]=Kit&recordable_type[]=Images
 ```
 
-`downloadable.view_logs` is checked on the press center recording only. Unknown `recordable_type` values are ignored. If none of the types are declared, the table is empty. Do not send `recording_ids[]`. Do not use `root_recording_id` for this rollup.
+`downloadable.view_logs` is checked on the press center recording only. Unknown `recordable_type` values are ignored. If none of the types are declared, the table is empty. On the subtree screen, What is a filter for the same param. The URL is the initial selection. Item history stays when and who. Do not send `recording_ids[]`. Do not use `root_recording_id` for this rollup.
 
 ## 0.9.0
 

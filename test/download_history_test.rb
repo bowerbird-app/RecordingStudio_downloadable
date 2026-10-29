@@ -82,6 +82,7 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "All time"
     assert_match(/value="last_4_weeks" selected="selected"/, response.body)
     refute_includes response.body, "People"
+    refute_includes response.body, 'name="recordable_type"'
     refute_includes response.body, 'name="start_date"'
     refute_includes response.body, 'name="download"'
 
@@ -192,9 +193,33 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     assert_includes history_table, "Typed kit"
     refute_includes history_table, "Typed page"
 
+    fetch_table(scope: "subtree")
+    assert_includes history_table, "Typed kit"
+    assert_includes history_table, "Typed page"
+
     fetch_table(scope: "subtree", recordable_type: "NotAType")
     refute_includes history_table, "Typed kit"
     refute_includes history_table, "Typed page"
+  end
+
+  test "subtree history shows a What filter and item history does not" do
+    kit = record_child!(PressKit.create!(name: "Filter kit"), parent: @recording)
+    record_child!(Page.create!(title: "Filter page"), parent: @recording)
+    log_download!(kit, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
+
+    sign_in @admin
+    get history_path
+    refute_includes response.body, 'name="recordable_type"'
+
+    get screen_path(@recording, scope: "subtree")
+    assert_includes response.body, 'name="recordable_type"'
+    assert_includes response.body, ">What<"
+    assert_includes response.body, 'value="PressKit"'
+    assert_includes response.body, 'value="Page"'
+    refute_match(/value="PressKit" selected="selected"/, response.body)
+
+    get screen_path(@recording, scope: "subtree", recordable_type: "PressKit")
+    assert_match(/value="PressKit" selected="selected"/, response.body)
   end
 
   test "subtree history still requires view_logs on the anchor" do
