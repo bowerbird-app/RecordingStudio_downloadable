@@ -6,6 +6,7 @@ module RecordingStudioDownloadable
     SCREEN_KEY = "download_logs"
     SECTION_KEY = "downloads"
     RECORDING_KEY = :recording_studio_downloadable_admin_recording
+    HISTORY_SCOPE_KEY = :recording_studio_downloadable_admin_history_scope
 
     module_function
 
@@ -38,6 +39,14 @@ module RecordingStudioDownloadable
 
     def remembered_recording
       Thread.current[RECORDING_KEY]
+    end
+
+    def remember_history_scope(scope)
+      Thread.current[HISTORY_SCOPE_KEY] = scope
+    end
+
+    def remembered_history_scope
+      Thread.current[HISTORY_SCOPE_KEY]
     end
 
     def recording_id_from(context)

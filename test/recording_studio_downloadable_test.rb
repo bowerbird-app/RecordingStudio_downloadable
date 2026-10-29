@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.9.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.10.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -355,6 +355,8 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "unpublished.recording_studio_publishable"
     assert_includes readme, "recording_studio_downloadable_download_logs"
     assert_includes readme, "downloadable.view_logs"
+    assert_includes readme, "scope=subtree"
+    assert_includes readme, "recordable_type"
     assert_includes readme, "register_access_denied_component"
     assert_includes readme, "register_download_gate"
     assert_includes readme, "continuation_url"

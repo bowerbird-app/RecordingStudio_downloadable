@@ -12,11 +12,14 @@ module RecordingStudioDownloadable
 
       def relation_for(context)
         recording = context.access_recording
+        scope = HistoryScope.from_params(context.params)
         Admin.remember_recording(recording)
+        Admin.remember_history_scope(scope)
         stamp_default_period!(context)
+        stamp_subtree_columns!(context, scope)
         return DownloadLog.none if recording.nil? || !allowed?(context)
 
-        recording.downloadable_download_logs
+        logs_relation(recording, scope)
       end
 
       def apply_period(relation, value, _context)
@@ -46,9 +49,10 @@ module RecordingStudioDownloadable
         recording = Admin.remembered_recording
         return [] unless recording
 
+        relation = logs_relation(recording)
         labels = []
-        labels << "anonymous" if recording.downloadable_download_logs.exists?(actor_id: nil)
-        recording.downloadable_download_logs.identified.find_each { |log| labels << log.person_label }
+        labels << "anonymous" if relation.exists?(actor_id: nil)
+        relation.identified.find_each { |log| labels << log.person_label }
         labels.uniq
       end
 
@@ -59,6 +63,22 @@ module RecordingStudioDownloadable
         return relation.none unless match
 
         relation.where(actor_type: match.actor_type, actor_id: match.actor_id)
+      end
+
+      def item_label(log)
+        recording = log.recording
+        return Copy.t("history.unknown_item", default: Copy::UNKNOWN_ITEM) if recording.nil?
+
+        recording.name.presence || recording.type_label.presence ||
+          Copy.t("history.unknown_item", default: Copy::UNKNOWN_ITEM)
+      end
+
+      def logs_relation(recording, scope = Admin.remembered_history_scope)
+        scope ||= HistoryScope.item
+        relation = scope.logs_for(recording)
+        return relation unless relation.respond_to?(:includes)
+
+        relation.includes(:recording)
       end
 
       private
@@ -73,11 +93,21 @@ module RecordingStudioDownloadable
         params["period"] = DownloadLogsScreen::DEFAULT_PERIOD
       end
 
+      def stamp_subtree_columns!(context, scope)
+        return unless scope.subtree
+
+        params = context.params
+        return unless params.respond_to?(:[]=)
+        return if params[:columns].present? || params["columns"].present?
+
+        params["columns"] = scope.table_columns
+      end
+
       def person_match(value)
         recording = Admin.remembered_recording
         return unless recording
 
-        recording.downloadable_download_logs.identified.find { |log| log.person_label == value }
+        logs_relation(recording).identified.find { |log| log.person_label == value }
       end
     end
   end

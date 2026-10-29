@@ -158,6 +158,55 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "workspaces.other-only"
   end
 
+  test "subtree history includes child logs and excludes siblings" do
+    child = record_child!(PressKit.create!(name: "Launch kit"), parent: @recording)
+    sibling = create_workspace_recording
+    grant_download_access!(sibling, @admin)
+    log_download!(@recording, actor: @admin, occurred_at: 1.hour.ago)
+    log_download!(child, actor: @editor, action: "press_kits.download", occurred_at: 2.hours.ago)
+    log_download!(sibling, actor: @admin, action: "workspaces.sibling-only", occurred_at: 1.hour.ago)
+
+    sign_in @admin
+    fetch_table
+    refute_includes table_headers, "What"
+    refute_includes history_table, "Launch kit"
+    refute_includes history_table, "workspaces.sibling-only"
+
+    fetch_table(scope: "subtree", recording_ids: [sibling.id])
+    assert_includes table_headers, "What"
+    assert_includes history_table, @admin.email
+    assert_includes history_table, @editor.email
+    assert_includes history_table, "Launch kit"
+    refute_includes history_table, "workspaces.sibling-only"
+    refute_includes history_table, sibling.name
+  end
+
+  test "subtree type filter keeps matching children and drops other types" do
+    kit = record_child!(PressKit.create!(name: "Typed kit"), parent: @recording)
+    page = record_child!(Page.create!(title: "Typed page"), parent: @recording)
+    log_download!(kit, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
+    log_download!(page, actor: @editor, action: "pages.download", occurred_at: 1.hour.ago)
+
+    sign_in @admin
+    fetch_table(scope: "subtree", recordable_type: "PressKit")
+    assert_includes history_table, "Typed kit"
+    refute_includes history_table, "Typed page"
+
+    fetch_table(scope: "subtree", recordable_type: "NotAType")
+    refute_includes history_table, "Typed kit"
+    refute_includes history_table, "Typed page"
+  end
+
+  test "subtree history still requires view_logs on the anchor" do
+    child = record_child!(PressKit.create!(name: "Hidden kit"), parent: @recording)
+    log_download!(child, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
+
+    sign_in @viewer
+    get table_path(@recording, scope: "subtree")
+    assert_response :not_found
+    refute_includes response.body, "Hidden kit"
+  end
+
   test "hosts can override history through an action audience" do
     with_action_audience(:"downloadable.view_logs", admin_only_audience) do
       sign_in @editor
@@ -234,6 +283,16 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
   def perform_enqueued_jobs_download!
     sign_in @admin
     perform_enqueued_jobs { @recording.downloadable_generate! }
+  end
+
+  def record_child!(recordable, parent:)
+    RecordingStudio.record!(
+      action: "created",
+      recordable: recordable,
+      root_recording: parent.root_recording_or_self,
+      parent_recording: parent,
+      actor: @admin
+    ).recording
   end
 
   def restore_view_logs_policy!

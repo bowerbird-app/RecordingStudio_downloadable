@@ -39,6 +39,8 @@ module RecordingStudioDownloadable
       table do
         column :occurred_at, title: "When"
         column :who, title: "Who", sortable: false, value: ->(row, _context) { row.person_label }
+        column :what, title: Copy.t("history.what", default: Copy::WHAT_COLUMN), sortable: false,
+                      value: ->(row, _context) { DownloadLogsScreen.item_label(row) }
         default_columns :occurred_at, :who
         default_sort :occurred_at, direction: :desc
         paginate per_page: 20

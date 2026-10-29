@@ -80,4 +80,30 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Downloads over time"
   end
+
+  test "subtree history on a workspace lists a child kit download" do
+    kit = PressKit.create!(name: "Subtree kit #{SecureRandom.hex(4)}")
+    kit_recording = RecordingStudio.record!(
+      action: "created",
+      recordable: kit,
+      root_recording: @recording,
+      parent_recording: @recording,
+      actor: @user
+    ).recording
+    RecordingStudioDownloadable::DownloadLog.record!(
+      recording: kit_recording, action: "press_kits.download", export_scope: "public",
+      actor: @user, occurred_at: 1.day.ago
+    )
+
+    get recording_studio_admin_admin.screen_table_path(
+      "download_logs",
+      recording_id: @recording.id,
+      scope: "subtree"
+    ), headers: { "Turbo-Frame" => "screen-table" }
+
+    assert_response :success
+    assert_includes response.body, kit.name
+    assert_includes response.body, @user.email
+    assert_includes response.body, "What"
+  end
 end

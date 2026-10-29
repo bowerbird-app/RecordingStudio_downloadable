@@ -180,23 +180,39 @@ RecordingStudioAdmin.configure do |config|
 end
 ```
 
-`recording_id` is the item whose logs you are opening. Without that param, the resolver should return the current root. A missing or trashed id stays unresolved so Admin refuses the page. The query is `access_recording.downloadable_download_logs`.
+`recording_id` is the item whose logs you are opening. Without that param, the resolver should return the current root. A missing or trashed id stays unresolved so Admin refuses the page. The default query is `access_recording.downloadable_download_logs`.
 
-Admin's own gate is still `required_access_role` (default `:view`) on that recording. Downloadable then requires `:"downloadable.view_logs"` (`visible_if` on the screen, and the query returns nothing when it fails). The action defaults to role `:edit`, so edit and admin can open history and view cannot. It does not fall back to `:view` and it does not reuse the download check. Hosts override it through Accessible, for example `config.action_audiences[:"downloadable.view_logs"]`. A signed-in person who passes Admin's `:view` role and fails `downloadable.view_logs` gets Admin's not-found response. Admin has no per-screen Accessible action.
+Add `scope=subtree` to count that recording and its Core descendants (`descendant_ids(include_self: true)`). Do not use `root_recording_id` for this rollup. The client cannot pass recording ids. Optional `recordable_type` further limits which recordings in that tree are included. One type or several. Unknown types are ignored. If every type is unknown, the table is empty.
+
+```
+/admin/screens/download_logs?recording_id=:id
+/admin/screens/download_logs?recording_id=:id&scope=subtree
+/admin/screens/download_logs?recording_id=:id&scope=subtree&recordable_type=PressKit
+/admin/screens/download_logs?recording_id=:id&scope=subtree&recordable_type[]=PressKit&recordable_type[]=Page
+```
+
+A host that rolls kit downloads up under a parent recording (a press center that is not itself downloadable) links with subtree and the kit types. Downloadable does not know those product types.
+
+Admin's own gate is still `required_access_role` (default `:view`) on that recording. Downloadable then requires `:"downloadable.view_logs"` on the **anchor** only (`visible_if` on the screen, and the query returns nothing when it fails). Child recordings are not checked. The action defaults to role `:edit`, so edit and admin can open history and view cannot. It does not fall back to `:view` and it does not reuse the download check. Hosts override it through Accessible, for example `config.action_audiences[:"downloadable.view_logs"]`. A signed-in person who passes Admin's `:view` role and fails `downloadable.view_logs` gets Admin's not-found response. Admin has no per-screen Accessible action.
 
 ```ruby
 recording_studio_downloadable_history_link(recording)
+recording_studio_downloadable_history_link(
+  recording,
+  scope: :subtree,
+  recordable_type: %w[PressKit Page]
+)
 ```
 
-The helper renders nothing unless Admin is loaded and the current person can view history. The link is `/admin/screens/download_logs?recording_id=…` when the host mounted Admin as `:admin` at `/admin`.
+The helper renders nothing unless Admin is loaded and the current person can view history. Omit `scope` and the recording must be downloadable, same as before. With `scope: :subtree` the recording does not need to be downloadable. The link is `/admin/screens/download_logs?recording_id=…` when the host mounted Admin as `:admin` at `/admin`. Subtree adds `scope=subtree` and any `recordable_type` values.
 
 Admin also requires the current root (Root Switchable) to be that recording's root. A history link for another workspace is refused until the person switches. The dummy starts on Studio Workspace when the signed-in person can open it, so the home page History link matches.
 
-The screen uses Admin's layout, inline filters, summary count, line chart, and paginated table (20 rows). Filters are a period preset, group by, and person. The presets are Last 7 days, Last 4 weeks (the default), Last 3 months, Last 12 months, and All time. Columns are when and who (or “Anonymous”), newest first. IP addresses, user agents, metadata, and the download action stay off the screen.
+The screen uses Admin's layout, inline filters, summary count, line chart, and paginated table (20 rows). Filters are a period preset, group by, and person. The presets are Last 7 days, Last 4 weeks (the default), Last 3 months, Last 12 months, and All time. Columns are when and who (or “Anonymous”), newest first. Subtree adds a What column with the item name. IP addresses, user agents, metadata, and the download action stay off the screen.
 
 Admin's `date_range` filter always renders a free start/end calendar, and its preset list cannot be replaced from a screen. `Period` also has no all-time key (`last_7_days`, `last_4_weeks`, `last_3_months`, and `last_12_months` do parse). The screen therefore uses a select whose values are those Period keys plus `all_time`. Select filters do not apply `default:`, and a missing `period` param would show “All” over an unfiltered table, so the query stamps `last_4_weeks` before the filters run. `last_4_weeks` is Period's window: today minus 28 days through today. All time leaves `occurred_at` unbounded. The chart still has to hand Metrics a start and end, and Metrics refuses a reporting period longer than its maximum (about a year), so an All time chart start is pulled forward to fit.
 
-When `RecordingStudio_metrics` is loaded, Downloadable registers `download_logs.total` (count) and `download_logs.over_time` (timeseries on `occurred_at`). The chart calls `RecordingStudioMetrics::Admin.chart_series` with `MetricsRegistration.context_for(recording:, actor:, relation:)`. That context uses scope `:root` and an `authorized_relation` already limited to the recording (and to the active filters when the screen draws the chart). Passing the Admin context straight into `chart_series` would also send the root recording, and Metrics would treat the log table as a recordable and return no points.
+When `RecordingStudio_metrics` is loaded, Downloadable registers `download_logs.total` (count) and `download_logs.over_time` (timeseries on `occurred_at`). The chart calls `RecordingStudioMetrics::Admin.chart_series` with `MetricsRegistration.context_for(recording:, actor:, relation:)`. That context uses scope `:root` and an `authorized_relation` already limited to the history query (this recording, or the subtree, and the active filters when the screen draws the chart). Passing the Admin context straight into `chart_series` would also send the root recording, and Metrics would treat the log table as a recordable and return no points.
 
 `chart_series` returns `{ x:, y: }` points (RecordingStudio_metrics 0.5.0). The screen hands that series to Admin. The counts stay the same.
 

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-29
+
+### Added
+
+- Admin download history can open an authorized **anchor** recording plus its Core descendants (`scope=subtree`). Optional `recordable_type` limits that tree to declared types. Auth stays `downloadable.view_logs` on the anchor. The anchor does not need to be downloadable.
+- `recording_studio_downloadable_history_link` accepts `scope:` and `recordable_type:`. Omit them and the link is unchanged.
+- Subtree tables add a What column with the item name.
+
+### Upgrade notes
+
+- Bump to `0.10.0`. No migration.
+- Single-recording `?recording_id=` links stay the same. See [UPGRADING.md](UPGRADING.md).
+
 ## [0.9.0] - 2026-10-27
 
 ### Changed
@@ -204,7 +217,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.7.2...v0.8.0

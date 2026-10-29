@@ -31,6 +31,12 @@
       <% card.footer do %>
         <%= recording_studio_downloadable_button(@recording) %>
         <%= recording_studio_downloadable_history_link(@recording) %>
+        <%= recording_studio_downloadable_history_link(
+          @recording,
+          scope: :subtree,
+          recordable_type: "PressKit",
+          text: "Kit history"
+        ) %>
       <% end %>
     <% end %>
   <% end %>
