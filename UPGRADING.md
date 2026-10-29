@@ -1,5 +1,27 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.10.0
+
+`0.10.0` adds optional subtree download history. No migration.
+
+1. Pin `recording_studio_downloadable` to `0.10.0`.
+2. Keep existing history links. `?recording_id=` still lists that recording only. `recording_studio_downloadable_history_link(recording)` is unchanged.
+3. To roll up downloads under a parent (a press center that is not downloadable, with kits below it), link with subtree. Pass your own type names. Downloadable does not know Press Centers or kits.
+
+```ruby
+recording_studio_downloadable_history_link(
+  press_center_recording,
+  scope: :subtree,
+  recordable_type: %w[Kit Images]
+)
+```
+
+```
+/admin/screens/download_logs?recording_id=:press_center_id&scope=subtree&recordable_type[]=Kit&recordable_type[]=Images
+```
+
+`downloadable.view_logs` is checked on the press center recording only. Unknown `recordable_type` values are ignored. If none of the types are declared, the table is empty. On the subtree screen, What lists those items by name. Pick one kit to see only its logs. All restores the subtree and still honors `recordable_type` on the URL. Item history stays when and who. Do not send `recording_ids[]`. Do not use `root_recording_id` for this rollup.
+
 ## 0.9.0
 
 `0.9.0` requires Recording Studio `>= 6.1.0` and develops against Flatpack `0.1.319`.
