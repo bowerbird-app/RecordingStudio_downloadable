@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-10-29
+
+### Changed
+
+- Stop tracking SimpleCov `coverage/` output. `.gitignore` already ignored `coverage/`.
+- README intro matches the gemspec: Recording Studio `>= 6.1.0`.
+- UPGRADING `0.8.0` Logs allowed range text matches the gemspec (`>= 0.4.1, < 1.0`).
+
+### Upgrade notes
+
+- Bump to `0.9.1`. No migration. No runtime behavior change.
+
 ## [0.9.0] - 2026-10-27
 
 ### Changed
@@ -204,7 +216,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.7.2...v0.8.0
