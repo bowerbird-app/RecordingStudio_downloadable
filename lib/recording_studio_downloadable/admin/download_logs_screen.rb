@@ -19,12 +19,9 @@ module RecordingStudioDownloadable
       filter :period, values: PERIOD_KEYS, apply: lambda { |relation, value, context|
         DownloadLogsScreen.apply_period(relation, value, context)
       }
-      filter :what,
-             param: :recordable_type,
-             options: -> { DownloadLogsScreen.recordable_type_choices },
-             apply: lambda { |relation, value, context|
-               DownloadLogsScreen.apply_recordable_type(relation, value, context)
-             }
+      filter :what, options: -> { DownloadLogsScreen.item_choices }, apply: lambda { |relation, value, context|
+        DownloadLogsScreen.apply_item(relation, value, context)
+      }
       filter :group_by, values: %i[day week month], default: :day
       filter :person, options: -> { DownloadLogsScreen.person_choices }, apply: lambda { |relation, value, context|
         DownloadLogsScreen.apply_person(relation, value, context)
@@ -57,9 +54,9 @@ module RecordingStudioDownloadable
 
       def self.filters
         declared = super
-        return declared if recordable_type_choices.any?
+        return declared if item_choices.any?
 
-        declared.reject { |filter| filter.param_key == :recordable_type }
+        declared.reject { |filter| filter.param_key == :what }
       end
     end
   end

@@ -86,8 +86,19 @@ module RecordingStudioDownloadable
       subtree ? SUBTREE_COLUMNS : ITEM_COLUMNS
     end
 
-    def type_choices(recording)
-      (descendant_declared_types(recording) | declared_types).sort
+    def item_labels(recording)
+      recordings_in_tree(recording).filter_map { |row| self.class.label_for(row) }.uniq.sort
+    end
+
+    def recording_ids_matching(recording, label)
+      recordings_in_tree(recording).filter_map { |row| row.id if self.class.label_for(row) == label.to_s }
+    end
+
+    def self.label_for(recording)
+      return Copy.t("history.unknown_item", default: Copy::UNKNOWN_ITEM) if recording.nil?
+
+      recording.name.presence || recording.type_label.presence ||
+        Copy.t("history.unknown_item", default: Copy::UNKNOWN_ITEM)
     end
 
     private
@@ -108,15 +119,11 @@ module RecordingStudioDownloadable
       requested_types.size == 1 ? requested_types.first : requested_types
     end
 
-    def descendant_declared_types(recording)
-      return [] unless recording.respond_to?(:descendant_ids)
+    def recordings_in_tree(recording)
+      ids = recording_ids_for(recording)
+      return [] if ids.empty? || !defined?(RecordingStudio::Recording)
 
-      ids = recording.descendant_ids(include_self: true)
-      return [] if ids.empty?
-      return [] unless defined?(RecordingStudio::Recording)
-
-      names = RecordingStudio::Recording.unscoped.where(id: ids).distinct.pluck(:recordable_type)
-      names.select { |name| declared_type_name(name) }
+      RecordingStudio::Recording.unscoped.where(id: ids)
     end
   end
 end

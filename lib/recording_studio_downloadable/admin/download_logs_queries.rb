@@ -65,23 +65,27 @@ module RecordingStudioDownloadable
         relation.where(actor_type: match.actor_type, actor_id: match.actor_id)
       end
 
-      def recordable_type_choices
+      def item_choices
         scope = Admin.remembered_history_scope
-        return [] unless scope&.subtree
+        recording = Admin.remembered_recording
+        return [] unless scope&.subtree && recording
 
-        scope.type_choices(Admin.remembered_recording)
+        scope.item_labels(recording)
       end
 
-      def apply_recordable_type(relation, _value, _context)
-        relation
+      def apply_item(relation, value, _context)
+        return relation if value.blank?
+
+        scope = Admin.remembered_history_scope
+        recording = Admin.remembered_recording
+        ids = scope&.subtree && recording ? scope.recording_ids_matching(recording, value) : []
+        return relation.none if ids.empty?
+
+        relation.where(recording_id: ids)
       end
 
       def item_label(log)
-        recording = log.recording
-        return Copy.t("history.unknown_item", default: Copy::UNKNOWN_ITEM) if recording.nil?
-
-        recording.name.presence || recording.type_label.presence ||
-          Copy.t("history.unknown_item", default: Copy::UNKNOWN_ITEM)
+        HistoryScope.label_for(log.recording)
       end
 
       def logs_relation(recording, scope = Admin.remembered_history_scope)
