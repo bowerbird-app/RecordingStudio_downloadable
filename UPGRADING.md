@@ -35,6 +35,10 @@ recording_studio_downloadable_history_link(
 
 No Downloadable migration.
 
+## 0.8.1
+
+`0.8.1` lifts the Logs gemspec ceiling to `< 1.0`. No migration. Pin `recording_studio_logs` to GitHub tag `v0.5.0` as before. Hosts may take any Logs release in `>= 0.4.1, < 1.0`.
+
 ## 0.8.0
 
 `0.8.0` registers the existing download log with RecordingStudioLogs. There is no daily summary table.
