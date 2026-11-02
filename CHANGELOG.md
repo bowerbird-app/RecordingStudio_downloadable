@@ -11,9 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Stop tracking SimpleCov `coverage/` output. `.gitignore` already ignored `coverage/`.
+- Stop tracking SimpleCov root and dummy `coverage/` output. `.gitignore` already ignored `coverage/`.
 - README intro matches the gemspec: Recording Studio `>= 6.1.0`.
-- UPGRADING `0.8.0` Logs allowed range text matches the gemspec (`>= 0.4.1, < 1.0`).
 
 ### Upgrade notes
 
