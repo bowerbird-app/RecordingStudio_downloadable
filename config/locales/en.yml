@@ -13,6 +13,8 @@ en:
         section_subtitle: "Who grabbed the ZIP."
         anonymous: "Anonymous"
         someone: "Someone"
+        unknown_item: "Unknown item"
+        what: "What"
         downloads: "Downloads"
         chart_title: "Downloads over time"
       notices:

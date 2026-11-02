@@ -82,6 +82,8 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "All time"
     assert_match(/value="last_4_weeks" selected="selected"/, response.body)
     refute_includes response.body, "People"
+    refute_includes response.body, 'name="recordable_type"'
+    refute_includes response.body, 'name="what"'
     refute_includes response.body, 'name="start_date"'
     refute_includes response.body, 'name="download"'
 
@@ -156,6 +158,93 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
 
     assert_includes [403, 404], response.status
     refute_includes response.body, "workspaces.other-only"
+  end
+
+  test "subtree history includes child logs and excludes siblings" do
+    child = record_child!(PressKit.create!(name: "Launch kit"), parent: @recording)
+    sibling = create_workspace_recording
+    grant_download_access!(sibling, @admin)
+    log_download!(@recording, actor: @admin, occurred_at: 1.hour.ago)
+    log_download!(child, actor: @editor, action: "press_kits.download", occurred_at: 2.hours.ago)
+    log_download!(sibling, actor: @admin, action: "workspaces.sibling-only", occurred_at: 1.hour.ago)
+
+    sign_in @admin
+    fetch_table
+    refute_includes table_headers, "What"
+    refute_includes history_table, "Launch kit"
+    refute_includes history_table, "workspaces.sibling-only"
+
+    fetch_table(scope: "subtree", recording_ids: [sibling.id])
+    assert_includes table_headers, "What"
+    assert_includes history_table, @admin.email
+    assert_includes history_table, @editor.email
+    assert_includes history_table, "Launch kit"
+    refute_includes history_table, "workspaces.sibling-only"
+    refute_includes history_table, sibling.name
+  end
+
+  test "subtree type filter keeps matching children and drops other types" do
+    kit = record_child!(PressKit.create!(name: "Typed kit"), parent: @recording)
+    page = record_child!(Page.create!(title: "Typed page"), parent: @recording)
+    log_download!(kit, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
+    log_download!(page, actor: @editor, action: "pages.download", occurred_at: 1.hour.ago)
+
+    sign_in @admin
+    fetch_table(scope: "subtree", recordable_type: "PressKit")
+    assert_includes history_table, "Typed kit"
+    refute_includes history_table, "Typed page"
+
+    fetch_table(scope: "subtree")
+    assert_includes history_table, "Typed kit"
+    assert_includes history_table, "Typed page"
+
+    fetch_table(scope: "subtree", recordable_type: "NotAType")
+    refute_includes history_table, "Typed kit"
+    refute_includes history_table, "Typed page"
+  end
+
+  test "subtree history shows a What item filter and item history does not" do
+    kit = record_child!(PressKit.create!(name: "Filter kit"), parent: @recording)
+    page = record_child!(Page.create!(title: "Filter page"), parent: @recording)
+    log_download!(kit, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
+    log_download!(page, actor: @editor, action: "pages.download", occurred_at: 1.hour.ago)
+
+    sign_in @admin
+    get history_path
+    refute_includes response.body, 'name="what"'
+
+    get screen_path(@recording, scope: "subtree")
+    assert_includes response.body, 'name="what"'
+    refute_match(/<select[^>]*name="recordable_type"/, response.body)
+    assert_includes response.body, 'value="Filter kit"'
+    assert_includes response.body, "Filter page"
+    refute_includes response.body, 'value="PressKit"'
+
+    fetch_table(scope: "subtree", what: "Filter kit")
+    assert_includes history_table, "Filter kit"
+    refute_includes history_table, "Filter page"
+
+    fetch_table(scope: "subtree")
+    assert_includes history_table, "Filter kit"
+    assert_includes history_table, "Filter page"
+
+    fetch_table(scope: "subtree", recordable_type: "PressKit")
+    assert_includes history_table, "Filter kit"
+    refute_includes history_table, "Filter page"
+
+    fetch_table(scope: "subtree", recordable_type: "PressKit", what: "Filter kit")
+    assert_includes history_table, "Filter kit"
+    refute_includes history_table, "Filter page"
+  end
+
+  test "subtree history still requires view_logs on the anchor" do
+    child = record_child!(PressKit.create!(name: "Hidden kit"), parent: @recording)
+    log_download!(child, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
+
+    sign_in @viewer
+    get table_path(@recording, scope: "subtree")
+    assert_response :not_found
+    refute_includes response.body, "Hidden kit"
   end
 
   test "hosts can override history through an action audience" do
@@ -234,6 +323,16 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
   def perform_enqueued_jobs_download!
     sign_in @admin
     perform_enqueued_jobs { @recording.downloadable_generate! }
+  end
+
+  def record_child!(recordable, parent:)
+    RecordingStudio.record!(
+      action: "created",
+      recordable: recordable,
+      root_recording: parent.root_recording_or_self,
+      parent_recording: parent,
+      actor: @admin
+    ).recording
   end
 
   def restore_view_logs_policy!

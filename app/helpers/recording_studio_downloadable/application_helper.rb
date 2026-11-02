@@ -52,7 +52,10 @@ module RecordingStudioDownloadable
     end
 
     def recording_studio_downloadable_history_link(recording, **options)
-      return unless recording.respond_to?(:downloadable?) && recording.downloadable?
+      history_scope = HistoryScope.from_options(options)
+      options = options.except(:scope, :recordable_type)
+      return unless recording
+      return unless history_scope.subtree || (recording.respond_to?(:downloadable?) && recording.downloadable?)
       return unless RecordingStudioDownloadable::Authorization.view_logs_allowed?(
         actor: downloadable_view_actor,
         recording: recording
@@ -63,7 +66,7 @@ module RecordingStudioDownloadable
         text: options.fetch(:text, Copy.t("buttons.history", default: Copy::HISTORY_BUTTON)),
         style: options.fetch(:style, :ghost),
         size: options.fetch(:size, :md),
-        href: downloadable_history_path_for(recording)
+        href: downloadable_history_path_for(recording, history_scope)
       )
     end
 
@@ -162,7 +165,7 @@ module RecordingStudioDownloadable
       downloadable_routes.recording_package_path(recording)
     end
 
-    def downloadable_history_path_for(recording)
+    def downloadable_history_path_for(recording, history_scope = HistoryScope.item)
       return unless defined?(RecordingStudioAdmin)
 
       key = RecordingStudioDownloadable::Admin::SCREEN_KEY
@@ -171,7 +174,7 @@ module RecordingStudioDownloadable
              else
                "#{RecordingStudioAdmin.configuration.default_mount_path}/screens/#{key}"
              end
-      "#{base}?#{Rack::Utils.build_query(recording_id: recording.id)}"
+      "#{base}?#{history_scope.query_params(recording_id: recording.id).to_query}"
     end
 
     def downloadable_package_status_path_for(recording)

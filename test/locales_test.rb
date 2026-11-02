@@ -17,6 +17,8 @@ class LocalesTest < ActiveSupport::TestCase
     "history.section_subtitle" => Copy::SECTION_SUBTITLE,
     "history.anonymous" => Copy::ANONYMOUS,
     "history.someone" => Copy::SOMEONE,
+    "history.unknown_item" => Copy::UNKNOWN_ITEM,
+    "history.what" => Copy::WHAT_COLUMN,
     "history.downloads" => Copy::STATS_DOWNLOADS,
     "history.chart_title" => Copy::CHART_TITLE,
     "notices.empty" => Copy::EMPTY_NOTICE,

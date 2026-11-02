@@ -61,6 +61,8 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Last 4 weeks"
     assert_includes response.body, "Last 12 months"
     refute_includes response.body, "People"
+    refute_includes response.body, 'name="recordable_type"'
+    refute_includes response.body, 'name="what"'
     refute_includes response.body, 'name="start_date"'
 
     get recording_studio_admin_admin.screen_table_path("download_logs", recording_id: @recording.id),
@@ -79,5 +81,64 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "Downloads over time"
+  end
+
+  test "subtree history on a workspace lists a child kit download" do
+    kit = PressKit.create!(name: "Subtree kit #{SecureRandom.hex(4)}")
+    kit_recording = RecordingStudio.record!(
+      action: "created",
+      recordable: kit,
+      root_recording: @recording,
+      parent_recording: @recording,
+      actor: @user
+    ).recording
+    RecordingStudioDownloadable::DownloadLog.record!(
+      recording: kit_recording, action: "press_kits.download", export_scope: "public",
+      actor: @user, occurred_at: 1.day.ago
+    )
+
+    get recording_studio_admin_admin.screen_path(
+      "download_logs",
+      recording_id: @recording.id,
+      scope: "subtree"
+    )
+
+    assert_response :success
+    assert_includes response.body, 'name="what"'
+    refute_match(/<select[^>]*name="recordable_type"/, response.body)
+    assert_includes response.body, kit.name
+
+    get recording_studio_admin_admin.screen_table_path(
+      "download_logs",
+      recording_id: @recording.id,
+      scope: "subtree"
+    ), headers: { "Turbo-Frame" => "screen-table" }
+
+    assert_response :success
+    assert_includes response.body, kit.name
+    assert_includes response.body, @user.email
+    assert_includes response.body, "What"
+
+    get recording_studio_admin_admin.screen_table_path(
+      "download_logs",
+      recording_id: @recording.id,
+      scope: "subtree",
+      what: kit.name
+    ), headers: { "Turbo-Frame" => "screen-table" }
+
+    assert_response :success
+    assert_includes response.body, kit.name
+
+    get recording_studio_admin_admin.screen_path(
+      "download_logs",
+      recording_id: @recording.id,
+      scope: "subtree",
+      recordable_type: "PressKit"
+    )
+
+    assert_response :success
+    assert_includes response.body, 'name="what"'
+    assert_includes response.body, kit.name
+    refute_match(/value="PressKit" selected="selected"/, response.body)
   end
 end

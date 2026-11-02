@@ -38,6 +38,7 @@ Then open the app and sign in with:
 - `/pages` - dummy table of Page recordables; `/pages/new` creates a page then opens Attachable upload
 - `/press_kits` - dummy Press Kit list (`source: :manifest` ZIP of uploads plus generated files); `/press_kits/:id/edit` changes the description
 - Download on home or Pages `POST`s ZIP generation for anyone authorized for that action (including anonymous visitors when the audience is `public`). Stimulus polls `/recording_studio_downloadable/recordings/:id/package/status` until `ready`, then starts the authorized GET. That GET redirects to a short-lived signed Active Storage URL (a bearer link until it expires) so the ZIP streams from Disk/R2 instead of Rails memory. Concurrent requests share one in-flight build; unauthorized requests never enqueue.
+- `/admin/screens/download_logs?recording_id=` - Admin download history for an item. Add `scope=subtree` to include descendants and a What filter of those items by name. Optional `recordable_type` still limits the tree for host links.
 - `/up` - Rails health check
 
 ## Active Storage / Cloudflare R2

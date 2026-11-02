@@ -204,6 +204,34 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     assert_nil recording_studio_downloadable_history_link(other)
   end
 
+  test "history link for subtree does not require the anchor to be downloadable" do
+    folder = Folder.create!(name: "Docs folder")
+    folder_recording = RecordingStudio.record!(
+      action: "created",
+      recordable: folder,
+      root_recording: @recording,
+      parent_recording: @recording,
+      actor: @actor
+    ).recording
+
+    refute folder_recording.downloadable?
+    html = recording_studio_downloadable_history_link(
+      folder_recording,
+      scope: :subtree,
+      recordable_type: %w[PressKit Page]
+    ).to_s
+
+    assert_includes html, "History"
+    assert_includes html, "download_logs"
+    assert_includes html, folder_recording.id
+    assert_includes html, "scope=subtree"
+    assert_includes html, "recordable_type"
+    assert_includes html, "PressKit"
+    assert_includes html, "Page"
+
+    assert_nil recording_studio_downloadable_history_link(folder_recording)
+  end
+
   test "anonymous visitors get a generate post when the audience is public" do
     audience = {
       allowed: %i[public granted],

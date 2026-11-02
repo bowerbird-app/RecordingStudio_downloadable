@@ -26,6 +26,8 @@ module RecordingStudioDownloadable
     SECTION_SUBTITLE = "Who grabbed the ZIP."
     ANONYMOUS = "Anonymous"
     SOMEONE = "Someone"
+    UNKNOWN_ITEM = "Unknown item"
+    WHAT_COLUMN = "What"
     STATS_DOWNLOADS = "Downloads"
     CHART_TITLE = "Downloads over time"
 

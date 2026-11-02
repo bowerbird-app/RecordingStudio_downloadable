@@ -97,6 +97,9 @@ begin
   if root_recording.downloadable_download_logs.none?
     seed_download_logs.call(root_recording, user, colleague)
   end
+  if press_kit_recording.downloadable_download_logs.none?
+    seed_download_logs.call(press_kit_recording, user, colleague)
+  end
 
   stored = RecordingStudioDownloadable::Sources::Attachments.call(press_kit_recording)
   if stored.empty?
