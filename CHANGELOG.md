@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-11-05
+
+### Changed
+
+- Development and dummy lockfiles take Rails `8.1.4.1`, rack `3.2.8`, nokogiri `1.19.7`, loofah `2.25.3`, and rails-html-sanitizer `1.7.2`. Dummy net-ssh stays `7.3.8`.
+
+### Upgrade notes
+
+- Bump to `0.10.2`. No migration. No runtime behavior change.
+
 ## [0.10.1] - 2026-11-02
 
 ### Changed
@@ -228,7 +238,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.2...HEAD
+[0.10.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.8.1...v0.9.0
