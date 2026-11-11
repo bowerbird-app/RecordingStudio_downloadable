@@ -21,7 +21,7 @@ module RecordingStudioDownloadable
     HISTORY_BUTTON = "History"
 
     HISTORY_TITLE = "Download history"
-    HISTORY_SUBTITLE = "Newest first."
+    SCREEN_TITLE = "Downloads"
     SECTION_TITLE = "Downloads"
     SECTION_SUBTITLE = "Who grabbed the ZIP."
     ANONYMOUS = "Anonymous"

@@ -8,7 +8,7 @@ en:
         history: "History"
       history:
         title: "Download history"
-        subtitle: "Newest first."
+        screen_title: "Downloads"
         section_title: "Downloads"
         section_subtitle: "Who grabbed the ZIP."
         anonymous: "Anonymous"

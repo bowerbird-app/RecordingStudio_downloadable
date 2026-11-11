@@ -12,7 +12,7 @@ class LocalesTest < ActiveSupport::TestCase
     "buttons.retry" => Copy::RETRY_BUTTON,
     "buttons.history" => Copy::HISTORY_BUTTON,
     "history.title" => Copy::HISTORY_TITLE,
-    "history.subtitle" => Copy::HISTORY_SUBTITLE,
+    "history.screen_title" => Copy::SCREEN_TITLE,
     "history.section_title" => Copy::SECTION_TITLE,
     "history.section_subtitle" => Copy::SECTION_SUBTITLE,
     "history.anonymous" => Copy::ANONYMOUS,

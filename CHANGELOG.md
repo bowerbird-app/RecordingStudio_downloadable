@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-11
+
+### Changed
+
+- The admin download history screen title is Downloads. The Downloads section link stays Download history.
+- That screen no longer shows a subtitle.
+- Group by on that screen defaults to week. Day, week, and month stay available.
+
+### Upgrade notes
+
+- Bump to `0.11.0`. No migration.
+- The screen title key is `recording_studio.downloadable.history.screen_title` (English "Downloads"). `history.title` still labels the section link.
+- `history.subtitle` is removed. See [UPGRADING.md](UPGRADING.md).
+
 ## [0.10.2] - 2026-11-05
 
 ### Changed
@@ -238,7 +252,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.2...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.9.0...v0.10.0

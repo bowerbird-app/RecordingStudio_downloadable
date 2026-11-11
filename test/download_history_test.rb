@@ -77,7 +77,12 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     get history_path
 
     assert_response :success
-    assert_includes response.body, "Download history"
+    assert_select "h1", text: "Downloads"
+    refute_includes response.body, "Download history"
+    refute_includes response.body, "Newest first."
+    assert_match(/value="week" selected="selected"/, response.body)
+    assert_includes response.body, 'value="day"'
+    assert_includes response.body, 'value="month"'
     assert_includes response.body, "Last 4 weeks"
     assert_includes response.body, "All time"
     assert_match(/value="last_4_weeks" selected="selected"/, response.body)
@@ -111,8 +116,16 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Downloads over time"
     assert_includes response.body, ">4<"
     assert_match(/flat-pack--chart-series-value=.*&quot;x&quot;:/, response.body)
-    assert_match(/flat-pack--chart-series-value=.*&quot;y&quot;:1/, response.body)
     refute_match(/flat-pack--chart-series-value=.*\[\d{4}-\d{2}-\d{2}/, response.body)
+
+    points = chart_points
+    dates = points.map { |point| Date.iso8601(point.fetch("x")) }
+    gaps = dates.each_cons(2).map { |earlier, later| (later - earlier).to_i }
+
+    total = points.sum { |point| point.fetch("y") }
+
+    assert_equal [7] * gaps.size, gaps
+    assert_equal 4, total
   end
 
   test "period presets and person filters limit the table" do
@@ -296,6 +309,11 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
 
   def history_table
     response.body[%r{<tbody.*?</tbody>}m].to_s
+  end
+
+  def chart_points
+    encoded = response.body[/data-flat-pack--chart-series-value="([^"]+)"/, 1]
+    JSON.parse(CGI.unescapeHTML(encoded)).first.fetch("data")
   end
 
   def log_download!(recording, actor:, action: "workspaces.download", occurred_at: Time.current, **trace)

@@ -10,8 +10,7 @@ module RecordingStudioDownloadable
 
       key SCREEN_KEY
       icon :arrow_down_tray
-      title { Copy.t("history.title", default: Copy::HISTORY_TITLE) }
-      subtitle { Copy.t("history.subtitle", default: Copy::HISTORY_SUBTITLE) }
+      title { Copy.t("history.screen_title", default: Copy::SCREEN_TITLE) }
       visible_if { |context| DownloadLogsScreen.allowed?(context) }
 
       query { |context| DownloadLogsScreen.relation_for(context) }
@@ -22,7 +21,7 @@ module RecordingStudioDownloadable
       filter :what, options: -> { DownloadLogsScreen.item_choices }, apply: lambda { |relation, value, context|
         DownloadLogsScreen.apply_item(relation, value, context)
       }
-      filter :group_by, values: %i[day week month], default: :day
+      filter :group_by, values: %i[day week month], default: :week
       filter :person, options: -> { DownloadLogsScreen.person_choices }, apply: lambda { |relation, value, context|
         DownloadLogsScreen.apply_person(relation, value, context)
       }

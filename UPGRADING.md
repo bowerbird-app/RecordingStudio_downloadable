@@ -1,5 +1,14 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.11.0
+
+`0.11.0` retitles the admin download history screen and changes its default grouping. No migration.
+
+1. Pin `recording_studio_downloadable` to `0.11.0`.
+2. The screen title is Downloads (`recording_studio.downloadable.history.screen_title`). The Downloads section link still reads Download history (`history.title`).
+3. The screen no longer shows a subtitle. `history.subtitle` is gone.
+4. Group by defaults to week. Day, week, and month stay available. A URL that already sets `group_by` is unchanged. Auth stays `:"downloadable.view_logs"`.
+
 ## 0.10.0
 
 `0.10.0` adds optional subtree download history. No migration.

@@ -57,7 +57,10 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     get recording_studio_admin_admin.screen_path("download_logs", recording_id: @recording.id)
 
     assert_response :success
-    assert_includes response.body, "Download history"
+    assert_select "h1", text: "Downloads"
+    refute_includes response.body, "Download history"
+    refute_includes response.body, "Newest first."
+    assert_match(/value="week" selected="selected"/, response.body)
     assert_includes response.body, "Last 4 weeks"
     assert_includes response.body, "Last 12 months"
     refute_includes response.body, "People"
