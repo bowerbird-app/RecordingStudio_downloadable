@@ -15,7 +15,14 @@ module RecordingStudioDownloadable
         private
 
         def register_action(name, api_name)
-          return if RecordingStudioApi.capability_action(name, api: api_name)
+          existing = RecordingStudioApi.capability_action(name, api: api_name)
+          if existing
+            spec = ACTIONS.fetch(name)
+            return if existing.capability == :downloadable && existing.handler == spec.fetch(:handler)
+
+            raise RecordingStudioApi::ConfigurationError,
+                  "API action #{name} is already registered on #{api_name}"
+          end
 
           RecordingStudioApi.register_capability_action(name, **action_options(name, api_name))
         end

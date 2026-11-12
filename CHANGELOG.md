@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Recording Studio API capability actions `:download` (POST) and `:package_status` (GET) on `:downloadable`. Handlers authorize through `context.access_grant.authorize!` and `Authorization.authorize!`, look up the recording in the grant's root, then call `downloadable_generate!` or read `downloadable_package`. `:download` builds or queues the ZIP and returns status, not a URL. The HTML download role (`config.auth_roles` `:download`, default `:view`) is the default; per-type `auth_roles` still apply. MCP needs no extra code. Hosts still list the actions on each recordable type API.
+- Recording Studio API capability actions `:downloadable_download` (POST) and `:downloadable_package_status` (GET) on `:downloadable`. Handlers authorize through `context.access_grant.authorize!` and `Authorization.authorize!`, look up the recording in the grant's root, then call `downloadable_generate!` or read `downloadable_package`. `:downloadable_download` builds or queues the ZIP and returns status, not a URL. Recording Studio API `required_role` is the global `Api.download_role` (`config.auth_roles` `:download`, default `:view`). A weaker per-type `auth_roles` value is refused by Recording Studio API first. MCP needs no extra code. Hosts still list the actions on each recordable type API. A colliding action name raises instead of being skipped.
 
 ### Changed
 
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Upgrade notes
 
 - Bump to `0.12.0`. No migration.
-- Enable `:download` and `:package_status` on recordable type APIs that should expose them. See [UPGRADING.md](UPGRADING.md).
+- Enable `:downloadable_download` and `:downloadable_package_status` on recordable type APIs that should expose them. See [UPGRADING.md](UPGRADING.md).
 
 ## [0.11.0] - 2026-11-12
 

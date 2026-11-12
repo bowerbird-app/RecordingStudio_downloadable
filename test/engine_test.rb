@@ -159,7 +159,16 @@ class EngineTest < Minitest::Test
     end
 
     assert_equal 1, to_prepare_blocks.size
-    assert_nil to_prepare_blocks.first.call
+
+    registered = nil
+    RecordingStudioDownloadable::Api.stub(:register_capability_action!, lambda {
+      registered = RecordingStudioDownloadable::Api::ACTIONS.keys
+      registered
+    }) do
+      to_prepare_blocks.first.call
+    end
+
+    assert_equal %i[downloadable_download downloadable_package_status], registered
   end
 
   def test_model_extension_initializer_skips_abstract_models

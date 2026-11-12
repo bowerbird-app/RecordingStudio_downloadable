@@ -16,7 +16,7 @@ end
 RecordingStudioApi.register_recordable_type_api(
   "Workspace",
   operations: %i[index show],
-  capability_actions: %i[download package_status],
+  capability_actions: %i[downloadable_download downloadable_package_status],
   serializer: ->(workspace, **) { { name: workspace.name } },
   output_keys: %i[name]
 )

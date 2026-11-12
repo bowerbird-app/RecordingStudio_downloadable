@@ -30,7 +30,7 @@ class DownloadableApiActionsTest < ActionDispatch::IntegrationTest
 
   test "download authorizes then generates for an actor who can use the HTML package" do
     assert_enqueued_jobs 1, only: RecordingStudioDownloadable::GeneratePackageJob do
-      payload = call(:post, "/workspaces/#{@recording.id}/actions/download", @owner_token)
+      payload = call(:post, "/workspaces/#{@recording.id}/actions/downloadable_download", @owner_token)
       assert_response :success, response.body
       assert_equal "pending", payload.fetch("state")
       refute payload.fetch("ready")
@@ -40,7 +40,7 @@ class DownloadableApiActionsTest < ActionDispatch::IntegrationTest
 
     perform_enqueued_jobs
 
-    status = call(:get, "/workspaces/#{@recording.id}/actions/package_status", @owner_token)
+    status = call(:get, "/workspaces/#{@recording.id}/actions/downloadable_package_status", @owner_token)
     assert_response :success, response.body
     assert_equal "ready", status.fetch("state")
     assert status.fetch("ready")
@@ -51,7 +51,7 @@ class DownloadableApiActionsTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs { @recording.downloadable_generate! }
 
     assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
-      payload = call(:get, "/workspaces/#{@recording.id}/actions/package_status", @owner_token)
+      payload = call(:get, "/workspaces/#{@recording.id}/actions/downloadable_package_status", @owner_token)
       assert_response :success, response.body
       assert_equal "ready", payload.fetch("state")
       assert_equal @recording.downloadable_package&.failed? || false, payload.fetch("failed")
@@ -60,18 +60,18 @@ class DownloadableApiActionsTest < ActionDispatch::IntegrationTest
 
   test "download and package_status are forbidden without the HTML download role" do
     with_action_audience(:"workspaces.download", download_audience(granted_roles: %i[edit admin])) do
-      call(:post, "/workspaces/#{@recording.id}/actions/download", @viewer_token)
+      call(:post, "/workspaces/#{@recording.id}/actions/downloadable_download", @viewer_token)
       assert_response :forbidden, response.body
-      call(:get, "/workspaces/#{@recording.id}/actions/package_status", @viewer_token)
+      call(:get, "/workspaces/#{@recording.id}/actions/downloadable_package_status", @viewer_token)
       assert_response :forbidden, response.body
     end
     assert_nil @recording.reload.downloadable_package
   end
 
   test "a viewer with the HTML download role can download and read status" do
-    call(:post, "/workspaces/#{@recording.id}/actions/download", @viewer_token)
+    call(:post, "/workspaces/#{@recording.id}/actions/downloadable_download", @viewer_token)
     assert_response :success, response.body
-    payload = call(:get, "/workspaces/#{@recording.id}/actions/package_status", @viewer_token)
+    payload = call(:get, "/workspaces/#{@recording.id}/actions/downloadable_package_status", @viewer_token)
     assert_response :success, response.body
 
     assert_equal "pending", payload.fetch("state")
@@ -81,9 +81,9 @@ class DownloadableApiActionsTest < ActionDispatch::IntegrationTest
     foreign = create_workspace_recording
     RecordingStudioAccessible.bootstrap_owner_access!(recording: foreign, actor: @stranger)
 
-    call(:post, "/workspaces/#{foreign.id}/actions/download", @owner_token)
+    call(:post, "/workspaces/#{foreign.id}/actions/downloadable_download", @owner_token)
     assert_response :not_found, response.body
-    call(:get, "/workspaces/#{foreign.id}/actions/package_status", @owner_token)
+    call(:get, "/workspaces/#{foreign.id}/actions/downloadable_package_status", @owner_token)
     assert_response :not_found, response.body
     assert_nil foreign.downloadable_package
   end
@@ -96,7 +96,7 @@ class DownloadableApiActionsTest < ActionDispatch::IntegrationTest
     end
 
     with_download_gate(@recording.downloadable_action, gate) do
-      call(:post, "/workspaces/#{@recording.id}/actions/download", @owner_token)
+      call(:post, "/workspaces/#{@recording.id}/actions/downloadable_download", @owner_token)
       assert_response :forbidden, response.body
     end
     assert_nil @recording.reload.downloadable_package
@@ -104,10 +104,42 @@ class DownloadableApiActionsTest < ActionDispatch::IntegrationTest
 
   test "per-type auth_roles override is resolved per recording" do
     with_downloadable_options(Workspace, source: :attachments, format: :zip, auth_roles: { download: :edit }) do
-      call(:post, "/workspaces/#{@recording.id}/actions/download", @viewer_token)
+      call(:post, "/workspaces/#{@recording.id}/actions/downloadable_download", @viewer_token)
       assert_response :forbidden, response.body
-      call(:post, "/workspaces/#{@recording.id}/actions/download", @owner_token)
+      call(:post, "/workspaces/#{@recording.id}/actions/downloadable_download", @owner_token)
       assert_response :success, response.body
+    end
+  end
+
+  test "scoped downloadable actions are registered on the public API" do
+    download = RecordingStudioApi.capability_action(:downloadable_download)
+    status = RecordingStudioApi.capability_action(:downloadable_package_status)
+
+    assert download
+    assert_equal :downloadable, download.capability
+    assert_equal :post, download.http_verb
+    assert_equal RecordingStudioDownloadable::Api.download_role, download.required_role
+    assert_equal RecordingStudioDownloadable::Api::DownloadRecording, download.handler
+
+    assert status
+    assert_equal :downloadable, status.capability
+    assert_equal :get, status.http_verb
+    assert_equal RecordingStudioDownloadable::Api.download_role, status.required_role
+    assert_equal RecordingStudioDownloadable::Api::PackageStatus, status.handler
+  end
+
+  test "re-registering this gem's actions does not raise" do
+    assert_nil RecordingStudioDownloadable::Api.register_capability_action!
+  end
+
+  test "a colliding capability action raises" do
+    foreign = Struct.new(:capability, :handler).new(:movable, Object.new)
+
+    RecordingStudioApi.stub(:capability_action, foreign) do
+      error = assert_raises(RecordingStudioApi::ConfigurationError) do
+        RecordingStudioDownloadable::Api.register_capability_action!
+      end
+      assert_match(/already registered/, error.message)
     end
   end
 

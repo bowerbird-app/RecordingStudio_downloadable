@@ -1,7 +1,6 @@
-<div class="gap-6">
 <% if WorkspaceDownloadGate.confirmed?(WorkspaceDownloadGate.entry_for(recording, WorkspaceDownloadGate.entries(Current.download_gate))) %>
   <%= recording_studio_downloadable_button(recording, autostart: true) do %>
-    <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg, align: :start, class: "gap-6") do %>
+    <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg, align: :start) do %>
       <div data-downloadable-progress>
         <%= render FlatPack::Grid::Component.new(cols: 1, gap: :sm, align: :start) do %>
           <%= render FlatPack::SectionTitle::Component.new(
@@ -41,7 +40,7 @@
 <% else %>
   <%= form_with url: download_gate_path, method: :patch do %>
     <%= hidden_field_tag :recording_id, recording.id %>
-    <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg, align: :start, class: "gap-6") do %>
+    <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg, align: :start) do %>
       <% if flash[:alert].present? %>
         <%= render FlatPack::Alert::Component.new(title: flash[:alert], style: :warning) %>
       <% end %>
@@ -60,4 +59,3 @@
     <% end %>
   <% end %>
 <% end %>
-</div>

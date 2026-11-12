@@ -17,6 +17,18 @@ class ApiRegistrationTest < Minitest::Test
     assert_equal :edit, role
   end
 
+  def test_registered_action_names_are_scoped_to_downloadable
+    assert_equal %i[downloadable_download downloadable_package_status],
+                 RecordingStudioDownloadable::Api::ACTIONS.keys
+  end
+
+  def test_openapi_descriptions_name_the_global_download_role
+    RecordingStudioDownloadable::Api::ACTIONS.each_value do |spec|
+      assert_includes spec.fetch(:description), "Api.download_role"
+      assert_includes spec.fetch(:description), "weaker per-type auth role"
+    end
+  end
+
   def test_openapi_summaries_are_plain_sentences
     RecordingStudioDownloadable::Api::ACTIONS.each_value do |spec|
       summary = spec.fetch(:summary)
