@@ -31,7 +31,7 @@ module RecordingStudioDownloadable
       end
 
       def period_window(value)
-        key = value.presence&.to_s || DownloadLogsScreen::DEFAULT_PERIOD
+        key = value.presence&.to_s || DownloadLogsDeclaration::DEFAULT_PERIOD
         return if key == "all_time"
 
         period = RecordingStudioAdmin::Period.from_preset_key(key)
@@ -41,7 +41,7 @@ module RecordingStudioDownloadable
       end
 
       def period_label_for(context)
-        key = context.filter_value(:period).presence || DownloadLogsScreen::DEFAULT_PERIOD
+        key = context.filter_value(:period).presence || DownloadLogsDeclaration::DEFAULT_PERIOD
         key.to_s.humanize
       end
 
@@ -88,7 +88,7 @@ module RecordingStudioDownloadable
         return unless params.respond_to?(:[]=)
         return if params[:period].present? || params["period"].present?
 
-        params["period"] = DownloadLogsScreen::DEFAULT_PERIOD
+        params["period"] = DownloadLogsDeclaration::DEFAULT_PERIOD
       end
 
       def stamp_item_column!(context)

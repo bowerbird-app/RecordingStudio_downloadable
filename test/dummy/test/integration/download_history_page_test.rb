@@ -66,7 +66,8 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "People"
     assert_includes response.body, "Who"
     assert_includes response.body, 'name="person"'
-    assert_includes response.body, 'name="recordable_type"'
+    refute_includes response.body, 'name="recordable_type"'
+    refute_includes response.body, 'name="item_'
     refute_includes response.body, 'name="what"'
     refute_includes response.body, 'name="start_date"'
 
@@ -101,9 +102,10 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
       recording: kit_recording, action: "press_kits.download", export_scope: "public",
       actor: @user, occurred_at: 1.day.ago
     )
-    item_key = RecordingStudioDownloadable::Admin::DownloadLogsScreen.item_filter_key("PressKit")
+    item_key = RecordingStudioDownloadable::Admin::DownloadLogsRollupScreen.item_filter_key("PressKit")
+    rollup_key = RecordingStudioDownloadable::Admin::ROLLUP_SCREEN_KEY
 
-    get recording_studio_admin_admin.screen_path("download_logs", recording_id: @recording.id)
+    get recording_studio_admin_admin.screen_path(rollup_key, recording_id: @recording.id)
 
     assert_response :success
     assert_includes response.body, %(name="#{item_key}")
@@ -112,7 +114,7 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "scope=subtree"
 
     get recording_studio_admin_admin.screen_table_path(
-      "download_logs",
+      rollup_key,
       recording_id: @recording.id
     ), headers: { "Turbo-Frame" => "screen-table" }
 
@@ -122,7 +124,7 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "What"
 
     get recording_studio_admin_admin.screen_table_path(
-      "download_logs",
+      rollup_key,
       recording_id: @recording.id,
       item_key => kit_recording.id
     ), headers: { "Turbo-Frame" => "screen-table" }

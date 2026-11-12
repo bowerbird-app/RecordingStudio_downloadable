@@ -4,6 +4,7 @@ module RecordingStudioDownloadable
   # Optional RecordingStudioAdmin registration. Loaded only when that gem is present.
   module Admin
     SCREEN_KEY = "download_logs"
+    ROLLUP_SCREEN_KEY = "download_logs_rollup"
     SECTION_KEY = "downloads"
     RECORDING_KEY = :recording_studio_downloadable_admin_recording
     LOG_IDS_KEY = :recording_studio_downloadable_admin_log_ids
@@ -16,8 +17,9 @@ module RecordingStudioDownloadable
       require_screen!
       install_within_log_filter!
       RecordingStudioAdmin.register_screen(DownloadLogsScreen)
+      RecordingStudioAdmin.register_screen(DownloadLogsRollupScreen)
       RecordingStudioAdmin.register_section(DownloadsSection)
-      DownloadLogsScreen.install_scope!
+      DownloadLogsRollupScreen.install_scope!
     end
 
     def require_screen!

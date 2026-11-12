@@ -10,7 +10,7 @@ module RecordingStudioDownloadable
 
       link :history,
            text: ->(_context) { Copy.t("history.title", default: Copy::HISTORY_TITLE) },
-           url: ->(context) { context.scoped_screen_path(SCREEN_KEY) },
+           url: ->(context) { context.scoped_screen_path(ROLLUP_SCREEN_KEY) },
            style: :primary
     end
   end

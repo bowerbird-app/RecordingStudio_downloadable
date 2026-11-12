@@ -63,7 +63,7 @@ module RecordingStudioDownloadable
         text: options.fetch(:text, Copy.t("buttons.history", default: Copy::HISTORY_BUTTON)),
         style: options.fetch(:style, :ghost),
         size: options.fetch(:size, :md),
-        href: downloadable_history_path_for(recording, recordable_type: recordable_type)
+        href: downloadable_history_path_for(recording, recordable_type: recordable_type, rollup: rollup)
       )
     end
 
@@ -175,14 +175,19 @@ module RecordingStudioDownloadable
       recording.respond_to?(:downloadable?) && recording.downloadable?
     end
 
-    def downloadable_history_path_for(recording, recordable_type: nil)
+    def downloadable_history_path_for(recording, recordable_type: nil, rollup: false)
       return unless defined?(RecordingStudioAdmin)
 
-      key = RecordingStudioDownloadable::Admin::SCREEN_KEY
+      key = history_screen_key(rollup: rollup, recordable_type: recordable_type)
       base = history_screen_base(key)
       params = { recording_id: recording.id }
       params[:recordable_type] = recordable_type.to_s if recordable_type.present?
       "#{base}?#{params.to_query}"
+    end
+
+    def history_screen_key(rollup:, recordable_type:)
+      keys = RecordingStudioDownloadable::Admin
+      rollup || recordable_type.present? ? keys::ROLLUP_SCREEN_KEY : keys::SCREEN_KEY
     end
 
     def history_screen_base(key)

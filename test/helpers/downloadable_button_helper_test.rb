@@ -192,7 +192,8 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     html = recording_studio_downloadable_history_link(@recording).to_s
 
     assert_includes html, "History"
-    assert_includes html, "download_logs"
+    assert_includes html, "download_logs?"
+    refute_includes html, "download_logs_rollup"
     assert_includes html, @recording.id
 
     viewer = User.create!(email: "viewer-#{SecureRandom.hex(4)}@example.com", password: "Password",
@@ -222,7 +223,7 @@ class DownloadableButtonHelperTest < ActionView::TestCase
     ).to_s
 
     assert_includes html, "History"
-    assert_includes html, "download_logs"
+    assert_includes html, "download_logs_rollup"
     assert_includes html, folder_recording.id
     assert_includes html, "recordable_type=PressKit"
     refute_includes html, "scope="

@@ -11,20 +11,21 @@
 5. Group by defaults to week. Day, week, and month stay available. A URL that already sets `group_by` is unchanged. Auth stays `:"downloadable.view_logs"` on the anchor. `last_4_weeks` is today minus 27 days through today.
 6. Drop `scope=subtree`. Admin reserves `scope` for Root Switchable. A leftover `scope=subtree` can switch the current root. Do not send `recording_ids[]`. Do not use `root_recording_id`.
 
-`?recording_id=` now lists that anchor and kept descendants on the history allowlist. The allowlist defaults to every type that opted in with Downloadable `.to`. Override it before Admin boots:
+`download_logs?recording_id=` lists that recording only. Period, group by, and Who are its filters. `download_logs_rollup?recording_id=` lists that anchor and kept descendants on the history allowlist. `rollup: true` or a `recordable_type` on the history helper opens the rollup screen. The allowlist defaults to every type that opted in with Downloadable `.to`. Override it before Admin boots:
 
 ```ruby
 RecordingStudioDownloadable.configuration.history_recordable_types = %w[PressKit Page]
 ```
 
-`nil` keeps the default. An empty list turns the rollup off, and the query is only the anchor. After a later change, call `RecordingStudioDownloadable::Admin::DownloadLogsScreen.install_scope!`.
+`nil` keeps the default. An empty list turns the rollup off, and the query is only the anchor. After a later change, call `RecordingStudioDownloadable::Admin::DownloadLogsRollupScreen.install_scope!`. The rollup draws one within filter per allowlisted type. That list is fixed when the screen registers, so a request cannot hide Page while keeping Press kit. Set the allowlist to the types that should appear.
 
 Kind is one class name. An unknown type is ignored and the allowlist stays in effect. That differs from 0.10, where a list of unknown types emptied the table. Within drills into one item and everything under it. The param key is `item_` plus the underscored type. A descendant count past Admin `max_scoped_recordings` (default 5000) returns 422.
 
 ```
 /admin/screens/download_logs?recording_id=:id
-/admin/screens/download_logs?recording_id=:id&recordable_type=PressKit
-/admin/screens/download_logs?recording_id=:id&item_press_kit=:child_id
+/admin/screens/download_logs_rollup?recording_id=:id
+/admin/screens/download_logs_rollup?recording_id=:id&recordable_type=PressKit
+/admin/screens/download_logs_rollup?recording_id=:id&item_press_kit=:child_id
 ```
 
 ```ruby

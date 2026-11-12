@@ -14,9 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The admin download history screen title is Downloads. The Downloads section link stays Download history.
 - That screen no longer shows a subtitle.
 - Group by on that screen defaults to week. Day, week, and month stay available.
-- Download history uses Admin 2.12 scoped recordings. `?recording_id=` lists the anchor and kept descendants on the history allowlist. The 0.10 `scope=subtree` query is replaced. Kind is one `recordable_type`. Within is `item_<underscored_type>=` for one item and everything under it.
+- Download history uses Admin 2.12 scoped recordings on `download_logs_rollup`. That screen lists the anchor and kept descendants on the history allowlist. The plain `download_logs` screen stays one recording. The 0.10 `scope=subtree` query is replaced. Kind is one `recordable_type`. Within is `item_<underscored_type>=` for one item and everything under it.
 - The person filter is labeled Who. Kind and the within filters replace the What select. The What column stays when the rollup is on.
 - `history_recordable_types` sets the allowlist. `nil` means every type that opted in with `.to`.
+- `download_logs?recording_id=` stays one recording, with period, group by, and Who. Descendants, Kind, and within filters live on `download_logs_rollup`. The history helper opens that screen for `rollup: true` or a `recordable_type`.
+- The history line chart uses a straight stroke. A smooth curve was drawn in 0..1 on Admin's 0..max count axis, so a week of 3 downloads looked like a fraction.
 - Development and dummy apps pin Admin `v2.12.0`, Recording Studio `v6.3.0`, and Flatpack `v0.1.341`. The gemspec still allows Recording Studio `>= 6.1.0`. Admin stays a host dependency.
 
 ### Upgrade notes
