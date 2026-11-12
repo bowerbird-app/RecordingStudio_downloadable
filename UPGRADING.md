@@ -1,5 +1,16 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.12.0
+
+`0.12.0` exposes download through Recording Studio API. No migration.
+
+1. Pin `recording_studio_downloadable` to `0.12.0`.
+2. If the host loads Recording Studio API, pin `recording_studio_api` to `v0.21.4` and `recording_studio_admin` to `v2.13.0`. API `0.21.4` stops shadowing Admin's history filter-fields partial.
+3. HTML package `GET` still authorizes, gates, rate-limits, and serves as before.
+4. If the host registers a recordable type API, add `capability_actions: %i[downloadable_download downloadable_package_status]` (or the subset you want) on downloadable types. The gem registers the actions. The type list is still default-deny.
+5. `:downloadable_download` is POST. It authorizes, honors the download gate and rate limit, then builds or queues the ZIP and returns package status. It does not return a download URL. `:downloadable_package_status` is GET and reads `downloadable_package`. Recording Studio API `required_role` is the global `Api.download_role` (`config.auth_roles` `:download`, default `:view`). A weaker per-type `auth_roles` value is refused by Recording Studio API before the handler runs.
+6. Download log metrics on the API now require `downloadable.view_logs` (edit), the same as the Admin history screen.
+
 ## 0.11.1
 
 `0.11.1` stops the install generator from appending a Downloadable Stimulus lazy-load line. No migration.

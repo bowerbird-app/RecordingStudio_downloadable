@@ -147,6 +147,38 @@ class EngineTest < Minitest::Test
     assert_equal 2, to_prepare_blocks.size
   end
 
+  def test_api_initializer_registers_capability_actions_on_prepare
+    to_prepare_blocks = []
+    config_stub = Object.new
+    config_stub.define_singleton_method(:to_prepare) do |&block|
+      to_prepare_blocks << block
+    end
+
+    RecordingStudioDownloadable::Engine.stub(:config, config_stub) do
+      find_initializer("recording_studio_downloadable.api").block.call
+    end
+
+    assert_equal 1, to_prepare_blocks.size
+
+    registered = nil
+    RecordingStudioDownloadable::Api.stub(:register_capability_action!, lambda {
+      registered = RecordingStudioDownloadable::Api::ACTIONS.keys
+      registered
+    }) do
+      to_prepare_blocks.first.call
+    end
+
+    assert_equal %i[downloadable_download downloadable_package_status], registered
+  end
+
+  def test_admin_filter_views_initializer_prepends_current_admin_views
+    initializer = find_initializer("recording_studio_downloadable.admin_filter_views")
+
+    assert initializer
+    assert_equal "recording_studio_api.prepend_recording_studio_admin_views",
+                 initializer.after
+  end
+
   def test_model_extension_initializer_skips_abstract_models
     to_prepare_blocks = []
     config_stub = Object.new

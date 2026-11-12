@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Dummy pins Recording Studio API `v0.21.4` and Admin `v2.13.0` so history filter labels come from Admin instead of the older API view shadow.
+
+## [0.12.0] - 2026-11-12
+
+### Added
+
+- Recording Studio API capability actions `:downloadable_download` (POST) and `:downloadable_package_status` (GET) on `:downloadable`. Handlers authorize through `context.access_grant.authorize!` and `Authorization.authorize!`, look up the recording in the grant's root, then call `downloadable_generate!` or read `downloadable_package`. `:downloadable_download` builds or queues the ZIP and returns status, not a URL. Recording Studio API `required_role` is the global `Api.download_role` (`config.auth_roles` `:download`, default `:view`). A weaker per-type `auth_roles` value is refused by Recording Studio API first. MCP needs no extra code. Hosts still list the actions on each recordable type API. A colliding action name raises instead of being skipped.
+
+### Changed
+
+- Download log metrics register `api_authorize` with the same Accessible check as Admin history (`downloadable.view_logs`, edit).
+
+### Upgrade notes
+
+- Bump to `0.12.0`. No migration.
+- Enable `:downloadable_download` and `:downloadable_package_status` on recordable type APIs that should expose them. See [UPGRADING.md](UPGRADING.md).
+
 ## [0.11.1] - 2026-11-12
 
 ### Fixed
@@ -271,7 +290,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.0...v0.10.1

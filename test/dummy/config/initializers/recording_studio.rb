@@ -7,9 +7,15 @@ RecordingStudio.configure do |config|
     "Folder",
     "Page",
     "PressKit",
+    "AdminRoot",
     "RecordingStudioAttachable::Attachment",
+    "RecordingStudio::Access",
     "RecordingStudio::AccessConstraint",
-    "RecordingStudio::AccessRule"
+    "RecordingStudio::AccessRule",
+    "RecordingStudioApi::ApiClient",
+    "RecordingStudioApi::ApiCredential",
+    "RecordingStudioApi::ApiAccessToken",
+    "RecordingStudioApi::AdminApi"
   ]
 
   # Require each configured ActiveRecord type to call recording_studio_recordable.
