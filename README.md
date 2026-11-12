@@ -180,18 +180,24 @@ RecordingStudioAdmin.configure do |config|
 end
 ```
 
-`recording_id` is the item whose logs you are opening. Without that param, the resolver should return the current root. A missing or trashed id stays unresolved so Admin refuses the page. The default query is `access_recording.downloadable_download_logs`.
+`recording_id` is the anchor whose logs you are opening. Without that param, the resolver should return the current root. A missing or trashed id stays unresolved so Admin refuses the page.
 
-Add `scope=subtree` to count that recording and its Core descendants (`descendant_ids(include_self: true)`). Do not use `root_recording_id` for this rollup. The client cannot pass recording ids. Optional `recordable_type` further limits which recordings in that tree are included. One type or several. Unknown types are ignored. If every type is unknown, the table is empty. Hosts keep that param on links. The subtree screen has a What filter of concrete items in that tree, labeled with each recording's name. Pick one to see only that item's logs. All restores the subtree, still honoring `recordable_type` when it is set. Single-recording history has no What filter.
+`download_logs?recording_id=` lists that recording only. Its filters are the period, group by, and Who. Kind and the within filters are not on that screen.
+
+`download_logs_rollup?recording_id=` lists that anchor plus kept descendants whose type is on the history allowlist. The allowlist defaults to every recordable that opted in with Downloadable `.to`. Set `RecordingStudioDownloadable.configuration.history_recordable_types` to class names to narrow it. `nil` keeps the default. An empty list turns the rollup off, and the query is only the anchor. Set the list before Admin registers the screen. If you change it later, call `RecordingStudioDownloadable::Admin::DownloadLogsRollupScreen.install_scope!`. The rollup shows one within filter per allowlisted type. Admin builds that bar when the screen is registered, so a single request cannot drop types. Narrow the allowlist to shorten it.
+
+Do not send `scope=subtree`. Admin reserves `scope` for Root Switchable, and that param can switch the current root. Do not send `recording_ids[]`. Do not use `root_recording_id` for this rollup. The client cannot pass recording ids. Logs outside the anchor subtree are not listed.
+
+`recordable_type` is one class name. That is the Kind filter. An unknown or disallowed type is ignored, and the allowlist stays in effect. Each allowed type has a within filter. Pick one item to see that item and everything under it. The param is `item_` plus the underscored type (`item_press_kit`). All items clears it. Several within filters intersect. Admin returns 422 when the descendant count passes `max_scoped_recordings` (default 5000).
 
 ```
 /admin/screens/download_logs?recording_id=:id
-/admin/screens/download_logs?recording_id=:id&scope=subtree
-/admin/screens/download_logs?recording_id=:id&scope=subtree&recordable_type=PressKit
-/admin/screens/download_logs?recording_id=:id&scope=subtree&recordable_type[]=PressKit&recordable_type[]=Page
+/admin/screens/download_logs_rollup?recording_id=:id
+/admin/screens/download_logs_rollup?recording_id=:id&recordable_type=PressKit
+/admin/screens/download_logs_rollup?recording_id=:id&item_press_kit=:child_id
 ```
 
-A host that rolls kit downloads up under a parent recording (a press center that is not itself downloadable) links with subtree and the kit types. Downloadable does not know those product types.
+A host that rolls downloads up under a parent that is not itself downloadable still passes that parent as `recording_id`. Downloadable does not know product type names. Pass those names in `history_recordable_types` or `recordable_type`.
 
 Admin's own gate is still `required_access_role` (default `:view`) on that recording. Downloadable then requires `:"downloadable.view_logs"` on the **anchor** only (`visible_if` on the screen, and the query returns nothing when it fails). Child recordings are not checked. The action defaults to role `:edit`, so edit and admin can open history and view cannot. It does not fall back to `:view` and it does not reuse the download check. Hosts override it through Accessible, for example `config.action_audiences[:"downloadable.view_logs"]`. A signed-in person who passes Admin's `:view` role and fails `downloadable.view_logs` gets Admin's not-found response. Admin has no per-screen Accessible action.
 
@@ -199,20 +205,20 @@ Admin's own gate is still `required_access_role` (default `:view`) on that recor
 recording_studio_downloadable_history_link(recording)
 recording_studio_downloadable_history_link(
   recording,
-  scope: :subtree,
-  recordable_type: %w[PressKit Page]
+  rollup: true,
+  recordable_type: "PressKit"
 )
 ```
 
-The helper renders nothing unless Admin is loaded and the current person can view history. Omit `scope` and the recording must be downloadable, same as before. With `scope: :subtree` the recording does not need to be downloadable. The link is `/admin/screens/download_logs?recording_id=…` when the host mounted Admin as `:admin` at `/admin`. Subtree adds `scope=subtree` and any `recordable_type` values.
+The helper renders nothing unless Admin is loaded and the current person can view history. Without `rollup` or `recordable_type`, the recording must be downloadable and the link is the plain screen. `rollup: true` or a type opens `download_logs_rollup` and allows an anchor that is not downloadable. `scope:` raises. An array `recordable_type` raises. The plain link is `/admin/screens/download_logs?recording_id=…` when the host mounted Admin as `:admin` at `/admin`. A type adds one `recordable_type` value on the rollup screen. The Downloads section link opens the rollup for the current root.
 
 Admin also requires the current root (Root Switchable) to be that recording's root. A history link for another workspace is refused until the person switches. The dummy starts on Studio Workspace when the signed-in person can open it, so the home page History link matches.
 
-The screen uses Admin's layout, inline filters, summary count, line chart, and paginated table (20 rows). Filters are a period preset, group by, and person. Subtree adds What, a select of items in that tree. The presets are Last 7 days, Last 4 weeks (the default), Last 3 months, Last 12 months, and All time. Columns are when and who (or “Anonymous”), newest first. Subtree adds a What column with the item name. IP addresses, user agents, metadata, and the download action stay off the screen.
+Both screens use Admin's layout, inline filters, summary count, line chart, and paginated table (20 rows). The page title is Downloads. The table heading is Download log. Neither screen shows a subtitle. The Downloads section link still reads Download history and opens the rollup for the current root through `scoped_screen_path`. Plain filters are a period preset, group by, and Who (`person`). The rollup adds Kind (`recordable_type`) and one within select per allowlisted type. Group by defaults to week. Day and month stay in the list. The presets are Last 7 days, Last 4 weeks (the default), Last 3 months, Last 12 months, and All time. Columns are when and who (or “Anonymous”), newest first. The rollup adds a what column with the item name. The line is straight, so a weekly count sits on the integer axis. IP addresses, user agents, metadata, and the download action stay off the screen.
 
-Admin's `date_range` filter always renders a free start/end calendar, and its preset list cannot be replaced from a screen. `Period` also has no all-time key (`last_7_days`, `last_4_weeks`, `last_3_months`, and `last_12_months` do parse). The screen therefore uses a select whose values are those Period keys plus `all_time`. Select filters do not apply `default:`, and a missing `period` param would show “All” over an unfiltered table, so the query stamps `last_4_weeks` before the filters run. `last_4_weeks` is Period's window: today minus 28 days through today. All time leaves `occurred_at` unbounded. The chart still has to hand Metrics a start and end, and Metrics refuses a reporting period longer than its maximum (about a year), so an All time chart start is pulled forward to fit.
+Admin's `date_range` filter always renders a free start/end calendar, and its preset list cannot be replaced from a screen. `Period` also has no all-time key (`last_7_days`, `last_4_weeks`, `last_3_months`, and `last_12_months` do parse). The screen therefore uses a select whose values are those Period keys plus `all_time`. Select filters do not apply `default:`, and a missing `period` param would show “All” over an unfiltered table, so the query stamps `last_4_weeks` before the filters run. `last_4_weeks` is Period's window: today minus 27 days through today. All time leaves `occurred_at` unbounded. The chart still has to hand Metrics a start and end, and Metrics refuses a reporting period longer than its maximum (about a year), so an All time chart start is pulled forward to fit.
 
-When `RecordingStudio_metrics` is loaded, Downloadable registers `download_logs.total` (count) and `download_logs.over_time` (timeseries on `occurred_at`). The chart calls `RecordingStudioMetrics::Admin.chart_series` with `MetricsRegistration.context_for(recording:, actor:, relation:)`. That context uses scope `:root` and an `authorized_relation` already limited to the history query (this recording, or the subtree, and the active filters when the screen draws the chart). Passing the Admin context straight into `chart_series` would also send the root recording, and Metrics would treat the log table as a recordable and return no points.
+When `RecordingStudio_metrics` is loaded, Downloadable registers `download_logs.total` (count) and `download_logs.over_time` (timeseries on `occurred_at`). The chart calls `RecordingStudioMetrics::Admin.chart_series` with `MetricsRegistration.context_for(recording:, actor:, relation:)`. That context uses scope `:root` and an `authorized_relation` already limited to the history query (the anchor on the plain screen, or the anchor and its allowed descendants on the rollup, and the active filters when the screen draws the chart). Passing the Admin context straight into `chart_series` would also send the root recording, and Metrics would treat the log table as a recordable and return no points.
 
 `chart_series` returns `{ x:, y: }` points (RecordingStudio_metrics 0.5.0). The screen hands that series to Admin. The counts stay the same.
 
@@ -366,7 +372,7 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 6. List each download action in Accessible `config.action_audiences`.
 7. Opt each recordable in with `.to`.
 
-This dummy pins Recording Studio dummy GitHub tag `v6.1.0`, Accessible dummy GitHub tag `v0.22.0`, Trashable dummy GitHub tag `v0.12.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.1`, Logs dummy GitHub tag `v0.7.0`, Root Switchable dummy GitHub tag `v0.11.0`, Metrics dummy GitHub tag `v0.6.1` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.7.0` (download history screen), Recording Studio API dummy GitHub tag `v0.21.3` (Moveable `v4.1.0`, Icons `v0.1.3`, FlatPack `v0.1.341`), and Attachable `v0.22.0`. Development still pins FlatPack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`0.1.319`).
+This dummy pins Recording Studio dummy GitHub tag `v6.3.0`, Accessible dummy GitHub tag `v0.22.0`, Trashable dummy GitHub tag `v0.12.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.1`, Logs dummy GitHub tag `v0.7.0`, Root Switchable dummy GitHub tag `v0.11.0`, Metrics dummy GitHub tag `v0.6.1` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.12.0` (download history screen), Recording Studio API dummy GitHub tag `v0.21.3` (Moveable `v4.1.0`, Icons `v0.1.3`), FlatPack dummy GitHub tag `v0.1.341`, and Attachable `v0.22.0`.
 
 ## Dummy app
 

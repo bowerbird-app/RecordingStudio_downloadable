@@ -36,7 +36,6 @@ end
 
 require "recording_studio_downloadable/version"
 require "recording_studio_downloadable/copy"
-require "recording_studio_downloadable/history_scope"
 require "recording_studio_downloadable/configuration"
 require "recording_studio_downloadable/download_gate"
 require "recording_studio_downloadable/download_log_metadata"

@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.11.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.12.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -50,7 +50,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
   def test_dummy_gemfile_pins_verified_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.22.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.22.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.1"'
@@ -58,7 +58,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable"'
     assert_includes gemfile, 'tag: "v0.11.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.6.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.7.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.12.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v0.21.3"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_moveable", tag: "v4.1.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_icons", tag: "v0.1.3"'
@@ -318,8 +318,8 @@ class RecordingStudioDownloadableTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v6.1.0`"
-    assert_includes readme, "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
+    assert_includes readme, "dummy GitHub tag `v6.3.0`"
+    assert_includes readme, "dummy GitHub tag `v0.1.341`"
     assert_includes readme, "dummy GitHub tag `v0.22.0`"
     assert_includes readme, "dummy GitHub tag `v0.12.0`"
     assert_includes readme, "dummy GitHub tag `v0.11.0`"

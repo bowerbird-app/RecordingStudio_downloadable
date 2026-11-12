@@ -33,7 +33,7 @@
         <%= recording_studio_downloadable_history_link(@recording) %>
         <%= recording_studio_downloadable_history_link(
           @recording,
-          scope: :subtree,
+          rollup: true,
           recordable_type: "PressKit",
           text: "Kit history"
         ) %>

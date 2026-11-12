@@ -14,7 +14,7 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
                            password_confirmation: "Password")
     @viewer = User.create!(email: "hist-view-#{SecureRandom.hex(4)}@example.com", password: "Password",
                            password_confirmation: "Password")
-    @recording = create_workspace_recording
+    @recording = create_workspace_recording(name: "AAA History #{SecureRandom.hex(4)}")
     grant_download_access!(@recording, @admin)
     grant_role!(@recording, @editor, :edit)
     grant_role!(@recording, @viewer, :view)
@@ -72,17 +72,39 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     refute_includes history_table, secret_agent
   end
 
+  test "both download screens head the table Download log" do
+    sign_in @admin
+
+    get history_path
+    assert_response :success
+    assert_select "h3", text: "Download log"
+    refute_includes response.body, "Table data"
+
+    get rollup_path
+    assert_response :success
+    assert_select "h3", text: "Download log"
+    refute_includes response.body, "Table data"
+  end
+
   test "empty history shows the admin summary and no rows" do
     sign_in @admin
     get history_path
 
     assert_response :success
-    assert_includes response.body, "Download history"
+    assert_select "h1", text: "Downloads"
+    refute_includes response.body, "Download history"
+    refute_includes response.body, "Newest first."
+    assert_match(/value="week" selected="selected"/, response.body)
+    assert_includes response.body, 'value="day"'
+    assert_includes response.body, 'value="month"'
     assert_includes response.body, "Last 4 weeks"
     assert_includes response.body, "All time"
     assert_match(/value="last_4_weeks" selected="selected"/, response.body)
     refute_includes response.body, "People"
+    assert_includes response.body, ">Who</label>"
+    assert_includes response.body, 'name="person"'
     refute_includes response.body, 'name="recordable_type"'
+    refute_includes response.body, 'name="item_'
     refute_includes response.body, 'name="what"'
     refute_includes response.body, 'name="start_date"'
     refute_includes response.body, 'name="download"'
@@ -106,13 +128,24 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     fetch_table
     assert_includes history_table, "Anonymous"
     refute_includes history_table, @viewer.email
+    row_count = history_table.scan(/<tr\b/).size
 
     fetch_chart
     assert_includes response.body, "Downloads over time"
     assert_includes response.body, ">4<"
+    assert_includes response.body, "&quot;curve&quot;:&quot;straight&quot;"
     assert_match(/flat-pack--chart-series-value=.*&quot;x&quot;:/, response.body)
-    assert_match(/flat-pack--chart-series-value=.*&quot;y&quot;:1/, response.body)
     refute_match(/flat-pack--chart-series-value=.*\[\d{4}-\d{2}-\d{2}/, response.body)
+
+    points = chart_points
+    dates = points.map { |point| Date.iso8601(point.fetch("x")) }
+    gaps = dates.each_cons(2).map { |earlier, later| (later - earlier).to_i }
+
+    total = points.sum { |point| point.fetch("y") }
+
+    assert_equal [7] * gaps.size, gaps
+    assert_equal row_count, total
+    assert_equal 4, total
   end
 
   test "period presets and person filters limit the table" do
@@ -160,89 +193,121 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "workspaces.other-only"
   end
 
-  test "subtree history includes child logs and excludes siblings" do
-    child = record_child!(PressKit.create!(name: "Launch kit"), parent: @recording)
-    sibling = create_workspace_recording
-    grant_download_access!(sibling, @admin)
-    log_download!(@recording, actor: @admin, occurred_at: 1.hour.ago)
-    log_download!(child, actor: @editor, action: "press_kits.download", occurred_at: 2.hours.ago)
-    log_download!(sibling, actor: @admin, action: "workspaces.sibling-only", occurred_at: 1.hour.ago)
+  test "the plain screen lists only the anchor recording" do
+    seed_child_and_sibling!
 
     sign_in @admin
     fetch_table
+    assert_response :success
     refute_includes table_headers, "What"
+    assert_includes history_table, @admin.email
     refute_includes history_table, "Launch kit"
     refute_includes history_table, "workspaces.sibling-only"
+  end
 
-    fetch_table(scope: "subtree", recording_ids: [sibling.id])
+  test "history lists child logs and ignores an item outside the anchor" do
+    sibling = seed_child_and_sibling!
+
+    sign_in @admin
+    fetch_rollup_table
+    assert_response :success
     assert_includes table_headers, "What"
     assert_includes history_table, @admin.email
     assert_includes history_table, @editor.email
     assert_includes history_table, "Launch kit"
     refute_includes history_table, "workspaces.sibling-only"
-    refute_includes history_table, sibling.name
+
+    fetch_rollup_table(**item_query(sibling))
+    assert_response :success
+    refute_includes history_table, "workspaces.sibling-only"
+    assert_includes history_table, "Launch kit"
+
+    fetch_rollup_table(recordable_type: "Workspace", **item_query(sibling))
+    assert_response :success
+    refute_includes history_table, "workspaces.sibling-only"
+    refute_includes history_table, "Launch kit"
+
+    fetch_rollup_table(scope: "subtree")
+    refute_includes history_table, "workspaces.sibling-only"
   end
 
-  test "subtree type filter keeps matching children and drops other types" do
+  test "kind filter keeps matching children and an unknown type is ignored" do
     kit = record_child!(PressKit.create!(name: "Typed kit"), parent: @recording)
     page = record_child!(Page.create!(title: "Typed page"), parent: @recording)
     log_download!(kit, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
     log_download!(page, actor: @editor, action: "pages.download", occurred_at: 1.hour.ago)
 
     sign_in @admin
-    fetch_table(scope: "subtree", recordable_type: "PressKit")
+    fetch_rollup_table(recordable_type: "PressKit")
     assert_includes history_table, "Typed kit"
     refute_includes history_table, "Typed page"
 
-    fetch_table(scope: "subtree")
+    fetch_rollup_table
     assert_includes history_table, "Typed kit"
     assert_includes history_table, "Typed page"
 
-    fetch_table(scope: "subtree", recordable_type: "NotAType")
-    refute_includes history_table, "Typed kit"
-    refute_includes history_table, "Typed page"
+    fetch_rollup_table(recordable_type: "NotAType")
+    assert_includes history_table, "Typed kit"
+    assert_includes history_table, "Typed page"
   end
 
-  test "subtree history shows a What item filter and item history does not" do
+  test "within filter drills into one item and the screen labels who" do
     kit = record_child!(PressKit.create!(name: "Filter kit"), parent: @recording)
     page = record_child!(Page.create!(title: "Filter page"), parent: @recording)
     log_download!(kit, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
     log_download!(page, actor: @editor, action: "pages.download", occurred_at: 1.hour.ago)
 
     sign_in @admin
-    get history_path
+    get rollup_path
+    assert_includes response.body, "Who"
+    assert_includes response.body, 'name="person"'
     refute_includes response.body, 'name="what"'
+    assert_includes response.body, %(name="#{item_filter_key('PressKit')}")
+    assert_includes response.body, "Filter kit"
+    assert_includes response.body, "All items"
+    refute_includes response.body, "scope=subtree"
 
-    get screen_path(@recording, scope: "subtree")
-    assert_includes response.body, 'name="what"'
-    refute_match(/<select[^>]*name="recordable_type"/, response.body)
-    assert_includes response.body, 'value="Filter kit"'
-    assert_includes response.body, "Filter page"
-    refute_includes response.body, 'value="PressKit"'
-
-    fetch_table(scope: "subtree", what: "Filter kit")
+    fetch_rollup_table(**item_query(kit))
     assert_includes history_table, "Filter kit"
     refute_includes history_table, "Filter page"
 
-    fetch_table(scope: "subtree")
+    fetch_rollup_table
     assert_includes history_table, "Filter kit"
     assert_includes history_table, "Filter page"
-
-    fetch_table(scope: "subtree", recordable_type: "PressKit")
-    assert_includes history_table, "Filter kit"
-    refute_includes history_table, "Filter page"
-
-    fetch_table(scope: "subtree", recordable_type: "PressKit", what: "Filter kit")
-    assert_includes history_table, "Filter kit"
-    refute_includes history_table, "Filter page"
   end
 
-  test "subtree history still requires view_logs on the anchor" do
+  test "a configured allowlist drops other downloadable types" do
+    kit = record_child!(PressKit.create!(name: "Allowed kit"), parent: @recording)
+    page = record_child!(Page.create!(title: "Skipped page"), parent: @recording)
+    log_download!(kit, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
+    log_download!(page, actor: @editor, action: "pages.download", occurred_at: 1.hour.ago)
+    with_history_types(["PressKit"]) do
+      sign_in @admin
+      fetch_rollup_table
+      assert_includes history_table, "Allowed kit"
+      refute_includes history_table, "Skipped page"
+    end
+  end
+
+  test "a subtree past the admin cap is refused" do
+    record_child!(PressKit.create!(name: "Overflow kit"), parent: @recording)
+    previous = RecordingStudioAdmin.configuration.max_scoped_recordings
+    RecordingStudioAdmin.configuration.max_scoped_recordings = 0
+
+    sign_in @admin
+    get rollup_path
+
+    assert_response :unprocessable_entity
+  ensure
+    RecordingStudioAdmin.configuration.max_scoped_recordings = previous
+  end
+
+  test "rollup history still requires view_logs on the anchor" do
     child = record_child!(PressKit.create!(name: "Hidden kit"), parent: @recording)
     log_download!(child, actor: @admin, action: "press_kits.download", occurred_at: 1.hour.ago)
 
     sign_in @viewer
-    get table_path(@recording, scope: "subtree")
+    get rollup_table_path(@recording, **item_query(child))
     assert_response :not_found
     refute_includes response.body, "Hidden kit"
   end
@@ -273,8 +338,22 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     recording_studio_admin_admin.screen_path(screen_key, extra.merge(recording_id: recording.id))
   end
 
+  def seed_child_and_sibling!
+    child = record_child!(PressKit.create!(name: "Launch kit"), parent: @recording)
+    sibling = create_workspace_recording(name: "ZZZ Sibling #{SecureRandom.hex(4)}")
+    grant_download_access!(sibling, @admin)
+    log_download!(@recording, actor: @admin, occurred_at: 1.hour.ago)
+    log_download!(child, actor: @editor, action: "press_kits.download", occurred_at: 2.hours.ago)
+    log_download!(sibling, actor: @admin, action: "workspaces.sibling-only", occurred_at: 1.hour.ago)
+    sibling
+  end
+
   def fetch_table(extra = {})
     get table_path(@recording, extra), headers: { "Turbo-Frame" => "screen-table" }
+  end
+
+  def fetch_rollup_table(extra = {})
+    get rollup_table_path(@recording, extra), headers: { "Turbo-Frame" => "screen-table" }
   end
 
   def fetch_chart(extra = {})
@@ -290,12 +369,48 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     recording_studio_admin_admin.screen_table_path(screen_key, extra.merge(recording_id: recording.id))
   end
 
+  def rollup_path(extra = {})
+    recording_studio_admin_admin.screen_path(rollup_key, extra.merge(recording_id: @recording.id))
+  end
+
+  def rollup_table_path(recording, extra = {})
+    recording_studio_admin_admin.screen_table_path(rollup_key, extra.merge(recording_id: recording.id))
+  end
+
   def screen_key
     RecordingStudioDownloadable::Admin::SCREEN_KEY
   end
 
+  def rollup_key
+    RecordingStudioDownloadable::Admin::ROLLUP_SCREEN_KEY
+  end
+
+  def item_filter_key(type_name)
+    RecordingStudioDownloadable::Admin::DownloadLogsScreen.item_filter_key(type_name)
+  end
+
+  def item_query(recording)
+    { item_filter_key(recording.recordable_type) => recording.id }
+  end
+
+  def with_history_types(types)
+    config = RecordingStudioDownloadable.configuration
+    previous = config.history_recordable_types
+    config.history_recordable_types = types
+    RecordingStudioDownloadable::Admin::DownloadLogsRollupScreen.install_scope!
+    yield
+  ensure
+    config.history_recordable_types = previous
+    RecordingStudioDownloadable::Admin::DownloadLogsRollupScreen.install_scope!
+  end
+
   def history_table
     response.body[%r{<tbody.*?</tbody>}m].to_s
+  end
+
+  def chart_points
+    encoded = response.body[/data-flat-pack--chart-series-value="([^"]+)"/, 1]
+    JSON.parse(CGI.unescapeHTML(encoded)).first.fetch("data")
   end
 
   def log_download!(recording, actor:, action: "workspaces.download", occurred_at: Time.current, **trace)
