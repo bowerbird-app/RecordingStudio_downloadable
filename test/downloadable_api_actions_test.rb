@@ -2,121 +2,122 @@
 
 require_relative "downloadable_test_helper"
 
-class DownloadableApiActionsTest < ActiveSupport::TestCase
+class DownloadableApiActionsTest < ActionDispatch::IntegrationTest
   include DownloadableTestHelper
   include ActiveJob::TestHelper
 
-  HandlerContext = Struct.new(:recording, :access_grant, keyword_init: true)
-
-  class TestAccessGrant
-    class Denied < StandardError; end
-
-    def initialize(actor:, root:)
-      @actor = actor
-      @root = root
-    end
-
-    attr_reader :actor, :root
-
-    def accessible_recordings
-      RecordingStudio::Recording.unscoped.where(root_recording_id: @root.id)
-                                .or(RecordingStudio::Recording.unscoped.where(id: @root.id))
-    end
-
-    def authorize!(recording:, role:)
-      unless accessible_recordings.exists?(id: recording.id)
-        raise Denied, "API access grant is not authorized for this capability"
-      end
-      return if RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: role)
-
-      raise Denied, "API access grant is not authorized for this capability"
-    end
-  end
+  BASE = "/recording_studio_api/api/v1"
 
   setup do
+    @previous_actor = Current.actor
     @owner = User.create!(email: "api-dl-#{SecureRandom.hex(4)}@example.com", password: "Password",
                           password_confirmation: "Password")
     @viewer = User.create!(email: "api-view-#{SecureRandom.hex(4)}@example.com", password: "Password",
                            password_confirmation: "Password")
     @stranger = User.create!(email: "api-out-#{SecureRandom.hex(4)}@example.com", password: "Password",
                              password_confirmation: "Password")
+    Current.actor = @owner
     @recording = create_workspace_recording
     grant_download_access!(@recording, @owner)
     attach_file!(@recording, filename: "pack.txt", contents: "packed", actor: @owner)
-    @grant = TestAccessGrant.new(actor: @owner, root: @recording)
+    @owner_access = access_for(@recording, @owner)
+    @viewer_access = grant_view!(@recording, @viewer)
+    @owner_token, = token_for(@owner_access)
+    @viewer_token, = token_for(@viewer_access)
   end
+
+  teardown { Current.actor = @previous_actor }
 
   test "download authorizes then generates for an actor who can use the HTML package" do
     assert_enqueued_jobs 1, only: RecordingStudioDownloadable::GeneratePackageJob do
-      payload = RecordingStudioDownloadable::Api::DownloadRecording.call(context_for(@recording, @grant))
-      assert_equal "pending", payload.fetch(:state)
-      refute payload.fetch(:ready)
+      payload = call(:post, "/workspaces/#{@recording.id}/actions/download", @owner_token)
+      assert_response :success, response.body
+      assert_equal "pending", payload.fetch("state")
+      refute payload.fetch("ready")
+      refute payload.key?("download_url")
+      refute payload.key?("url")
     end
 
     perform_enqueued_jobs
 
-    status = RecordingStudioDownloadable::Api::PackageStatus.call(context_for(@recording, @grant))
-    assert_equal "ready", status.fetch(:state)
-    assert status.fetch(:ready)
+    status = call(:get, "/workspaces/#{@recording.id}/actions/package_status", @owner_token)
+    assert_response :success, response.body
+    assert_equal "ready", status.fetch("state")
+    assert status.fetch("ready")
+    refute status.key?("download_url")
   end
 
   test "package_status reads downloadable_package without enqueueing" do
     perform_enqueued_jobs { @recording.downloadable_generate! }
 
     assert_no_enqueued_jobs only: RecordingStudioDownloadable::GeneratePackageJob do
-      payload = RecordingStudioDownloadable::Api::PackageStatus.call(context_for(@recording, @grant))
-      assert_equal "ready", payload.fetch(:state)
-      assert_equal @recording.downloadable_package&.failed? || false, payload.fetch(:failed)
+      payload = call(:get, "/workspaces/#{@recording.id}/actions/package_status", @owner_token)
+      assert_response :success, response.body
+      assert_equal "ready", payload.fetch("state")
+      assert_equal @recording.downloadable_package&.failed? || false, payload.fetch("failed")
     end
   end
 
   test "download and package_status are forbidden without the HTML download role" do
-    denied = TestAccessGrant.new(actor: @stranger, root: @recording)
-
-    assert_raises(TestAccessGrant::Denied) do
-      RecordingStudioDownloadable::Api::DownloadRecording.call(context_for(@recording, denied))
+    with_action_audience(:"workspaces.download", download_audience(granted_roles: %i[edit admin])) do
+      call(:post, "/workspaces/#{@recording.id}/actions/download", @viewer_token)
+      assert_response :forbidden, response.body
+      call(:get, "/workspaces/#{@recording.id}/actions/package_status", @viewer_token)
+      assert_response :forbidden, response.body
     end
-    assert_raises(TestAccessGrant::Denied) do
-      RecordingStudioDownloadable::Api::PackageStatus.call(context_for(@recording, denied))
-    end
-    assert_nil @recording.downloadable_package
+    assert_nil @recording.reload.downloadable_package
   end
 
   test "a viewer with the HTML download role can download and read status" do
-    grant_view!(@recording, @viewer)
-    view_grant = TestAccessGrant.new(actor: @viewer, root: @recording)
+    call(:post, "/workspaces/#{@recording.id}/actions/download", @viewer_token)
+    assert_response :success, response.body
+    payload = call(:get, "/workspaces/#{@recording.id}/actions/package_status", @viewer_token)
+    assert_response :success, response.body
 
-    RecordingStudioDownloadable::Api::DownloadRecording.call(context_for(@recording, view_grant))
-    payload = RecordingStudioDownloadable::Api::PackageStatus.call(context_for(@recording, view_grant))
-
-    assert_equal "pending", payload.fetch(:state)
+    assert_equal "pending", payload.fetch("state")
   end
 
   test "download and package_status cannot see a recording in another workspace" do
     foreign = create_workspace_recording
-    RecordingStudioAccessible.bootstrap_owner_access!(recording: foreign, actor: @owner)
+    RecordingStudioAccessible.bootstrap_owner_access!(recording: foreign, actor: @stranger)
 
-    error = assert_raises(ActiveRecord::RecordNotFound) do
-      RecordingStudioDownloadable::Api::DownloadRecording.call(context_for(foreign, @grant))
-    end
-    assert_includes error.message, "this API scope"
-
-    error = assert_raises(ActiveRecord::RecordNotFound) do
-      RecordingStudioDownloadable::Api::PackageStatus.call(context_for(foreign, @grant))
-    end
-    assert_includes error.message, "this API scope"
+    call(:post, "/workspaces/#{foreign.id}/actions/download", @owner_token)
+    assert_response :not_found, response.body
+    call(:get, "/workspaces/#{foreign.id}/actions/package_status", @owner_token)
+    assert_response :not_found, response.body
     assert_nil foreign.downloadable_package
   end
 
+  test "a blocking download gate fails closed" do
+    gate = Class.new do
+      def self.satisfied?(**)
+        false
+      end
+    end
+
+    with_download_gate(@recording.downloadable_action, gate) do
+      call(:post, "/workspaces/#{@recording.id}/actions/download", @owner_token)
+      assert_response :forbidden, response.body
+    end
+    assert_nil @recording.reload.downloadable_package
+  end
+
+  test "per-type auth_roles override is resolved per recording" do
+    with_downloadable_options(Workspace, source: :attachments, format: :zip, auth_roles: { download: :edit }) do
+      call(:post, "/workspaces/#{@recording.id}/actions/download", @viewer_token)
+      assert_response :forbidden, response.body
+      call(:post, "/workspaces/#{@recording.id}/actions/download", @owner_token)
+      assert_response :success, response.body
+    end
+  end
+
   test "metrics api_authorize matches admin download history access" do
-    skip "RecordingStudio_metrics is not loaded" unless defined?(RecordingStudioMetrics)
+    assert defined?(RecordingStudioMetrics)
 
     hook = RecordingStudioMetrics.registry.api_authorize_for(:download_logs)
     assert hook
 
     assert hook.call(metrics_context(actor: @owner, recording: @recording))
-
-    grant_view!(@recording, @viewer)
     refute hook.call(metrics_context(actor: @viewer, recording: @recording))
     refute hook.call(metrics_context(actor: @stranger, recording: @recording))
 
@@ -126,13 +127,22 @@ class DownloadableApiActionsTest < ActiveSupport::TestCase
 
   private
 
-  def context_for(recording, grant)
-    HandlerContext.new(recording: recording, access_grant: grant)
+  def download_audience(granted_roles:)
+    {
+      allowed: %i[granted],
+      default: :granted,
+      granted_roles: granted_roles,
+      granted_override: true,
+      manage_role: :admin
+    }
   end
 
-  def metrics_context(actor:, recording:)
-    grant = Struct.new(:actor, :root_recording).new(actor, recording)
-    Struct.new(:access_grant, :access_recording, :root_recording).new(grant, recording, recording)
+  def access_for(recording, actor)
+    RecordingStudio::Recording.where(recordable_type: "RecordingStudio::Access").find do |access_recording|
+      access = access_recording.recordable
+      access.respond_to?(:actor) && access.actor == actor &&
+        (access_recording.parent_recording_id == recording.id || access_recording.root_recording_id == recording.id)
+    end
   end
 
   def grant_view!(recording, actor)
@@ -143,5 +153,44 @@ class DownloadableApiActionsTest < ActiveSupport::TestCase
       manager_actor: @owner
     )
     raise result.error if result.failure?
+
+    result.value
+  end
+
+  def token_for(access_recording)
+    provision = RecordingStudioApi::Services::ProvisionApiClient.call(
+      access_point_recording: access_recording.parent_recording || access_recording.root_recording,
+      manager_actor: @owner,
+      role: access_recording.recordable.role,
+      name: "Client #{SecureRandom.hex(3)}"
+    )
+    raise provision.error unless provision.success?
+
+    issued = RecordingStudioApi::Services::IssueOauthAccessToken.call(
+      grant_type: "client_credentials",
+      client_id: provision.value.fetch(:credential).oauth_client_id,
+      client_secret: provision.value.fetch(:token)
+    )
+    raise issued.error unless issued.success?
+
+    [issued.value.fetch(:access_token), provision.value.fetch(:api_client)]
+  end
+
+  def call(method, path, token, params = {})
+    send(
+      method,
+      "#{BASE}#{path}",
+      params: params,
+      headers: { "Authorization" => "Bearer #{token}", "Accept" => "application/json" },
+      as: :json
+    )
+    response.media_type.to_s.include?("json") ? JSON.parse(response.body) : {}
+  rescue JSON::ParserError
+    {}
+  end
+
+  def metrics_context(actor:, recording:)
+    grant = Struct.new(:actor, :access_recording).new(actor, recording)
+    Struct.new(:access_grant).new(grant)
   end
 end

@@ -13,14 +13,7 @@ module RecordingStudioDownloadable
 
       def call
         recording = GrantScope.recording_in_grant!(context)
-        GrantScope.authorize_download!(context, recording)
-        GrantScope.map_authorization! do
-          Authorization.authorize!(
-            action: recording.downloadable_action,
-            actor: context.access_grant.actor,
-            recording: recording
-          )
-        end
+        GrantScope.authorize_downloadable!(context, recording)
         PackagePayload.for(recording, recording.downloadable_package)
       end
 

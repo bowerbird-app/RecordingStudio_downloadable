@@ -330,13 +330,12 @@ recording.downloadable_invalidate!(immediate: true)          # drop/stop serving
 recording.downloadable_ready?
 recording.downloadable_package       # persisted Package (archive blob + fingerprint + state)
 recording.downloadable_download_path # engine route; authorizes in the controller
-RecordingStudioDownloadable.download!(recording:, actor:) # authorize, then generate (HTML show uses this too)
 recording.downloadable_source        # :attachments or :manifest
 ```
 
-`recording.downloadable_generate!(action:, export_scope:)` enqueues a build. `RecordingStudioDownloadable.download!(recording:, actor:)` runs `Authorization.authorize!` for that recording's download action, then `downloadable_generate!`. The HTML package `GET` calls the same method and then continues gate, rate limit, empty check, and serve. `recording.downloadable_invalidate!(immediate: true)` drops the current ZIP so it is not served. Hosts call these from their own subscribers. Downloadable does not depend on Publishable.
+`recording.downloadable_generate!(action:, export_scope:)` enqueues a build. `recording.downloadable_invalidate!(immediate: true)` drops the current ZIP so it is not served. Hosts call these from their own subscribers. Downloadable does not depend on Publishable.
 
-When Recording Studio API is loaded, this gem registers member capability actions `:download` (POST) and `:package_status` (GET) on `:downloadable`. Both use the HTML download role (`config.auth_roles` `:download`, default `:view`), authorize through the request `AccessGrant`, and look up the recording in that grant's root. `:download` calls `download!`. `:package_status` reads `downloadable_package`. Hosts still list those names in `capability_actions` on each recordable type API. MCP picks them up from the API. Download log metrics on the API use `downloadable.view_logs`, the same Accessible check as Admin history.
+When Recording Studio API is loaded, this gem registers member capability actions `:download` (POST) and `:package_status` (GET) on `:downloadable`. Both authorize through the request `AccessGrant` and `Authorization.authorize!`, using `RecordingStudio.capability_options(:downloadable, for: recording.recordable_type)` for the role. `:download` honors the download gate and rate limit, then builds or queues the ZIP and returns package status. It does not return a download URL. `:package_status` reads `downloadable_package`. Hosts still list those names in `capability_actions` on each recordable type API. MCP picks them up from the API. Download log metrics on the API use `downloadable.view_logs`, the same Accessible check as Admin history.
 
 `downloadable_invalidate!(immediate: true)` marks the cached ZIP unusable immediately (asset removal, unpublish, visibility, or authorization changes). Ordinary content changes debounce a rebuild for 30–60 seconds (`config.content_change_debounce`, default 45). Attachment observers enqueue a rebuild only when a package row already exists; the first ZIP comes from an authorized generate (HTTP or `downloadable_generate!`).
 
@@ -367,7 +366,7 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 6. List each download action in Accessible `config.action_audiences`.
 7. Opt each recordable in with `.to`.
 
-This dummy pins Recording Studio dummy GitHub tag `v6.1.0`, Accessible dummy GitHub tag `v0.22.0`, Trashable dummy GitHub tag `v0.12.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.1`, Logs dummy GitHub tag `v0.7.0`, Root Switchable dummy GitHub tag `v0.11.0`, Metrics dummy GitHub tag `v0.6.1` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.7.0` (download history screen), FlatPack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`0.1.319`), and Attachable `v0.22.0`.
+This dummy pins Recording Studio dummy GitHub tag `v6.1.0`, Accessible dummy GitHub tag `v0.22.0`, Trashable dummy GitHub tag `v0.12.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.1`, Logs dummy GitHub tag `v0.7.0`, Root Switchable dummy GitHub tag `v0.11.0`, Metrics dummy GitHub tag `v0.6.1` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.7.0` (download history screen), Recording Studio API dummy GitHub tag `v0.21.3` (Moveable `v4.1.0`, Icons `v0.1.3`, FlatPack `v0.1.341`), and Attachable `v0.22.0`. Development still pins FlatPack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`0.1.319`).
 
 ## Dummy app
 

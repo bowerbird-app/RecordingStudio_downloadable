@@ -54,17 +54,11 @@ module RecordingStudioDownloadable
     end
 
     def recording_ids_for(recording)
-      return [] if recording.nil? || !subtree
-      return [] unless recording.respond_to?(:descendant_ids)
-
-      ids = recording.descendant_ids(include_self: true)
+      ids = self_and_descendant_ids(recording)
       return [] if ids.empty?
       return ids unless type_filter?
 
-      declared = declared_types
-      return [] if declared.empty?
-
-      RecordingStudio::Recording.unscoped.where(id: ids, recordable_type: declared).pluck(:id)
+      restrict_ids_to_declared_types(ids)
     end
 
     def type_filter?
@@ -102,6 +96,20 @@ module RecordingStudioDownloadable
     end
 
     private
+
+    def self_and_descendant_ids(recording)
+      return [] if recording.nil? || !subtree
+      return [] unless recording.respond_to?(:self_and_descendants)
+
+      Array(recording.self_and_descendants).map(&:id)
+    end
+
+    def restrict_ids_to_declared_types(ids)
+      declared = declared_types
+      return [] if declared.empty?
+
+      RecordingStudio::Recording.unscoped.where(id: ids, recordable_type: declared).pluck(:id)
+    end
 
     def declared_type_name(name)
       return unless defined?(RecordingStudio)

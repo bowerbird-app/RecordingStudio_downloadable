@@ -5,9 +5,9 @@
 `0.11.0` exposes download through Recording Studio API. No migration.
 
 1. Pin `recording_studio_downloadable` to `0.11.0`.
-2. HTML package `GET` still authorizes, gates, rate-limits, and serves as before. It now calls `RecordingStudioDownloadable.download!`.
+2. HTML package `GET` still authorizes, gates, rate-limits, and serves as before.
 3. If the host registers a recordable type API, add `capability_actions: %i[download package_status]` (or the subset you want) on downloadable types. The gem registers the actions. The type list is still default-deny.
-4. `:download` is POST and enqueues `downloadable_generate!` after the same authorize path as HTML. `:package_status` is GET and reads `downloadable_package`. Both use the HTML download role (`:view` by default).
+4. `:download` is POST. It authorizes, honors the download gate and rate limit, then builds or queues the ZIP and returns package status. It does not return a download URL. `:package_status` is GET and reads `downloadable_package`. Both use the HTML download role (`:view` by default) unless that type sets `auth_roles`.
 5. Download log metrics on the API now require `downloadable.view_logs` (edit), the same as the Admin history screen.
 
 ## 0.10.0

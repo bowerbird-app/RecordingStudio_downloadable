@@ -9,19 +9,18 @@ require "recording_studio_downloadable/api/registration"
 module RecordingStudioDownloadable
   module Api
     ACTION_VERSION = "1.0.0"
-    INTERNAL_ROUTE_PARAMETER_KEYS = %i[api_key api_version].push("api_key", "api_version").freeze
     ACTIONS = {
       download: {
         http_verb: :post,
         handler: DownloadRecording,
-        summary: "Start building the authorized ZIP for this recording.",
-        description: "Authorizes the same download role as the HTML package, then enqueues generation."
+        summary: "Build or queue the authorized ZIP for this recording.",
+        description: "Authorizes the HTML download role, then builds or queues the ZIP and returns status, not a URL."
       },
       package_status: {
         http_verb: :get,
         handler: PackageStatus,
         summary: "Read the current ZIP package for this recording.",
-        description: "Authorizes the same download role as the HTML package, then reads the stored package."
+        description: "Authorizes the HTML download role, then returns package status, not a download URL."
       }
     }.freeze
 

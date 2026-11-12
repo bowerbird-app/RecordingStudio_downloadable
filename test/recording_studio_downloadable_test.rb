@@ -59,8 +59,11 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes gemfile, 'tag: "v0.11.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.6.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.7.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v0.21.3"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_moveable", tag: "v4.1.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_icons", tag: "v0.1.3"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.12.0", require: false'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.341"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.5.0"'
     refute_includes gemfile, 'tag: "v4.4.0"'
@@ -275,6 +278,9 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes initializer_source, '"Folder"'
     assert_includes initializer_source, '"Page"'
     assert_includes initializer_source, '"RecordingStudioAttachable::Attachment"'
+    assert_includes initializer_source, '"AdminRoot"'
+    assert_includes initializer_source, '"RecordingStudio::Access"'
+    assert_includes initializer_source, '"RecordingStudioApi::ApiClient"'
     refute_includes initializer_source, '"RecordingStudioAttachable::Library"'
     refute_includes initializer_source, '"RecordingStudioAttachable::Placement"'
     assert_includes initializer_source, '"RecordingStudio::AccessConstraint"'
@@ -350,7 +356,9 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "action_audiences"
     assert_includes readme, "bearer link"
     assert_includes readme, "downloadable_generate!(action:, export_scope:"
-    assert_includes readme, "RecordingStudioDownloadable.download!"
+    refute_includes readme, "RecordingStudioDownloadable.download!"
+    assert_includes readme, "builds or queues the ZIP and returns package status"
+    assert_includes readme, "It does not return a download URL"
     assert_includes readme, "capability_actions"
     assert_includes readme, "downloadable_invalidate!"
     assert_includes readme, "published.recording_studio_publishable"

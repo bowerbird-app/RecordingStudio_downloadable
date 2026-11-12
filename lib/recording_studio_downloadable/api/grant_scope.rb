@@ -10,30 +10,30 @@ module RecordingStudioDownloadable
         found = context.access_grant.accessible_recordings.find_by(id: recording.id)
         return found if found
 
-        raise_not_found!("Recording was not found in this API scope")
+        raise RecordingStudioApi::NotFoundError, "Recording was not found in this API scope"
       end
 
       def authorize_download!(context, recording)
-        role = Authorization.required_role_for(recording.downloadable_action)
+        options = capability_options_for(recording)
+        role = Authorization.required_role_for(recording.downloadable_action, capability_options: options)
         context.access_grant.authorize!(recording: recording, role: role)
       end
 
-      def raise_forbidden!(message)
-        raise RecordingStudioApi::AuthorizationError, message if defined?(RecordingStudioApi::AuthorizationError)
-
-        raise Authorization::NotAuthorizedError, message
-      end
-
-      def raise_not_found!(message)
-        raise RecordingStudioApi::NotFoundError, message if defined?(RecordingStudioApi::NotFoundError)
-
-        raise ActiveRecord::RecordNotFound, message
-      end
-
-      def map_authorization!
-        yield
+      def authorize_downloadable!(context, recording)
+        options = capability_options_for(recording)
+        authorize_download!(context, recording)
+        Authorization.authorize!(
+          action: recording.downloadable_action,
+          actor: context.access_grant.actor,
+          recording: recording,
+          capability_options: options
+        )
       rescue Authorization::NotAuthorizedError => e
-        raise_forbidden!(e.message)
+        raise RecordingStudioApi::AuthorizationError, e.message
+      end
+
+      def capability_options_for(recording)
+        RecordingStudio.capability_options(:downloadable, for: recording.recordable_type) || {}
       end
     end
   end

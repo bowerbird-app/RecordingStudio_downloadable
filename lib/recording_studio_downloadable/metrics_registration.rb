@@ -29,24 +29,11 @@ module RecordingStudioDownloadable
     end
 
     def api_authorized?(api_context)
+      grant = api_context.access_grant
       Authorization.view_logs_allowed?(
-        actor: actor_from(api_context),
-        recording: recording_from(api_context)
+        actor: grant.actor,
+        recording: grant.access_recording
       )
-    end
-
-    def actor_from(api_context)
-      grant = api_context.respond_to?(:access_grant) ? api_context.access_grant : nil
-      return grant.actor if grant.respond_to?(:actor)
-
-      api_context.try(:actor)
-    end
-
-    def recording_from(api_context)
-      return api_context.access_recording if api_context.respond_to?(:access_recording) && api_context.access_recording
-
-      grant = api_context.respond_to?(:access_grant) ? api_context.access_grant : nil
-      grant.respond_to?(:root_recording) ? grant.root_recording : api_context.try(:root_recording)
     end
 
     def duplicate_registration?(error)

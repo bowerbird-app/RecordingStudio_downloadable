@@ -12,6 +12,9 @@ class ApiRegistrationTest < Minitest::Test
     assert_equal :view, RecordingStudioDownloadable.configuration.auth_role_for(:download)
     assert_equal :view, RecordingStudioDownloadable::Api.download_role
     assert_equal :view, RecordingStudioDownloadable::Authorization.required_role_for(:download)
+    options = { auth_roles: { download: :edit } }
+    role = RecordingStudioDownloadable::Authorization.required_role_for(:download, capability_options: options)
+    assert_equal :edit, role
   end
 
   def test_openapi_summaries_are_plain_sentences
