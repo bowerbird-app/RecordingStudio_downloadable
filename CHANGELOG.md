@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - The admin download history screen title is Downloads. The Downloads section link stays Download history.
+- Both download history tables are headed Download log (`history.table_title`). Admin's own default heading is Table data.
 - That screen no longer shows a subtitle.
 - Group by on that screen defaults to week. Day, week, and month stay available.
 - Download history uses Admin 2.12 scoped recordings on `download_logs_rollup`. That screen lists the anchor and kept descendants on the history allowlist. The plain `download_logs` screen stays one recording. The 0.10 `scope=subtree` query is replaced. Kind is one `recordable_type`. Within is `item_<underscored_type>=` for one item and everything under it.
@@ -25,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump to `0.11.0`. No migration.
 - The screen title key is `recording_studio.downloadable.history.screen_title` (English "Downloads"). `history.title` still labels the section link.
-- `history.subtitle` is removed. Added `history.who` ("Who"), `history.kind` ("Kind"), and `history.within_all` ("All items").
+- `history.subtitle` is removed. Added `history.who` ("Who"), `history.kind` ("Kind"), `history.within_all` ("All items"), and `history.table_title` ("Download log").
 - Replace `?scope=subtree&recordable_type=` links. `recording_studio_downloadable_history_link` takes `rollup:` and one `recordable_type:` string. `scope:` raises. See [UPGRADING.md](UPGRADING.md).
 
 ## [0.10.2] - 2026-11-05

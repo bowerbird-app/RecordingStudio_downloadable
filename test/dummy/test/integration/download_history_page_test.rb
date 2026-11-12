@@ -58,6 +58,8 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Downloads"
+    assert_select "h3", text: "Download log"
+    refute_includes response.body, "Table data"
     refute_includes response.body, "Download history"
     refute_includes response.body, "Newest first."
     assert_match(/value="week" selected="selected"/, response.body)
@@ -108,6 +110,8 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     get recording_studio_admin_admin.screen_path(rollup_key, recording_id: @recording.id)
 
     assert_response :success
+    assert_select "h3", text: "Download log"
+    refute_includes response.body, "Table data"
     assert_includes response.body, %(name="#{item_key}")
     assert_includes response.body, "All items"
     assert_includes response.body, kit.name

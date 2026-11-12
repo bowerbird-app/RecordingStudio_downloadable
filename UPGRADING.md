@@ -7,7 +7,7 @@
 1. Pin `recording_studio_downloadable` to `0.11.0`.
 2. If the host loads Admin, pin `recording_studio_admin` to `v2.12.0` or newer. That requires Recording Studio `>= 6.3.0` and Flatpack `>= 0.1.341`. Downloadable's gemspec still allows Recording Studio `>= 6.1.0`. Admin is not a Downloadable dependency. Hosts that do not load Admin are unchanged.
 3. The screen title is Downloads (`recording_studio.downloadable.history.screen_title`). The Downloads section link still reads Download history (`history.title`) and opens the current root's rollup.
-4. The screen no longer shows a subtitle. `history.subtitle` is gone. New keys, each with an English default: `history.who` ("Who"), `history.kind` ("Kind"), `history.within_all` ("All items").
+4. The screen no longer shows a subtitle. `history.subtitle` is gone. New keys, each with an English default: `history.who` ("Who"), `history.kind` ("Kind"), `history.within_all` ("All items"), and `history.table_title` ("Download log"). The table heading on both screens is Download log.
 5. Group by defaults to week. Day, week, and month stay available. A URL that already sets `group_by` is unchanged. Auth stays `:"downloadable.view_logs"` on the anchor. `last_4_weeks` is today minus 27 days through today.
 6. Drop `scope=subtree`. Admin reserves `scope` for Root Switchable. A leftover `scope=subtree` can switch the current root. Do not send `recording_ids[]`. Do not use `root_recording_id`.
 

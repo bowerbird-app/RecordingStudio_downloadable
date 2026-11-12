@@ -56,6 +56,7 @@ module RecordingStudioDownloadable
 
       def declare_history_table!(screen)
         table do
+          title Copy.t("history.table_title", default: Copy::TABLE_TITLE)
           column :occurred_at, title: "When"
           column :who, title: "Who", sortable: false, value: ->(row, _context) { row.person_label }
           column :what, title: Copy.t("history.what", default: Copy::WHAT_COLUMN), sortable: false,

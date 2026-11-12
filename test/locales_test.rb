@@ -24,6 +24,7 @@ class LocalesTest < ActiveSupport::TestCase
     "history.within_all" => Copy::WITHIN_ALL,
     "history.downloads" => Copy::STATS_DOWNLOADS,
     "history.chart_title" => Copy::CHART_TITLE,
+    "history.table_title" => Copy::TABLE_TITLE,
     "notices.empty" => Copy::EMPTY_NOTICE,
     "notices.ready" => Copy::READY_NOTICE,
     "notices.building" => Copy::BUILDING_NOTICE,

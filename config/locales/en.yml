@@ -20,6 +20,7 @@ en:
         within_all: "All items"
         downloads: "Downloads"
         chart_title: "Downloads over time"
+        table_title: "Download log"
       notices:
         empty: "Nothing to package."
         ready: "Download is ready."

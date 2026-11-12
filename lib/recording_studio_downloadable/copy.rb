@@ -33,6 +33,7 @@ module RecordingStudioDownloadable
     WITHIN_ALL = "All items"
     STATS_DOWNLOADS = "Downloads"
     CHART_TITLE = "Downloads over time"
+    TABLE_TITLE = "Download log"
 
     NOT_AUTHORIZED = "Not authorized to download this package"
     CAPABILITY_DISABLED = "Downloads are not enabled for this item"

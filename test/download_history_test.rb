@@ -72,6 +72,20 @@ class DownloadHistoryTest < ActionDispatch::IntegrationTest
     refute_includes history_table, secret_agent
   end
 
+  test "both download screens head the table Download log" do
+    sign_in @admin
+
+    get history_path
+    assert_response :success
+    assert_select "h3", text: "Download log"
+    refute_includes response.body, "Table data"
+
+    get rollup_path
+    assert_response :success
+    assert_select "h3", text: "Download log"
+    refute_includes response.body, "Table data"
+  end
+
   test "empty history shows the admin summary and no rows" do
     sign_in @admin
     get history_path
