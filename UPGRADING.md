@@ -1,5 +1,20 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.11.1
+
+`0.11.1` stops the install generator from appending a Downloadable Stimulus lazy-load line. No migration.
+
+1. Pin `recording_studio_downloadable` to `0.11.1`.
+2. Delete this line from `app/javascript/controllers/index.js` if a previous install added it:
+
+```js
+lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)
+```
+
+Keep `lazyLoadControllersFrom("controllers", application)` or the host's eager load of `controllers`. The importmap pin `controllers/recording_studio_downloadable` stays. That load resolves `recording-studio-downloadable--package`.
+
+The deleted line scans every `data-controller` on the page. The browser then logs `Failed to autoload controller` for controllers that do not live in this gem.
+
 ## 0.11.0
 
 `0.11.0` retitles the admin download history screen, changes its default grouping, and replaces the 0.10 subtree query with Admin 2.12 scoped recordings. No migration.

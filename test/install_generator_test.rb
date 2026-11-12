@@ -156,8 +156,8 @@ class InstallGeneratorTest < Minitest::Test
 
       importmap = File.read(importmap_path)
       index = File.read(index_path)
-      assert_includes importmap, "pin_all_from RecordingStudioDownloadable::Engine.root.join(" \
-        '"app/javascript/controllers/recording_studio_downloadable")'
+      assert_includes importmap, "pin_all_from RecordingStudioDownloadable::Engine.root.join("
+      assert_includes importmap, '"app/javascript/controllers/recording_studio_downloadable")'
       assert_includes importmap, 'under: "controllers/recording_studio_downloadable"'
       assert_equal original_index, index
       refute_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
@@ -176,7 +176,9 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes install_guide, "GET …/package/status"
     assert_includes install_guide, 'lazyLoadControllersFrom("controllers", application)'
     assert_includes install_guide, "controllers/recording_studio_downloadable"
-    refute_includes install_guide, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
+    gem_loader = 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
+    assert_includes install_guide, "Do not add\n   `#{gem_loader}`."
+    refute_includes install_guide, "adds the importmap pin and `lazyLoadControllersFrom`"
     assert_includes install_guide, "blob.url"
     assert_includes install_guide, "authorized_action?"
     assert_includes install_guide, "action_audiences"
