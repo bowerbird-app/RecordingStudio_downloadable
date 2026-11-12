@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Dummy pins Recording Studio API `v0.21.4` and Admin `v2.13.0` so history filter labels come from Admin instead of the older API view shadow.
+
 ## [0.12.0] - 2026-11-12
 
 ### Added
