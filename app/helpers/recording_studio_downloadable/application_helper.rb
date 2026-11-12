@@ -51,22 +51,19 @@ module RecordingStudioDownloadable
       end
     end
 
-    def recording_studio_downloadable_history_link(recording, **options)
-      history_scope = HistoryScope.from_options(options)
-      options = options.except(:scope, :recordable_type)
+    def recording_studio_downloadable_history_link(recording, recordable_type: nil, rollup: false, **options)
+      raise ArgumentError, "scope is reserved. Pass rollup: true or recordable_type:." if options.key?(:scope)
+      raise ArgumentError, "recordable_type is one class name" if recordable_type.is_a?(Array)
+
       return unless recording
-      return unless history_scope.subtree || (recording.respond_to?(:downloadable?) && recording.downloadable?)
-      return unless RecordingStudioDownloadable::Authorization.view_logs_allowed?(
-        actor: downloadable_view_actor,
-        recording: recording
-      )
+      return unless history_link_visible?(recording, recordable_type: recordable_type, rollup: rollup)
       return unless defined?(FlatPack::Button::Component)
 
       render FlatPack::Button::Component.new(
         text: options.fetch(:text, Copy.t("buttons.history", default: Copy::HISTORY_BUTTON)),
         style: options.fetch(:style, :ghost),
         size: options.fetch(:size, :md),
-        href: downloadable_history_path_for(recording, history_scope)
+        href: downloadable_history_path_for(recording, recordable_type: recordable_type)
       )
     end
 
@@ -165,16 +162,35 @@ module RecordingStudioDownloadable
       downloadable_routes.recording_package_path(recording)
     end
 
-    def downloadable_history_path_for(recording, history_scope = HistoryScope.item)
+    def history_link_visible?(recording, recordable_type:, rollup:)
+      return false unless rollup || recordable_type.present? || history_item?(recording)
+
+      RecordingStudioDownloadable::Authorization.view_logs_allowed?(
+        actor: downloadable_view_actor,
+        recording: recording
+      )
+    end
+
+    def history_item?(recording)
+      recording.respond_to?(:downloadable?) && recording.downloadable?
+    end
+
+    def downloadable_history_path_for(recording, recordable_type: nil)
       return unless defined?(RecordingStudioAdmin)
 
       key = RecordingStudioDownloadable::Admin::SCREEN_KEY
-      base = if respond_to?(:recording_studio_admin_admin)
-               recording_studio_admin_admin.screen_path(key)
-             else
-               "#{RecordingStudioAdmin.configuration.default_mount_path}/screens/#{key}"
-             end
-      "#{base}?#{history_scope.query_params(recording_id: recording.id).to_query}"
+      base = history_screen_base(key)
+      params = { recording_id: recording.id }
+      params[:recordable_type] = recordable_type.to_s if recordable_type.present?
+      "#{base}?#{params.to_query}"
+    end
+
+    def history_screen_base(key)
+      if respond_to?(:recording_studio_admin_admin)
+        recording_studio_admin_admin.screen_path(key)
+      else
+        "#{RecordingStudioAdmin.configuration.default_mount_path}/screens/#{key}"
+      end
     end
 
     def downloadable_package_status_path_for(recording)

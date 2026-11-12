@@ -64,7 +64,9 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Last 4 weeks"
     assert_includes response.body, "Last 12 months"
     refute_includes response.body, "People"
-    refute_includes response.body, 'name="recordable_type"'
+    assert_includes response.body, "Who"
+    assert_includes response.body, 'name="person"'
+    assert_includes response.body, 'name="recordable_type"'
     refute_includes response.body, 'name="what"'
     refute_includes response.body, 'name="start_date"'
 
@@ -86,7 +88,7 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Downloads over time"
   end
 
-  test "subtree history on a workspace lists a child kit download" do
+  test "rollup history on a workspace lists a child kit download" do
     kit = PressKit.create!(name: "Subtree kit #{SecureRandom.hex(4)}")
     kit_recording = RecordingStudio.record!(
       action: "created",
@@ -99,22 +101,19 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
       recording: kit_recording, action: "press_kits.download", export_scope: "public",
       actor: @user, occurred_at: 1.day.ago
     )
+    item_key = RecordingStudioDownloadable::Admin::DownloadLogsScreen.item_filter_key("PressKit")
 
-    get recording_studio_admin_admin.screen_path(
-      "download_logs",
-      recording_id: @recording.id,
-      scope: "subtree"
-    )
+    get recording_studio_admin_admin.screen_path("download_logs", recording_id: @recording.id)
 
     assert_response :success
-    assert_includes response.body, 'name="what"'
-    refute_match(/<select[^>]*name="recordable_type"/, response.body)
+    assert_includes response.body, %(name="#{item_key}")
+    assert_includes response.body, "All items"
     assert_includes response.body, kit.name
+    refute_includes response.body, "scope=subtree"
 
     get recording_studio_admin_admin.screen_table_path(
       "download_logs",
-      recording_id: @recording.id,
-      scope: "subtree"
+      recording_id: @recording.id
     ), headers: { "Turbo-Frame" => "screen-table" }
 
     assert_response :success
@@ -125,23 +124,10 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     get recording_studio_admin_admin.screen_table_path(
       "download_logs",
       recording_id: @recording.id,
-      scope: "subtree",
-      what: kit.name
+      item_key => kit_recording.id
     ), headers: { "Turbo-Frame" => "screen-table" }
 
     assert_response :success
     assert_includes response.body, kit.name
-
-    get recording_studio_admin_admin.screen_path(
-      "download_logs",
-      recording_id: @recording.id,
-      scope: "subtree",
-      recordable_type: "PressKit"
-    )
-
-    assert_response :success
-    assert_includes response.body, 'name="what"'
-    assert_includes response.body, kit.name
-    refute_match(/value="PressKit" selected="selected"/, response.body)
   end
 end

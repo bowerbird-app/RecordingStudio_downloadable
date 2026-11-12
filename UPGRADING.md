@@ -2,16 +2,45 @@
 
 ## 0.11.0
 
-`0.11.0` retitles the admin download history screen and changes its default grouping. No migration.
+`0.11.0` retitles the admin download history screen, changes its default grouping, and replaces the 0.10 subtree query with Admin 2.12 scoped recordings. No migration.
 
 1. Pin `recording_studio_downloadable` to `0.11.0`.
-2. The screen title is Downloads (`recording_studio.downloadable.history.screen_title`). The Downloads section link still reads Download history (`history.title`).
-3. The screen no longer shows a subtitle. `history.subtitle` is gone.
-4. Group by defaults to week. Day, week, and month stay available. A URL that already sets `group_by` is unchanged. Auth stays `:"downloadable.view_logs"`.
+2. If the host loads Admin, pin `recording_studio_admin` to `v2.12.0` or newer. That requires Recording Studio `>= 6.3.0` and Flatpack `>= 0.1.341`. Downloadable's gemspec still allows Recording Studio `>= 6.1.0`. Admin is not a Downloadable dependency. Hosts that do not load Admin are unchanged.
+3. The screen title is Downloads (`recording_studio.downloadable.history.screen_title`). The Downloads section link still reads Download history (`history.title`) and opens the current root's rollup.
+4. The screen no longer shows a subtitle. `history.subtitle` is gone. New keys, each with an English default: `history.who` ("Who"), `history.kind` ("Kind"), `history.within_all` ("All items").
+5. Group by defaults to week. Day, week, and month stay available. A URL that already sets `group_by` is unchanged. Auth stays `:"downloadable.view_logs"` on the anchor. `last_4_weeks` is today minus 27 days through today.
+6. Drop `scope=subtree`. Admin reserves `scope` for Root Switchable. A leftover `scope=subtree` can switch the current root. Do not send `recording_ids[]`. Do not use `root_recording_id`.
+
+`?recording_id=` now lists that anchor and kept descendants on the history allowlist. The allowlist defaults to every type that opted in with Downloadable `.to`. Override it before Admin boots:
+
+```ruby
+RecordingStudioDownloadable.configuration.history_recordable_types = %w[PressKit Page]
+```
+
+`nil` keeps the default. An empty list turns the rollup off, and the query is only the anchor. After a later change, call `RecordingStudioDownloadable::Admin::DownloadLogsScreen.install_scope!`.
+
+Kind is one class name. An unknown type is ignored and the allowlist stays in effect. That differs from 0.10, where a list of unknown types emptied the table. Within drills into one item and everything under it. The param key is `item_` plus the underscored type. A descendant count past Admin `max_scoped_recordings` (default 5000) returns 422.
+
+```
+/admin/screens/download_logs?recording_id=:id
+/admin/screens/download_logs?recording_id=:id&recordable_type=PressKit
+/admin/screens/download_logs?recording_id=:id&item_press_kit=:child_id
+```
+
+```ruby
+recording_studio_downloadable_history_link(recording)
+recording_studio_downloadable_history_link(
+  press_center_recording,
+  rollup: true,
+  recordable_type: "PressKit"
+)
+```
+
+`scope:` raises `ArgumentError`. An array `recordable_type` raises. Pass `rollup: true` when the anchor is not downloadable.
 
 ## 0.10.0
 
-`0.10.0` adds optional subtree download history. No migration.
+`0.10.0` added optional subtree download history. `0.11.0` replaces that query. Use the 0.11.0 notes above. The 0.10 behavior was:
 
 1. Pin `recording_studio_downloadable` to `0.10.0`.
 2. Keep existing history links. `?recording_id=` still lists that recording only. `recording_studio_downloadable_history_link(recording)` is unchanged.

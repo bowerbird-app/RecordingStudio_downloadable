@@ -15,6 +15,9 @@ en:
         someone: "Someone"
         unknown_item: "Unknown item"
         what: "What"
+        who: "Who"
+        kind: "Kind"
+        within_all: "All items"
         downloads: "Downloads"
         chart_title: "Downloads over time"
       notices:

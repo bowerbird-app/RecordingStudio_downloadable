@@ -18,13 +18,12 @@ module RecordingStudioDownloadable
       filter :period, values: PERIOD_KEYS, apply: lambda { |relation, value, context|
         DownloadLogsScreen.apply_period(relation, value, context)
       }
-      filter :what, options: -> { DownloadLogsScreen.item_choices }, apply: lambda { |relation, value, context|
-        DownloadLogsScreen.apply_item(relation, value, context)
-      }
       filter :group_by, values: %i[day week month], default: :week
-      filter :person, options: -> { DownloadLogsScreen.person_choices }, apply: lambda { |relation, value, context|
-        DownloadLogsScreen.apply_person(relation, value, context)
-      }
+      filter :person, label: -> { Copy.t("history.who", default: Copy::WHO_FILTER) },
+                      options: -> { DownloadLogsScreen.person_choices },
+                      apply: lambda { |relation, value, context|
+                        DownloadLogsScreen.apply_person(relation, value, context)
+                      }
       filter_presentation :inline
 
       summary do
@@ -50,13 +49,7 @@ module RecordingStudioDownloadable
 
       extend DownloadLogsQueries
       extend DownloadLogsSeries
-
-      def self.filters
-        declared = super
-        return declared if item_choices.any?
-
-        declared.reject { |filter| filter.param_key == :what }
-      end
+      extend DownloadLogsScope
     end
   end
 end

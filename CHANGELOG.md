@@ -7,19 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.11.0] - 2026-11-11
+## [0.11.0] - 2026-11-12
 
 ### Changed
 
 - The admin download history screen title is Downloads. The Downloads section link stays Download history.
 - That screen no longer shows a subtitle.
 - Group by on that screen defaults to week. Day, week, and month stay available.
+- Download history uses Admin 2.12 scoped recordings. `?recording_id=` lists the anchor and kept descendants on the history allowlist. The 0.10 `scope=subtree` query is replaced. Kind is one `recordable_type`. Within is `item_<underscored_type>=` for one item and everything under it.
+- The person filter is labeled Who. Kind and the within filters replace the What select. The What column stays when the rollup is on.
+- `history_recordable_types` sets the allowlist. `nil` means every type that opted in with `.to`.
+- Development and dummy apps pin Admin `v2.12.0`, Recording Studio `v6.3.0`, and Flatpack `v0.1.341`. The gemspec still allows Recording Studio `>= 6.1.0`. Admin stays a host dependency.
 
 ### Upgrade notes
 
 - Bump to `0.11.0`. No migration.
 - The screen title key is `recording_studio.downloadable.history.screen_title` (English "Downloads"). `history.title` still labels the section link.
-- `history.subtitle` is removed. See [UPGRADING.md](UPGRADING.md).
+- `history.subtitle` is removed. Added `history.who` ("Who"), `history.kind` ("Kind"), and `history.within_all` ("All items").
+- Replace `?scope=subtree&recordable_type=` links. `recording_studio_downloadable_history_link` takes `rollup:` and one `recordable_type:` string. `scope:` raises. See [UPGRADING.md](UPGRADING.md).
 
 ## [0.10.2] - 2026-11-05
 

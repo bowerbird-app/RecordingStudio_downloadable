@@ -28,6 +28,9 @@ module RecordingStudioDownloadable
     SOMEONE = "Someone"
     UNKNOWN_ITEM = "Unknown item"
     WHAT_COLUMN = "What"
+    WHO_FILTER = "Who"
+    KIND_FILTER = "Kind"
+    WITHIN_ALL = "All items"
     STATS_DOWNLOADS = "Downloads"
     CHART_TITLE = "Downloads over time"
 

@@ -12,14 +12,14 @@ module RecordingStudioDownloadable
 
       def relation_for(context)
         recording = context.access_recording
-        scope = HistoryScope.from_params(context.params)
         Admin.remember_recording(recording)
-        Admin.remember_history_scope(scope)
         stamp_default_period!(context)
-        stamp_subtree_columns!(context, scope)
         return DownloadLog.none if recording.nil? || !allowed?(context)
 
-        logs_relation(recording, scope)
+        ids = recording_ids_for(context, recording)
+        Admin.remember_log_ids(ids)
+        stamp_item_column!(context)
+        logs_for_ids(ids)
       end
 
       def apply_period(relation, value, _context)
@@ -46,10 +46,7 @@ module RecordingStudioDownloadable
       end
 
       def person_choices
-        recording = Admin.remembered_recording
-        return [] unless recording
-
-        relation = logs_relation(recording)
+        relation = logs_for_ids(Admin.remembered_log_ids)
         labels = []
         labels << "anonymous" if relation.exists?(actor_id: nil)
         relation.identified.find_each { |log| labels << log.person_label }
@@ -65,38 +62,24 @@ module RecordingStudioDownloadable
         relation.where(actor_type: match.actor_type, actor_id: match.actor_id)
       end
 
-      def item_choices
-        scope = Admin.remembered_history_scope
-        recording = Admin.remembered_recording
-        return [] unless scope&.subtree && recording
-
-        scope.item_labels(recording)
-      end
-
-      def apply_item(relation, value, _context)
-        return relation if value.blank?
-
-        scope = Admin.remembered_history_scope
-        recording = Admin.remembered_recording
-        ids = scope&.subtree && recording ? scope.recording_ids_matching(recording, value) : []
-        return relation.none if ids.empty?
-
-        relation.where(recording_id: ids)
-      end
-
       def item_label(log)
-        HistoryScope.label_for(log.recording)
-      end
-
-      def logs_relation(recording, scope = Admin.remembered_history_scope)
-        scope ||= HistoryScope.item
-        relation = scope.logs_for(recording)
-        return relation unless relation.respond_to?(:includes)
-
-        relation.includes(:recording)
+        name = log.recording&.name
+        name.presence || Copy.t("history.unknown_item", default: Copy::UNKNOWN_ITEM)
       end
 
       private
+
+      def recording_ids_for(context, recording)
+        return [recording.id] unless scopeable?
+
+        context.scoped_recording_ids
+      end
+
+      def logs_for_ids(ids)
+        return DownloadLog.none if ids.blank?
+
+        DownloadLog.where(recording_id: ids).includes(:recording)
+      end
 
       # Select filters ignore default:, so a missing param would show "All"
       # while the rows stayed unfiltered. Stamp the default before filters run.
@@ -108,21 +91,18 @@ module RecordingStudioDownloadable
         params["period"] = DownloadLogsScreen::DEFAULT_PERIOD
       end
 
-      def stamp_subtree_columns!(context, scope)
-        return unless scope.subtree
+      def stamp_item_column!(context)
+        return unless scopeable?
 
         params = context.params
         return unless params.respond_to?(:[]=)
         return if params[:columns].present? || params["columns"].present?
 
-        params["columns"] = scope.table_columns
+        params["columns"] = DownloadLogsScope::ITEM_COLUMNS
       end
 
       def person_match(value)
-        recording = Admin.remembered_recording
-        return unless recording
-
-        logs_relation(recording).identified.find { |log| log.person_label == value }
+        logs_for_ids(Admin.remembered_log_ids).identified.find { |log| log.person_label == value }
       end
     end
   end
