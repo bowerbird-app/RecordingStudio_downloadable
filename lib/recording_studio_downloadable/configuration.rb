@@ -26,9 +26,11 @@ module RecordingStudioDownloadable
       require_workspace
     ].freeze
 
+    TYPE_NAME = /\A[A-Z][A-Za-z0-9_]*(?:::[A-Z][A-Za-z0-9_]*)*\z/
+
     attr_accessor :authorize_with, :cache, :max_zip_bytes, :max_concurrent_builds
     attr_reader :hooks, :auth_roles, :rate_limits, :content_change_debounce, :skip_host_before_actions,
-                :access_denied_components, :download_gates, :layout
+                :access_denied_components, :download_gates, :layout, :history_recordable_types
 
     def initialize
       @hooks = RecordingStudio::Hooks.new
@@ -45,6 +47,10 @@ module RecordingStudioDownloadable
 
     def layout=(value)
       @layout = RecordingStudio::Layout.accept(value)
+    end
+
+    def history_recordable_types=(types)
+      @history_recordable_types = types.nil? ? nil : normalize_history_types(types)
     end
 
     def register_access_denied_component(action, component)
@@ -146,6 +152,7 @@ module RecordingStudioDownloadable
       @access_denied_components = {}
       @download_gates = {}
       @layout = nil
+      @history_recordable_types = nil
     end
 
     def default_auth_roles
@@ -158,6 +165,20 @@ module RecordingStudioDownloadable
         actor: { limit: 60, period: 1.minute },
         recording: { limit: 30, period: 1.minute }
       }
+    end
+
+    def normalize_history_types(types)
+      names = Array(types).map { |type| history_type_name(type) }.uniq
+      names.each do |name|
+        next if name.match?(TYPE_NAME)
+
+        raise ArgumentError, "history_recordable_types includes #{name.inspect}"
+      end
+      names
+    end
+
+    def history_type_name(type)
+      type.is_a?(Class) ? type.name.to_s : type.to_s.strip
     end
 
     def normalize_rate_limits(value)

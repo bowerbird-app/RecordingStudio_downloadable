@@ -28,7 +28,7 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Send me the ZIP"
     assert_includes response.body, %(data-modal-id="#{WorkspaceDownloadGate.modal_id(@recording)}")
     assert_includes response.body, "p-[var(--card-padding-lg)]"
-    assert_includes response.body, "gap-6"
+    assert_includes response.body, "gap-[var(--stack-gap-lg)]"
     refute_includes response.body, "recording-studio-downloadable--package"
     refute_includes response.body, "Your name"
 
@@ -67,7 +67,7 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "text-[var(--color-success-background-color)]"
     assert_includes response.body, "data-downloadable-started"
     assert_includes response.body, "hidden"
-    assert_includes response.body, "gap-6"
+    assert_includes response.body, "gap-[var(--stack-gap-lg)]"
     assert_includes response.body, "recording-studio-downloadable--package"
     assert_includes response.body, 'auto-download-value="true"'
     refute_includes response.body, ">Download<"

@@ -4,22 +4,38 @@ module RecordingStudioDownloadable
   # Optional RecordingStudioAdmin registration. Loaded only when that gem is present.
   module Admin
     SCREEN_KEY = "download_logs"
+    ROLLUP_SCREEN_KEY = "download_logs_rollup"
     SECTION_KEY = "downloads"
     RECORDING_KEY = :recording_studio_downloadable_admin_recording
-    HISTORY_SCOPE_KEY = :recording_studio_downloadable_admin_history_scope
+    LOG_IDS_KEY = :recording_studio_downloadable_admin_log_ids
 
     module_function
 
     def register!
       return unless defined?(::RecordingStudioAdmin)
 
+      require_screen!
+      install_within_log_filter!
+      RecordingStudioAdmin.register_screen(DownloadLogsScreen)
+      RecordingStudioAdmin.register_screen(DownloadLogsRollupScreen)
+      RecordingStudioAdmin.register_section(DownloadsSection)
+      DownloadLogsRollupScreen.install_scope!
+    end
+
+    def require_screen!
+      require_relative "admin/within_log_filter"
       require_relative "admin/download_logs_queries"
       require_relative "admin/download_logs_series"
+      require_relative "admin/download_logs_scope"
       require_relative "admin/download_logs_screen"
       require_relative "admin/downloads_section"
+    end
 
-      RecordingStudioAdmin.register_screen(DownloadLogsScreen)
-      RecordingStudioAdmin.register_section(DownloadsSection)
+    def install_within_log_filter!
+      filter = ::RecordingStudioAdmin::Filters::WithinFilter
+      return if filter.ancestors.include?(WithinLogFilter)
+
+      filter.prepend(WithinLogFilter)
     end
 
     def recording_id?(context)
@@ -41,12 +57,12 @@ module RecordingStudioDownloadable
       Thread.current[RECORDING_KEY]
     end
 
-    def remember_history_scope(scope)
-      Thread.current[HISTORY_SCOPE_KEY] = scope
+    def remember_log_ids(ids)
+      Thread.current[LOG_IDS_KEY] = Array(ids)
     end
 
-    def remembered_history_scope
-      Thread.current[HISTORY_SCOPE_KEY]
+    def remembered_log_ids
+      Thread.current[LOG_IDS_KEY]
     end
 
     def recording_id_from(context)
