@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-12
+
+### Added
+
+- `RecordingStudioDownloadable.download!` authorizes with `Authorization.authorize!`, then either continues the HTML package request or calls `downloadable_generate!`. `PackagesController#show` uses this method so the ZIP page stays the same.
+- Recording Studio API capability actions `:download` (POST) and `:package_status` (GET) on `:downloadable`. Handlers authorize through `context.access_grant.authorize!`, look up the recording in the grant's root, and reuse `download!` / `downloadable_package`. Required role matches HTML download (`config.auth_roles` `:download`, default `:view`). MCP needs no extra code. Hosts still list the actions on each recordable type API.
+
+### Changed
+
+- Download log metrics register `api_authorize` with the same Accessible check as Admin history (`downloadable.view_logs`, edit).
+
+### Upgrade notes
+
+- Bump to `0.11.0`. No migration.
+- Enable `:download` and `:package_status` on recordable type APIs that should expose them. See [UPGRADING.md](UPGRADING.md).
+
 ## [0.10.2] - 2026-11-05
 
 ### Changed

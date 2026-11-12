@@ -20,11 +20,33 @@ module RecordingStudioDownloadable
       RecordingStudioMetrics.register(
         :download_logs,
         model: DownloadLog,
-        blast_radius: :recording
+        blast_radius: :recording,
+        api_authorize: method(:api_authorized?)
       ) do
         count :total, title: "Downloads"
         timeseries :over_time, title: "Downloads over time", field: :occurred_at
       end
+    end
+
+    def api_authorized?(api_context)
+      Authorization.view_logs_allowed?(
+        actor: actor_from(api_context),
+        recording: recording_from(api_context)
+      )
+    end
+
+    def actor_from(api_context)
+      grant = api_context.respond_to?(:access_grant) ? api_context.access_grant : nil
+      return grant.actor if grant.respond_to?(:actor)
+
+      api_context.try(:actor)
+    end
+
+    def recording_from(api_context)
+      return api_context.access_recording if api_context.respond_to?(:access_recording) && api_context.access_recording
+
+      grant = api_context.respond_to?(:access_grant) ? api_context.access_grant : nil
+      grant.respond_to?(:root_recording) ? grant.root_recording : api_context.try(:root_recording)
     end
 
     def duplicate_registration?(error)

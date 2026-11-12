@@ -330,10 +330,13 @@ recording.downloadable_invalidate!(immediate: true)          # drop/stop serving
 recording.downloadable_ready?
 recording.downloadable_package       # persisted Package (archive blob + fingerprint + state)
 recording.downloadable_download_path # engine route; authorizes in the controller
+RecordingStudioDownloadable.download!(recording:, actor:) # authorize, then generate (HTML show uses this too)
 recording.downloadable_source        # :attachments or :manifest
 ```
 
-`recording.downloadable_generate!(action:, export_scope:)` enqueues a build. `recording.downloadable_invalidate!(immediate: true)` drops the current ZIP so it is not served. Hosts call these from their own subscribers. Downloadable does not depend on Publishable.
+`recording.downloadable_generate!(action:, export_scope:)` enqueues a build. `RecordingStudioDownloadable.download!(recording:, actor:)` runs `Authorization.authorize!` for that recording's download action, then `downloadable_generate!`. The HTML package `GET` calls the same method and then continues gate, rate limit, empty check, and serve. `recording.downloadable_invalidate!(immediate: true)` drops the current ZIP so it is not served. Hosts call these from their own subscribers. Downloadable does not depend on Publishable.
+
+When Recording Studio API is loaded, this gem registers member capability actions `:download` (POST) and `:package_status` (GET) on `:downloadable`. Both use the HTML download role (`config.auth_roles` `:download`, default `:view`), authorize through the request `AccessGrant`, and look up the recording in that grant's root. `:download` calls `download!`. `:package_status` reads `downloadable_package`. Hosts still list those names in `capability_actions` on each recordable type API. MCP picks them up from the API. Download log metrics on the API use `downloadable.view_logs`, the same Accessible check as Admin history.
 
 `downloadable_invalidate!(immediate: true)` marks the cached ZIP unusable immediately (asset removal, unpublish, visibility, or authorization changes). Ordinary content changes debounce a rebuild for 30–60 seconds (`config.content_change_debounce`, default 45). Attachment observers enqueue a rebuild only when a package row already exists; the first ZIP comes from an authorized generate (HTTP or `downloadable_generate!`).
 

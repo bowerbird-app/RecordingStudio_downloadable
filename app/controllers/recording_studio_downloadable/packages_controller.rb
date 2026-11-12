@@ -4,18 +4,12 @@ module RecordingStudioDownloadable
   class PackagesController < ApplicationController
     def show
       recording = find_recording
-      authorize_download!(recording)
-      gate = download_gate_for(recording)
-      if download_gate_blocking?(gate, recording)
-        respond_to_download_gate!(recording, gate)
-        return
-      end
-
-      throttle_download!(recording)
-
-      raise ActiveRecord::RecordNotFound if recording.downloadable_empty?
-
-      serve_or_prepare!(recording)
+      RecordingStudioDownloadable.download!(
+        recording: recording,
+        actor: current_downloadable_actor,
+        controller: self,
+        capability_options: capability_options_for(recording)
+      )
     end
 
     def create

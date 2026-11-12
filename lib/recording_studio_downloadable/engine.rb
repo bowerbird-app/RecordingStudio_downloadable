@@ -219,6 +219,12 @@ module RecordingStudioDownloadable
       end
     end
 
+    initializer "recording_studio_downloadable.api" do
+      config.to_prepare do
+        RecordingStudioDownloadable::Api.register_capability_action!
+      end
+    end
+
     initializer "recording_studio_downloadable.admin",
                 after: "recording_studio_downloadable.load_config" do
       next unless defined?(RecordingStudioAdmin)
