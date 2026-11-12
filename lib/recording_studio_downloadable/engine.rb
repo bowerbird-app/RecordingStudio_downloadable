@@ -235,17 +235,5 @@ module RecordingStudioDownloadable
         RecordingStudioDownloadable::Admin.register!
       end
     end
-
-    initializer "recording_studio_downloadable.admin_filter_views",
-                after: "recording_studio_api.prepend_recording_studio_admin_views" do
-      next unless defined?(RecordingStudioAdmin)
-
-      config.to_prepare do
-        next unless defined?(::RecordingStudioAdmin::ScreensController)
-
-        admin_views = RecordingStudioAdmin::Engine.root.join("app/views").to_s
-        ::RecordingStudioAdmin::ScreensController.prepend_view_path(admin_views)
-      end
-    end
   end
 end
