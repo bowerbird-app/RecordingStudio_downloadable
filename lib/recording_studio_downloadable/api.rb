@@ -14,13 +14,18 @@ module RecordingStudioDownloadable
         http_verb: :post,
         handler: DownloadRecording,
         summary: "Build or queue the authorized ZIP for this recording.",
-        description: "Authorizes with the global download role from Api.download_role (config.auth_roles :download). Recording Studio API refuses a weaker per-type auth role before the handler runs. Then builds or queues the ZIP and returns status, not a URL."
+        description: "Authorizes with the global download role from Api.download_role " \
+                     "(config.auth_roles :download). Recording Studio API refuses a weaker " \
+                     "per-type auth role before the handler runs. Then builds or queues the " \
+                     "ZIP and returns status, not a URL."
       },
       downloadable_package_status: {
         http_verb: :get,
         handler: PackageStatus,
         summary: "Read the current ZIP package for this recording.",
-        description: "Authorizes with the same global download role from Api.download_role. Recording Studio API refuses a weaker per-type auth role before the handler runs. Then returns package status, not a download URL."
+        description: "Authorizes with the same global download role from Api.download_role. " \
+                     "Recording Studio API refuses a weaker per-type auth role before the " \
+                     "handler runs. Then returns package status, not a download URL."
       }
     }.freeze
 

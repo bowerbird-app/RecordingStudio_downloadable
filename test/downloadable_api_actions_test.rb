@@ -129,18 +129,23 @@ class DownloadableApiActionsTest < ActionDispatch::IntegrationTest
   end
 
   test "re-registering this gem's actions does not raise" do
-    assert_nil RecordingStudioDownloadable::Api.register_capability_action!
+    RecordingStudioDownloadable::Api.register_capability_action!
+    download = RecordingStudioApi.capability_action(:downloadable_download)
+
+    assert_equal RecordingStudioDownloadable::Api::DownloadRecording, download.handler
   end
 
   test "a colliding capability action raises" do
-    foreign = Struct.new(:capability, :handler).new(:movable, Object.new)
+    action = RecordingStudioApi.capability_action(:downloadable_download)
+    original_handler = action.handler
+    action.instance_variable_set(:@handler, Class.new)
 
-    RecordingStudioApi.stub(:capability_action, foreign) do
-      error = assert_raises(RecordingStudioApi::ConfigurationError) do
-        RecordingStudioDownloadable::Api.register_capability_action!
-      end
-      assert_match(/already registered/, error.message)
+    error = assert_raises(RecordingStudioApi::ConfigurationError) do
+      RecordingStudioDownloadable::Api.register_capability_action!
     end
+    assert_match(/already registered/, error.message)
+  ensure
+    action.instance_variable_set(:@handler, original_handler) if action && original_handler
   end
 
   test "metrics api_authorize matches admin download history access" do
