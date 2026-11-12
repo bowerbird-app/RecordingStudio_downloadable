@@ -1,8 +1,6 @@
 import { application } from "controllers/application"
 import { lazyLoadControllersFrom } from "@hotwired/stimulus-loading"
 
-// Lazy load controllers from the host app, FlatPack, and Attachable on first use.
+// One "controllers" load covers pinned gem controllers. A per-gem
+// lazyLoadControllersFrom scans every data-controller and logs autoload failures.
 lazyLoadControllersFrom("controllers", application)
-lazyLoadControllersFrom("controllers/recording_studio_attachable", application)
-lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)
-lazyLoadControllersFrom("controllers/recording_studio_admin", application)

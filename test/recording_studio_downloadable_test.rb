@@ -195,7 +195,10 @@ class RecordingStudioDownloadableTest < Minitest::Test
     )
 
     assert_includes importmap, "controllers/recording_studio_downloadable"
-    assert_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable"'
+    assert_includes index, 'lazyLoadControllersFrom("controllers", application)'
+    refute_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_attachable"'
+    refute_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable"'
+    refute_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_admin"'
     assert_includes controller, "package/status"
     assert_includes controller, "triggerDownload"
     assert_includes controller, "canGenerate"

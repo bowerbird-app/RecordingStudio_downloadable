@@ -26,6 +26,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump to `0.12.0`. No migration.
 - Enable `:downloadable_download` and `:downloadable_package_status` on recordable type APIs that should expose them. See [UPGRADING.md](UPGRADING.md).
 
+## [0.11.1] - 2026-11-12
+
+### Fixed
+
+- The install generator no longer appends `lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)` to the host Stimulus entrypoint. That call scans every `data-controller` and logs `Failed to autoload controller`. The importmap pin stays. `lazyLoadControllersFrom("controllers", application)` already resolves `recording-studio-downloadable--package`.
+
+### Upgrade notes
+
+- Bump to `0.11.1`. No migration.
+- Delete `lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)` from `app/javascript/controllers/index.js` if it is there. See [UPGRADING.md](UPGRADING.md).
+
 ## [0.11.0] - 2026-11-12
 
 ### Changed
