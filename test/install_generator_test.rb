@@ -135,14 +135,15 @@ class InstallGeneratorTest < Minitest::Test
     assert_equal ["INSTALL.md"], shown_templates
   end
 
-  def test_add_javascript_pins_appends_importmap_and_stimulus_loader
+  def test_add_javascript_pins_appends_importmap_pin_without_gem_stimulus_loader
     with_temp_app do |dir|
       FileUtils.mkdir_p(File.join(dir, "config"))
       FileUtils.mkdir_p(File.join(dir, "app/javascript/controllers"))
       importmap_path = File.join(dir, "config/importmap.rb")
       index_path = File.join(dir, "app/javascript/controllers/index.js")
+      original_index = "lazyLoadControllersFrom(\"controllers\", application)\n"
       File.write(importmap_path, "pin \"application\"\n")
-      File.write(index_path, "lazyLoadControllersFrom(\"controllers\", application)\n")
+      File.write(index_path, original_index)
 
       generator = build_generator(dir)
       Rails.stub(:root, Pathname.new(dir)) do
@@ -155,8 +156,11 @@ class InstallGeneratorTest < Minitest::Test
 
       importmap = File.read(importmap_path)
       index = File.read(index_path)
-      assert_includes importmap, "controllers/recording_studio_downloadable"
-      assert_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
+      assert_includes importmap, "pin_all_from RecordingStudioDownloadable::Engine.root.join(" \
+        '"app/javascript/controllers/recording_studio_downloadable")'
+      assert_includes importmap, 'under: "controllers/recording_studio_downloadable"'
+      assert_equal original_index, index
+      refute_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
     end
   end
 
@@ -170,7 +174,9 @@ class InstallGeneratorTest < Minitest::Test
     assert_includes install_guide, "auth, layout, and current actor integration"
     assert_includes install_guide, "recording_studio_recordable"
     assert_includes install_guide, "GET …/package/status"
-    assert_includes install_guide, "lazyLoadControllersFrom"
+    assert_includes install_guide, 'lazyLoadControllersFrom("controllers", application)'
+    assert_includes install_guide, "controllers/recording_studio_downloadable"
+    refute_includes install_guide, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
     assert_includes install_guide, "blob.url"
     assert_includes install_guide, "authorized_action?"
     assert_includes install_guide, "action_audiences"
