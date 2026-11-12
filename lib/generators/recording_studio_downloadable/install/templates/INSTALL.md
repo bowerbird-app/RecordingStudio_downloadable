@@ -37,7 +37,11 @@ Next steps:
    that authorization (including anonymous when the audience is `public`) may enqueue a build when the
    package is missing or stale. Concurrent requests share one in-flight job. Unauthorized requests never
    enqueue. Failed packages show Retry (rate-limited `POST`) instead of spinning forever. The installer
-   adds the importmap pin and `lazyLoadControllersFrom` when those host files exist.
+   pins `controllers/recording_studio_downloadable` in `config/importmap.rb` when that file exists.
+   Keep `lazyLoadControllersFrom("controllers", application)` or an eager load of `controllers`.
+   That load resolves `recording-studio-downloadable--package` from the pin. Do not add
+   `lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)`. That prefix
+   scans every `data-controller` on the page and logs `Failed to autoload controller`.
 10. Large ZIP downloads: authorized `GET …/package` redirects to a short-lived signed Active Storage URL
    (`blob.url`, default 5 minutes). That URL is a bearer link until it expires, even if access is later
    revoked. Bytes stream from Disk or R2/S3. The app does not buffer the archive with `blob.download`.

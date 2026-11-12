@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.11.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.11.1", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -192,7 +192,10 @@ class RecordingStudioDownloadableTest < Minitest::Test
     )
 
     assert_includes importmap, "controllers/recording_studio_downloadable"
-    assert_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable"'
+    assert_includes index, 'lazyLoadControllersFrom("controllers", application)'
+    refute_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_attachable"'
+    refute_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_downloadable"'
+    refute_includes index, 'lazyLoadControllersFrom("controllers/recording_studio_admin"'
     assert_includes controller, "package/status"
     assert_includes controller, "triggerDownload"
     assert_includes controller, "canGenerate"

@@ -34,7 +34,6 @@ module RecordingStudioDownloadable
 
       def add_javascript_pins
         add_importmap_pin
-        add_stimulus_lazy_load
       end
 
       def add_tailwind_source
@@ -126,17 +125,6 @@ module RecordingStudioDownloadable
               to: "controllers/recording_studio_downloadable"
           RUBY
         end
-      end
-
-      def add_stimulus_lazy_load
-        path = Rails.root.join("app/javascript/controllers/index.js")
-        return unless File.exist?(path)
-
-        line = 'lazyLoadControllersFrom("controllers/recording_studio_downloadable", application)'
-        content = File.read(path)
-        return if content.include?(line)
-
-        append_to_file path, "\n#{line}\n"
       end
     end
   end
