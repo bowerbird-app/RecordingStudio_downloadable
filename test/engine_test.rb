@@ -171,6 +171,14 @@ class EngineTest < Minitest::Test
     assert_equal %i[downloadable_download downloadable_package_status], registered
   end
 
+  def test_admin_filter_views_initializer_prepends_current_admin_views
+    initializer = find_initializer("recording_studio_downloadable.admin_filter_views")
+
+    assert initializer
+    assert_equal "recording_studio_api.prepend_recording_studio_admin_views",
+                 initializer.after
+  end
+
   def test_model_extension_initializer_skips_abstract_models
     to_prepare_blocks = []
     config_stub = Object.new
