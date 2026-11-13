@@ -1,6 +1,6 @@
 # Recording Studio Downloadable
 
-Recording Studio 6.1 addon that packages files into a downloadable ZIP.
+Recording Studio 6.7 addon that packages files into a downloadable ZIP.
 
 Installing this gem does **not** enable the capability. Host recordables opt in:
 
@@ -199,7 +199,7 @@ Do not send `scope=subtree`. Admin reserves `scope` for Root Switchable, and tha
 
 A host that rolls downloads up under a parent that is not itself downloadable still passes that parent as `recording_id`. Downloadable does not know product type names. Pass those names in `history_recordable_types` or `recordable_type`.
 
-Admin's own gate is still `required_access_role` (default `:view`) on that recording. Downloadable then requires `:"downloadable.view_logs"` on the **anchor** only (`visible_if` on the screen, and the query returns nothing when it fails). Child recordings are not checked. The action defaults to role `:edit`, so edit and admin can open history and view cannot. It does not fall back to `:view` and it does not reuse the download check. Hosts override it through Accessible, for example `config.action_audiences[:"downloadable.view_logs"]`. A signed-in person who passes Admin's `:view` role and fails `downloadable.view_logs` gets Admin's not-found response. Admin has no per-screen Accessible action.
+Admin's own gate is still `required_access_role` (default `:view`) on that recording. Downloadable then requires `:"downloadable.view_logs"` on the **anchor** only (`visible_if` on the screen, and the query returns nothing when it fails). Child recordings are not checked. The action defaults to role `:edit`, so edit and admin can open history and view cannot. It does not fall back to `:view` and it does not reuse the download check. Hosts override it through Accessible, for example `config.action_audiences[:"downloadable.view_logs"]`. A signed-in person who passes Admin's `:view` role and fails `downloadable.view_logs` gets Admin's not-found response. Admin has no per-screen Accessible action. Hosts can deny stats after that check. See [Gating download stats](#gating-download-stats).
 
 ```ruby
 recording_studio_downloadable_history_link(recording)
@@ -221,6 +221,28 @@ Admin's `date_range` filter always renders a free start/end calendar, and its pr
 When `RecordingStudio_metrics` is loaded, Downloadable registers `download_logs.total` (count) and `download_logs.over_time` (timeseries on `occurred_at`). The chart calls `RecordingStudioMetrics::Admin.chart_series` with `MetricsRegistration.context_for(recording:, actor:, relation:)`. That context uses scope `:root` and an `authorized_relation` already limited to the history query (the anchor on the plain screen, or the anchor and its allowed descendants on the rollup, and the active filters when the screen draws the chart). Passing the Admin context straight into `chart_series` would also send the root recording, and Metrics would treat the log table as a recordable and return no points.
 
 `chart_series` returns `{ x:, y: }` points (RecordingStudio_metrics 0.5.0). The screen hands that series to Admin. The counts stay the same.
+
+## Gating download stats
+
+Stats stay available to anyone who passes `downloadable.view_logs` until the host registers a check. Downloadable does not ship a registration wrapper. Call core directly.
+
+```ruby
+# Host code. Downloadable does not load the Stripe gem and does not know plans.
+RecordingStudio.register_gate("downloadable.stats", :plan) do |actor:, recording:, **|
+  # actor is the signed-in person when the plan check needs them.
+  if RecordingStudioStripe::Billing.for_recording(recording).unlocked?(:download_stats)
+    true
+  else
+    RecordingStudio::GateDecision.deny(redirect_to: "/billing")
+  end
+end
+```
+
+Return `true` to allow. Return `false` to hide the history screens, the history link, and the download log metrics the same way a missing `downloadable.view_logs` permission does. Return `RecordingStudio::GateDecision.deny(redirect_to:)` to send an HTML request for `download_logs` or `download_logs_rollup` to that URL. The page, the chart, and the table all redirect. No registered checks means allow. The first deny wins. A check that raises denies and does not redirect.
+
+Metrics `download_logs.total` and `download_logs.over_time` stay denied. They do not redirect. A JSON request for a history screen stays not-found. The filter-options endpoint stays not-found. The history link hides and does not redirect. Admin renders the screens and turns a hidden screen into not-found, so Downloadable applies `redirect_to` in a before_action on `RecordingStudioAdmin::ScreensController` before that resolve. An allowed HTML request can run the check twice. Keep the check free of side effects.
+
+Someone who fails `downloadable.view_logs` stays denied even when the gate would allow. A nil recording stays denied, and the gate is not called. `register_download_gate` is a different hook. It still pauses the ZIP. It does not gate stats.
 
 ## Presskits
 
@@ -372,7 +394,7 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 6. List each download action in Accessible `config.action_audiences`.
 7. Opt each recordable in with `.to`.
 
-This dummy pins Recording Studio dummy GitHub tag `v6.3.0`, Accessible dummy GitHub tag `v0.22.0`, Trashable dummy GitHub tag `v0.12.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.1`, Logs dummy GitHub tag `v0.7.0`, Root Switchable dummy GitHub tag `v0.11.0`, Metrics dummy GitHub tag `v0.6.1` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.13.0` (download history screen), Recording Studio API dummy GitHub tag `v0.21.4` (Moveable `v4.1.0`, Icons `v0.1.3`), FlatPack dummy GitHub tag `v0.1.341`, and Attachable `v0.22.0`.
+This dummy pins Recording Studio dummy GitHub tag `v6.7.0`, Accessible dummy GitHub tag `v0.22.0`, Trashable dummy GitHub tag `v0.12.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.5.1`, Logs dummy GitHub tag `v0.7.0`, Root Switchable dummy GitHub tag `v0.11.0`, Metrics dummy GitHub tag `v0.6.1` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.13.0` (download history screen), Recording Studio API dummy GitHub tag `v0.21.4` (Moveable `v4.1.0`, Icons `v0.1.3`), FlatPack dummy GitHub tag `v0.1.341`, and Attachable `v0.22.0`.
 
 ## Dummy app
 

@@ -20,6 +20,7 @@ DUMMY_TEST_FILES = [
   File.expand_path("test/download_logs_test.rb", __dir__),
   File.expand_path("test/download_gate_test.rb", __dir__),
   File.expand_path("test/download_history_test.rb", __dir__),
+  File.expand_path("test/stats_gate_test.rb", __dir__),
   File.expand_path("test/logs_registration_test.rb", __dir__),
   File.expand_path("test/downloadable_api_actions_test.rb", __dir__)
 ].freeze
@@ -44,6 +45,7 @@ ROOT_TEST_EXCLUSIONS = %w[
   test/download_logs_test.rb
   test/download_gate_test.rb
   test/download_history_test.rb
+  test/stats_gate_test.rb
   test/logs_registration_test.rb
   test/downloadable_api_actions_test.rb
   test/rename_verification_test.rb

@@ -16,6 +16,7 @@ module RecordingStudioDownloadable
 
       require_screen!
       install_within_log_filter!
+      install_stats_screen_redirect!
       RecordingStudioAdmin.register_screen(DownloadLogsScreen)
       RecordingStudioAdmin.register_screen(DownloadLogsRollupScreen)
       RecordingStudioAdmin.register_section(DownloadsSection)
@@ -29,6 +30,11 @@ module RecordingStudioDownloadable
       require_relative "admin/download_logs_scope"
       require_relative "admin/download_logs_screen"
       require_relative "admin/downloads_section"
+    end
+
+    def install_stats_screen_redirect!
+      require_relative "admin/stats_screen_redirect"
+      StatsScreenRedirect.install!
     end
 
     def install_within_log_filter!

@@ -26,4 +26,10 @@ RecordingStudioDownloadable.configure do |config|
   # Optional pre-download step. The host owns the form. Unregistered actions
   # download as usual. See README "Pre-download gate".
   # config.register_download_gate :"presskits.kit_download", Presskits::KitDownloadGate
+
+  # Optional download stats gate. Register it on core. Unregistered means
+  # anyone who can view history still can. See README "Gating download stats".
+  # RecordingStudio.register_gate("downloadable.stats", :plan) do |actor:, recording:, **|
+  #   true
+  # end
 end
