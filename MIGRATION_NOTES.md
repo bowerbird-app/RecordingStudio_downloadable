@@ -4,10 +4,11 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio 6.1 (`>= 6.1.0` in the gemspec; dummy GitHub tag `v6.1.0`)
-- Accessible dummy tag `v0.22.0` and Root Switchable dummy tag `v0.11.0`
-- Cache dummy tag `v0.5.1`, Logs dummy tag `v0.7.0` (gemspec `>= 0.4.1, < 1.0`), and Metrics dummy tag `v0.6.1`. Those three gemspecs still declare `recording_studio ~> 4.2`. The test bundle widens that requirement before `Bundler.setup`.
-- FlatPack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`0.1.319`)
+- Recording Studio 6.7 (`>= 6.7.0` in the gemspec; dummy GitHub tag `v6.7.0`)
+- Accessible dummy tag `v0.32.0`, Attachable dummy tag `v0.23.0`, and Root Switchable dummy tag `v0.15.0`
+- Cache dummy tag `v0.6.3` (gemspec `~> 0.5`), Logs dummy tag `v0.7.4` (gemspec `>= 0.4.1, < 1.0`), and Metrics dummy tag `v0.8.0`
+- Trashable dummy tag `v0.14.0`, Admin dummy tag `v2.13.0`, API dummy tag `v0.23.0`, Moveable dummy tag `v4.1.1`, and Icons dummy tag `v0.2.1`
+- FlatPack tag `v0.1.356`
 - Public RubyGems and GitHub access for dependency installation
 
 ## Verification
