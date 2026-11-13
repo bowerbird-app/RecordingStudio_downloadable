@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Dummy pins Recording Studio API `v0.21.4` and Admin `v2.13.0` so history filter labels come from Admin instead of the older API view shadow.
+- Development and dummy Gemfiles pin the current Recording Studio ladder by GitHub release tag: FlatPack `v0.1.356`, Accessible `v0.32.0`, Attachable `v0.23.0`, Cache `v0.6.3`, Logs `v0.7.4`, Metrics `v0.8.0`, Trashable `v0.14.0`, API `v0.23.0`, Moveable `v4.1.1`, Icons `v0.2.1`, and Root Switchable `v0.15.0`. Recording Studio stays `v6.7.0`. Admin stays `v2.13.0`.
+- Attachable `0.23` requires Recording Studio API `~> 0.23`, so the root Gemfile pins API, Moveable, and Icons. The test bundle no longer widens sibling `recording_studio` requirements.
 
 ## [0.13.0] - 2026-11-13
 

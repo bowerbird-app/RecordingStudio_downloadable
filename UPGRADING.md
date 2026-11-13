@@ -1,5 +1,14 @@
 # Upgrading Recording Studio Downloadable
 
+## Unreleased
+
+Development and dummy Gemfiles pin the current ladder. The gemspec is unchanged: `recording_studio >= 6.7.0` and `recording_studio_cache ~> 0.5` (Cache `0.6.3` still matches).
+
+1. Pin FlatPack `v0.1.356`, Accessible `v0.32.0`, Attachable `v0.23.0`, Cache `v0.6.3`, Logs `v0.7.4`, Metrics `v0.8.0`, Trashable `v0.14.0`, Admin `v2.13.0`, API `v0.23.0`, Moveable `v4.1.1`, Icons `v0.2.1`, and Root Switchable `v0.15.0`. Recording Studio stays `v6.7.0`.
+2. Attachable `0.23` needs Recording Studio API `~> 0.23`. Declare the API, Moveable, and Icons git sources. Sibling gemspecs already allow Recording Studio `6.1` or newer, so do not widen their requirements at Bundler setup.
+3. Trashable `0.14` adds nullable `purge_at` on `recording_studio_recordings`. Install `bin/rails generate recording_studio_trashable:migrations` and migrate when this host uses trash retention.
+4. Root Switchable `0.15` still expects Accessible `:view` on a root before the mounted switch page opens it.
+
 ## 0.13.0
 
 `0.13.0` requires Recording Studio `6.7.0` or newer. No migration.
