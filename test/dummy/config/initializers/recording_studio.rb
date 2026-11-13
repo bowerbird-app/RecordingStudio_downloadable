@@ -35,4 +35,11 @@ RecordingStudio.configure do |config|
 
   # Recordable duplication strategy for revisions
   config.recordable_dup_strategy = :dup
+
+  # Core 6.5+ refuses a write with no authorizer, and a blank actor raises
+  # unless this flag is set. The dummy records before anyone is signed in.
+  config.authorize_write = lambda { |**|
+    true
+  }
+  config.allow_unauthorized_writes = true
 end

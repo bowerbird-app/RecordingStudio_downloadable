@@ -1,5 +1,30 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.13.0
+
+`0.13.0` requires Recording Studio `6.7.0` or newer. No migration.
+
+1. Pin `recording_studio_downloadable` to `0.13.0` and `recording_studio` to `6.7.0` or newer.
+2. If the host is coming from Recording Studio older than `6.5.0`, writes now fail closed. `RecordingStudio.record!` raises `RecordingStudio::AuthorizationError` until `config.authorize_write` is set. A missing actor raises `RecordingStudio::ActorRequired`. Set an authorizer that returns true or false, or set `config.allow_unauthorized_writes = true` to keep the previous open writes.
+3. Download stats stay available to anyone who passes `downloadable.view_logs` until you register a check. Register it on core. Downloadable does not add a wrapper.
+
+```ruby
+# Host code. Downloadable does not load the Stripe gem and does not know plans.
+RecordingStudio.register_gate("downloadable.stats", :plan) do |actor:, recording:, **|
+  if RecordingStudioStripe::Billing.for_recording(recording).unlocked?(:download_stats)
+    true
+  else
+    RecordingStudio::GateDecision.deny(redirect_to: "/billing")
+  end
+end
+```
+
+Return `true` to allow, `false` to hide stats the way a missing permission does, or `RecordingStudio::GateDecision.deny(redirect_to:)` to send HTML history screens to that URL. No checks means allow. The first deny wins. A raised error denies without a redirect.
+
+`redirect_to` applies to HTML requests for `download_logs` and `download_logs_rollup`, including the chart and the table. Metrics `download_logs.total` and `download_logs.over_time` stay denied and do not redirect. JSON requests for those screens stay not-found. The filter-options endpoint stays not-found. The history link hides. Admin has no screen redirect, so Downloadable redirects in a before_action on `RecordingStudioAdmin::ScreensController` before Admin turns a hidden screen into not-found. An allowed HTML request can call the check twice. Keep it free of side effects.
+
+Someone who fails `downloadable.view_logs` stays denied even when the gate would allow. A nil recording stays denied and the gate is not called. `register_download_gate` is unchanged. It still pauses the ZIP, not the stats.
+
 ## 0.12.0
 
 `0.12.0` exposes download through Recording Studio API. No migration.

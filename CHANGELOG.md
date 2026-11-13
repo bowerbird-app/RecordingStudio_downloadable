@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dummy pins Recording Studio API `v0.21.4` and Admin `v2.13.0` so history filter labels come from Admin instead of the older API view shadow.
 
+## [0.13.0] - 2026-11-13
+
+### Added
+
+- Optional `downloadable.stats` gate through `RecordingStudio.check_gate`, after `downloadable.view_logs`. Hosts register with `RecordingStudio.register_gate`. No checks means allow. A deny hides the history screens, the history link, and download log metrics. A deny with `redirect_to` redirects HTML requests for `download_logs` and `download_logs_rollup`. Metrics stay denied and do not redirect. A check that raises denies.
+
+### Changed
+
+- Require `recording_studio` `>= 6.7.0`. Development and the dummy pin tag `v6.7.0`.
+
+### Upgrade notes
+
+- Bump to `0.13.0`. No migration. Requires Recording Studio `6.7.0`.
+- Hosts coming from core older than `6.5.0` need `config.authorize_write` or `config.allow_unauthorized_writes`. See [UPGRADING.md](UPGRADING.md).
+
 ## [0.12.0] - 2026-11-12
 
 ### Added
@@ -290,7 +305,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.1...v0.10.2

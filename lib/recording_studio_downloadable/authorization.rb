@@ -6,6 +6,7 @@ module RecordingStudioDownloadable
     class CapabilityNotEnabledError < NotAuthorizedError; end
 
     VIEW_LOGS_ACTION = :"downloadable.view_logs"
+    STATS_GATE = "downloadable.stats"
 
     class << self
       def authorize!(action:, actor:, recording:, capability_options: nil, controller: nil)
@@ -70,17 +71,7 @@ module RecordingStudioDownloadable
       end
 
       def view_logs_allowed?(actor:, recording:, controller: nil)
-        return false unless defined?(RecordingStudioAccessible)
-        return false if recording.nil?
-
-        RecordingStudioAccessible.authorized_action?(
-          actor: actor,
-          action: VIEW_LOGS_ACTION,
-          recording: recording,
-          controller: controller
-        )
-      rescue StandardError
-        false
+        stats_gate_decision(actor:, recording:, controller:).allowed?
       end
 
       def install_view_logs_action!
@@ -120,6 +111,21 @@ module RecordingStudioDownloadable
       end
 
       private
+
+      def stats_gate_decision(actor:, recording:, controller: nil)
+        return RecordingStudio::GateDecision.deny unless defined?(RecordingStudioAccessible)
+        return RecordingStudio::GateDecision.deny if recording.nil?
+        return RecordingStudio::GateDecision.deny unless RecordingStudioAccessible.authorized_action?(
+          actor: actor,
+          action: VIEW_LOGS_ACTION,
+          recording: recording,
+          controller: controller
+        )
+
+        RecordingStudio.check_gate(STATS_GATE, actor: actor, recording: recording)
+      rescue StandardError
+        RecordingStudio::GateDecision.deny
+      end
 
       def audience_allows?(action:, actor:, recording:, capability_options:, controller:)
         adapter = authorization_adapter(capability_options)

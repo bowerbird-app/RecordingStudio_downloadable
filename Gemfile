@@ -11,7 +11,7 @@ gemspec
 # flatpack 0.1.341 is the floor recording_studio_admin 2.12.0 declares.
 # view_component stays on Flatpack's ">= 4.14", "< 5".
 gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.341"
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.7.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.22.0"
 gem "recording_studio_attachable", github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.22.0"
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.1"

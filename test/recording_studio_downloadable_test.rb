@@ -4,17 +4,17 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.12.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.13.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
     assert_kind_of Class, ::RecordingStudioDownloadable::Engine
   end
 
-  def test_gemspec_requires_recording_studio_6_1
+  def test_gemspec_requires_recording_studio_6_7
     gemspec = File.read(File.expand_path("../recording_studio_downloadable.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.7.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_accessible"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_attachable"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
@@ -50,7 +50,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
   def test_dummy_gemfile_pins_verified_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.3.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.7.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.22.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.22.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.5.1"'
@@ -321,7 +321,9 @@ class RecordingStudioDownloadableTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v6.3.0`"
+    assert_includes readme, "dummy GitHub tag `v6.7.0`"
+    assert_includes readme, 'RecordingStudio.register_gate("downloadable.stats"'
+    assert_includes readme, "RecordingStudioStripe::Billing.for_recording(recording).unlocked?(:download_stats)"
     assert_includes readme, "dummy GitHub tag `v0.1.341`"
     assert_includes readme, "dummy GitHub tag `v0.22.0`"
     assert_includes readme, "dummy GitHub tag `v0.12.0`"
