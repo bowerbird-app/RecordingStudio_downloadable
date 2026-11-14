@@ -79,21 +79,38 @@ module RecordingStudio
 
         def downloadable_files
           assert_downloadable_capability!
-          RecordingStudioDownloadable::Services::CollectFiles.call(recording: self).value!
+          downloadable_memo_fetch([:files, id]) { collect_downloadable_files }
         end
 
         def downloadable_empty?
+          owner = downloadable_hook_owner(:downloadable_empty?)
+          return owner.downloadable_empty? if owner
+
+          # A cache key host that does not also define downloadable_empty?
+          # must not pay for a manifest just to answer emptiness. The job
+          # still refuses to mark an empty file list ready.
+          return false if downloadable_hook_owner(:downloadable_cache_key)
+
           downloadable_files.empty?
         end
 
         def downloadable_package(action: downloadable_action, export_scope: downloadable_export_scope)
           assert_downloadable_capability!
-          RecordingStudioDownloadable::Package.find_by(
-            recording_id: id,
-            action: action.to_s,
-            export_scope: export_scope.to_s,
-            format: downloadable_format.to_s
-          )
+          downloadable_memo_fetch([:package, id, action.to_s, export_scope.to_s, downloadable_format.to_s]) do
+            RecordingStudioDownloadable::Package.find_by(
+              recording_id: id,
+              action: action.to_s,
+              export_scope: export_scope.to_s,
+              format: downloadable_format.to_s
+            )
+          end
+        end
+
+        def clear_downloadable_package_memo!
+          store = RecordingStudioDownloadable::RequestMemo.store
+          return unless store
+
+          store.delete_if { |key, _| key.is_a?(Array) && key.first == :package && key[1] == id }
         end
 
         def downloadable_ready?(action: downloadable_action, export_scope: downloadable_export_scope)
@@ -136,9 +153,26 @@ module RecordingStudio
           RecordingStudioDownloadable::Engine.routes.url_helpers.recording_package_path(self)
         end
 
-        def downloadable_source_fingerprint(action: downloadable_action, export_scope: downloadable_export_scope)
+        # Key compared with the package row. A recordable can define
+        # downloadable_cache_key(action:, export_scope:). That value must change
+        # whenever any file in the ZIP changes. Without the hook, this is the
+        # full file fingerprint, memoized for the request. It is not recording
+        # id plus updated_at, because that misses child file changes.
+        def downloadable_cache_key(action: downloadable_action, export_scope: downloadable_export_scope, fresh: false)
+          action_key = action.to_s
+          scope_key = export_scope.to_s
+          return resolve_downloadable_cache_key(action, export_scope, fresh: true) if fresh
+
+          downloadable_memo_fetch([:cache_key, id, action_key, scope_key]) do
+            resolve_downloadable_cache_key(action, export_scope, fresh: false)
+          end
+        end
+
+        def downloadable_source_fingerprint(action: downloadable_action, export_scope: downloadable_export_scope,
+                                            fresh: false)
+          files = fresh ? collect_downloadable_files : downloadable_files
           RecordingStudioDownloadable::Fingerprint.call(
-            downloadable_files,
+            files,
             action: action,
             export_scope: export_scope
           )
@@ -157,10 +191,51 @@ module RecordingStudio
           package.present? &&
             package.action.to_s == action.to_s &&
             package.export_scope.to_s == export_scope.to_s &&
-            package.source_fingerprint == downloadable_source_fingerprint(action: action, export_scope: export_scope)
+            package.source_fingerprint == downloadable_cache_key(action: action, export_scope: export_scope)
         end
 
         private
+
+        def collect_downloadable_files
+          RecordingStudioDownloadable::Services::CollectFiles.call(recording: self).value!
+        end
+
+        def resolve_downloadable_cache_key(action, export_scope, fresh:)
+          owner = downloadable_hook_owner(:downloadable_cache_key)
+          if owner
+            raw = owner.downloadable_cache_key(action: action, export_scope: export_scope)
+            if raw.nil? || raw.to_s.empty?
+              raise RecordingStudioDownloadable::Error,
+                    "#{owner.class}#downloadable_cache_key must return a value that changes when any ZIP file changes"
+            end
+
+            return RecordingStudioDownloadable::Fingerprint.host_cache_key(
+              raw,
+              action: action,
+              export_scope: export_scope
+            )
+          end
+
+          downloadable_source_fingerprint(action: action, export_scope: export_scope, fresh: fresh)
+        end
+
+        def downloadable_hook_owner(method_name)
+          return unless respond_to?(:recordable)
+
+          recordable = self.recordable
+          return if recordable.nil?
+          return unless recordable.respond_to?(method_name)
+
+          recordable
+        end
+
+        def downloadable_memo_fetch(key)
+          store = RecordingStudioDownloadable::RequestMemo.store
+          return yield unless store
+          return store[key] if store.key?(key)
+
+          store[key] = yield
+        end
 
         def assert_downloadable_capability!
           return unless respond_to?(:assert_capability!, true)

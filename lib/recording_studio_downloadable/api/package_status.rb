@@ -12,9 +12,11 @@ module RecordingStudioDownloadable
       end
 
       def call
-        recording = GrantScope.recording_in_grant!(context)
-        GrantScope.authorize_downloadable!(context, recording)
-        PackagePayload.for(recording, recording.downloadable_package)
+        RecordingStudioDownloadable::RequestMemo.with_request_memo do
+          recording = GrantScope.recording_in_grant!(context)
+          GrantScope.authorize_downloadable!(context, recording)
+          PackagePayload.for(recording, recording.downloadable_package)
+        end
       end
 
       private

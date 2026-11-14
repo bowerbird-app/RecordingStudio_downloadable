@@ -12,14 +12,16 @@ module RecordingStudioDownloadable
       end
 
       def call
-        recording = GrantScope.recording_in_grant!(context)
-        GrantScope.authorize_downloadable!(context, recording)
-        refuse_blocked_gate!(recording)
-        throttle!(recording)
-        raise RecordingStudioApi::NotFoundError if recording.downloadable_empty?
+        RecordingStudioDownloadable::RequestMemo.with_request_memo do
+          recording = GrantScope.recording_in_grant!(context)
+          GrantScope.authorize_downloadable!(context, recording)
+          refuse_blocked_gate!(recording)
+          throttle!(recording)
+          raise RecordingStudioApi::NotFoundError if recording.downloadable_empty?
 
-        generate_package!(recording)
-        PackagePayload.for(recording.reload, recording.downloadable_package)
+          generate_package!(recording)
+          PackagePayload.for(recording, recording.downloadable_package)
+        end
       end
 
       private

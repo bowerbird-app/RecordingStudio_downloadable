@@ -39,6 +39,24 @@ class FingerprintTest < Minitest::Test
     refute_equal public_workspace, draft_workspace
   end
 
+  def test_host_cache_key_mixes_in_action_and_export_scope
+    public_download = RecordingStudioDownloadable::Fingerprint.host_cache_key(
+      "files", action: "download", export_scope: "public"
+    )
+    draft_download = RecordingStudioDownloadable::Fingerprint.host_cache_key(
+      "files", action: "download", export_scope: "draft"
+    )
+    changed_files = RecordingStudioDownloadable::Fingerprint.host_cache_key(
+      "files-2", action: "download", export_scope: "public"
+    )
+
+    assert_equal public_download, RecordingStudioDownloadable::Fingerprint.host_cache_key(
+      "files", action: "download", export_scope: "public"
+    )
+    refute_equal public_download, draft_download
+    refute_equal public_download, changed_files
+  end
+
   private
 
   def download_file(name, contents, identity:)

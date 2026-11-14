@@ -18,47 +18,80 @@ module RecordingStudioDownloadable
       attr_reader :recording, :action, :export_scope, :wait, :force
 
       def perform
-        files = CollectFiles.call(recording: recording).value!
-        return success(nil) if files.empty?
+        return success(nil) if recording.downloadable_empty?
 
-        fingerprint = Fingerprint.call(files, action: action, export_scope: export_scope)
-        package = nil
-
-        Package.transaction do
-          package = Package.lock.find_or_initialize_by(
-            recording_id: recording.id,
-            action: action.to_s,
-            export_scope: export_scope.to_s,
-            format: recording.downloadable_format.to_s
-          )
-
-          next if reusable?(package, fingerprint)
-
-          RateLimiter.assert_concurrent_capacity!(action: action, package: package)
-
-          package.assign_attributes(
-            state: "pending",
-            source_fingerprint: fingerprint,
-            failure_message: nil
-          )
-          package.save!
-          enqueue_job!(package)
-        end
-
+        key = recording.downloadable_cache_key(action: action, export_scope: export_scope)
+        package = claim_and_enqueue!(key)
+        ActiveRecord::Base.connection.clear_query_cache
+        recording.clear_downloadable_package_memo!
         success(package)
       end
 
-      def reusable?(package, fingerprint)
-        return false unless package.persisted?
+      def claim_and_enqueue!(key)
+        Package.transaction do
+          package = locked_package
+          next create_pending!(key) if package.nil?
+          next package if leave_in_place?(package, key)
+          next package unless claim_for_build!(package, key) == 1
 
-        if package.pending? || package.processing?
-          package.update!(source_fingerprint: fingerprint) if package.source_fingerprint != fingerprint
-          return true
+          package.reload
+          enqueue_job!(package)
+          package
         end
+      rescue ActiveRecord::RecordNotUnique
+        find_package
+      end
 
-        return false if package.stale_for?(fingerprint)
+      def leave_in_place?(package, key)
+        return true if in_flight?(package)
 
-        package.ready? && package.archive.attached?
+        current_package?(package, key)
+      end
+
+      def in_flight?(package)
+        package.pending? || package.processing?
+      end
+
+      def current_package?(package, key)
+        package.ready? && package.archive.attached? && !package.stale_for?(key)
+      end
+
+      def create_pending!(key)
+        RateLimiter.assert_concurrent_capacity!(action: action, package: nil)
+        package = Package.create!(package_identity.merge(
+                                    state: "pending",
+                                    source_fingerprint: key,
+                                    failure_message: nil
+                                  ))
+        enqueue_job!(package)
+        package
+      end
+
+      def claim_for_build!(package, key)
+        RateLimiter.assert_concurrent_capacity!(action: action, package: package)
+        Package.where(id: package.id).where.not(state: %w[pending processing]).update_all(
+          state: "pending",
+          source_fingerprint: key,
+          failure_message: nil,
+          updated_at: Time.current
+        )
+      end
+
+      def locked_package
+        Package.lock.find_by(package_identity)
+      end
+
+      def find_package
+        Package.find_by(package_identity)
+      end
+
+      def package_identity
+        {
+          recording_id: recording.id,
+          action: action.to_s,
+          export_scope: export_scope.to_s,
+          format: recording.downloadable_format.to_s
+        }
       end
 
       def enqueue_job!(package)

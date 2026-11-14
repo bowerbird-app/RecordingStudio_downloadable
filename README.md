@@ -308,6 +308,24 @@ Downloadable asks the recordable for `#downloadable_manifest` (or the recording,
 
 Use this when the ZIP should contain a chosen mix of stored blobs and generated content (text, JSON, CSV, and so on). Fingerprints use content identity, not timestamps, so a changed `credits.txt` or a replaced blob makes the cached ZIP stale.
 
+Status checks do not need that file list on every poll. Define `downloadable_cache_key(action:, export_scope:)` on the recordable when you can name a value that changes whenever any file in the ZIP changes. Downloadable stores that value on the package (mixed with action and export scope) and compares it on `ready?`, `stale?`, status, and show. It does not build the manifest for those checks. `GeneratePackageJob` is the path that collects files. Read the key before the file list, save that same key with the archive, and read it again after the zip is built. If it changed during the build, the package is left pending and another build is queued. It is never marked ready with the wrong bytes.
+
+Show trusts the stored key. The archive was built for the key that was stable across the file collection, and a later download only checks that the key has not moved.
+
+Also define `downloadable_empty?` on the recordable when emptiness is knowable without the file list. Status, show, and enqueue call it instead of collecting files. If you define the cache key and omit `downloadable_empty?`, those paths do not collect either: they treat the source as non-empty, and the job still fails an empty file list instead of marking it ready. A press kit that always writes generated text can return `false`.
+
+Without `downloadable_cache_key`, Downloadable keeps today's full file fingerprint. That fingerprint is memoized for the request. It is not recording id plus `updated_at`, because that misses changes to child files and would serve an out-of-date ZIP.
+
+```ruby
+def downloadable_cache_key(action:, export_scope:)
+  [action, export_scope, updated_at, attachment_checksum_token].join(":")
+end
+
+def downloadable_empty?
+  false
+end
+```
+
 ```ruby
 class Kit < ApplicationRecord
   recording_studio_recordable label: "Kit", root: false, allowed_parent_types: ["Project"]
@@ -352,7 +370,8 @@ recording.downloadable?              # => true
 recording.downloadable_action        # => :"projects.download" (or the action: passed to .to)
 recording.downloadable_export_scope  # => :public
 recording.downloadable_files         # DownloadFile value objects
-recording.downloadable_empty?
+recording.downloadable_empty?        # recordable hook, or the memoized file list
+recording.downloadable_cache_key     # recordable hook, or the full file fingerprint
 recording.downloadable_generate!(action:, export_scope:, ...) # enqueue a build
 recording.downloadable_invalidate!(immediate: true)          # drop/stop serving the ZIP
 recording.downloadable_ready?

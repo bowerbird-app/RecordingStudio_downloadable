@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-14
+
+### Added
+
+- Optional `downloadable_cache_key(action:, export_scope:)` on the recordable. The value must change whenever any file in the ZIP changes. Downloadable mixes in action and export scope and stores the result on the package. `ready?`, `stale?`, status, and show compare that stored key and do not build the file manifest. `GeneratePackageJob` is the only path that collects files. It reads the key before the file list and again after the zip is built. If the key changed during the build, the package stays pending and another build is queued.
+- Optional `downloadable_empty?` on the recordable so status, show, and enqueue can skip the file list. The dummy press kit defines both hooks. Workspace stays on the full fingerprint.
+
+### Changed
+
+- Status enqueues a build only when the package is missing or stale and no build is already pending or processing. The claim is a locked conditional update, so overlapping polls enqueue one job. A failed package is not retried by polling.
+- Without the cache key hook, status still uses the full file fingerprint. That work is memoized for the request. The default is not recording id plus `updated_at`.
+- Show serves a ready archive when the stored key matches. It does not rebuild the manifest to prove the bytes.
+
+### Upgrade notes
+
+- Bump to `0.14.0`. No migration. Recording Studio stays `>= 6.7.1`, `< 7.0`.
+- To make status cheap, define `downloadable_cache_key` and, when the ZIP can be empty, `downloadable_empty?` on the recordable. See [UPGRADING.md](UPGRADING.md).
+- Packages built before the hook do not match the new key. The next status poll or download queues one rebuild. Hosts with no hook keep the file fingerprint and do not rebuild for this change.
+
 ## [0.13.2] - 2026-11-14
 
 ### Changed
@@ -325,7 +344,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.2...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.2...v0.14.0
 [0.13.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.1...v0.13.2
 [0.13.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.12.0...v0.13.0

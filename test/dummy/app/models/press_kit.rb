@@ -19,7 +19,48 @@ class PressKit < ApplicationRecord
     stored + generated_download_files(stored)
   end
 
+  # Cheap status key. It must change when any file in the ZIP changes.
+  # Action and export scope are part of the value; Downloadable mixes them
+  # in again when it stores the key. Generated text always makes a kit non-empty.
+  def downloadable_cache_key(action:, export_scope:)
+    [action, export_scope, content_token, attachment_token].join("\u001f")
+  end
+
+  def downloadable_empty?
+    false
+  end
+
   private
+
+  def content_token
+    [updated_at&.utc&.iso8601(6), name, description, credits, created_at&.utc&.iso8601(6)].join("\u001f")
+  end
+
+  def attachment_token
+    recording = RecordingStudio::Recording
+      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .find_by(recordable: self)
+    return "none" unless recording
+
+    sql = <<~SQL.squish
+      SELECT md5(COALESCE(string_agg(
+        r.id::text || ':' || b.id::text || ':' || COALESCE(b.checksum, '') || ':' ||
+        COALESCE(a.original_filename, b.filename) || ':' || b.byte_size::text,
+        ',' ORDER BY r.id::text
+      ), ''))
+      FROM recording_studio_recordings r
+      INNER JOIN recording_studio_attachable_attachments a ON a.id = r.recordable_id
+      INNER JOIN active_storage_attachments sa
+        ON sa.record_type = 'RecordingStudioAttachable::Attachment'
+       AND sa.record_id = a.id
+       AND sa.name = 'file'
+      INNER JOIN active_storage_blobs b ON b.id = sa.blob_id
+      WHERE r.parent_recording_id = ?
+        AND r.recordable_type = 'RecordingStudioAttachable::Attachment'
+        AND r.trashed_at IS NULL
+    SQL
+    self.class.connection.select_value(self.class.sanitize_sql_array([sql, recording.id])).to_s
+  end
 
   def stored_download_files
     recording = RecordingStudio::Recording

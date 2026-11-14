@@ -1,5 +1,15 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.14.0
+
+`0.14.0` makes package status cheap when the host can name a cache key. No migration.
+
+1. Pin `recording_studio_downloadable` to `0.14.0`. Recording Studio stays `>= 6.7.1` and `< 7.0`. `recording_studio_cache` stays `~> 0.5` (Cache `0.6.3` still matches).
+2. On a recordable whose ZIP is large, define `downloadable_cache_key(action:, export_scope:)`. Return a value that changes whenever any file in the ZIP changes. Downloadable does not know about your files. It mixes action and export scope into the stored key. Do not return recording id plus `updated_at` unless that actually changes when child files change.
+3. Define `downloadable_empty?` on that recordable when the ZIP can be empty. Status, show, and enqueue call it instead of building the file list. If the cache key exists and this method does not, those paths skip the file list and treat the source as non-empty. The build job still fails an empty file list.
+4. Packages already built before the hook do not match the new key. The next status poll or download queues one rebuild. Hosts that do not define the hook keep the full file fingerprint, memoized for the request, and those packages stay current.
+5. A failed package is not rebuilt by a status poll. Show and the generate POST still retry it. Overlapping polls of a missing or stale package enqueue one job.
+
 ## 0.13.2
 
 `0.13.2` moves the download-log association and the recording invalidation callback onto Recording Studio's `extend_model(:recording)` hook. Downloads, logs, and invalidation behave the same. No migration.
