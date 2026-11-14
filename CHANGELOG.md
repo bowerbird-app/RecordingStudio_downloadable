@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.2] - 2026-11-14
+
+### Changed
+
+- Recording's download-log association and invalidation `after_commit` register once through `RecordingStudio.configuration.hooks.extend_model(:recording)`. Core applies that extension when the Recording class is loaded or reloaded. The `:downloadable` capability registers from the engine only.
+
+### Upgrade notes
+
+- Bump to `0.13.2`. No migration. No host changes. Recording Studio stays `>= 6.7.1`, `< 7.0`. See [UPGRADING.md](UPGRADING.md).
+
 ## [0.13.1] - 2026-11-14
 
 ### Changed
@@ -315,7 +325,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.2...HEAD
+[0.13.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.1...v0.13.2
 [0.13.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.11.0...v0.12.0

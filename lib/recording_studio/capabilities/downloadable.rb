@@ -181,11 +181,3 @@ module RecordingStudio
     end
   end
 end
-
-if defined?(RecordingStudio) && RecordingStudio.respond_to?(:register_capability)
-  RecordingStudio.register_capability(
-    :downloadable,
-    recording_methods: RecordingStudio::Capabilities::Downloadable::RecordingMethods,
-    source: "recording_studio_downloadable"
-  )
-end

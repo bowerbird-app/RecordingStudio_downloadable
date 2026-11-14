@@ -1,5 +1,11 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.13.2
+
+`0.13.2` moves the download-log association and the recording invalidation callback onto Recording Studio's `extend_model(:recording)` hook. Downloads, logs, and invalidation behave the same. No migration.
+
+1. Pin `recording_studio_downloadable` to `0.13.2`. Recording Studio stays `>= 6.7.1` and `< 7.0`.
+
 ## 0.13.1
 
 `0.13.1` requires Recording Studio `>= 6.7.1` and `< 7.0`. No Downloadable migration. `recording_studio_cache` stays `~> 0.5` (Cache `0.6.3` still matches).
