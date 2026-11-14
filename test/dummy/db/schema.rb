@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_130009) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -133,7 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130009) do
     t.check_constraint "action IS NULL OR char_length(action::text) <= 120", name: "recording_studio_access_requests_action_length"
     t.check_constraint "message IS NULL OR char_length(message) <= 2000", name: "recording_studio_access_requests_message_length"
     t.check_constraint "review_note IS NULL OR char_length(review_note) <= 2000", name: "recording_studio_access_requests_note_length"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'denied'::character varying]::text[])", name: "recording_studio_access_requests_status"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'approved'::character varying::text, 'denied'::character varying::text])", name: "recording_studio_access_requests_status"
   end
 
   create_table "recording_studio_access_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -360,11 +360,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130009) do
     t.uuid "recordable_id", null: false
     t.string "recordable_type", null: false
     t.uuid "recording_id", null: false
+    t.uuid "root_recording_id", null: false
     t.index ["action", "occurred_at"], name: "index_rs_events_on_action_and_occurred_at"
     t.index ["actor_type", "actor_id", "occurred_at"], name: "index_rs_events_on_actor_and_occurred_at"
+    t.index ["impersonator_type", "impersonator_id", "occurred_at"], name: "index_rs_events_on_impersonator_and_occurred_at"
     t.index ["recording_id", "idempotency_key"], name: "index_recording_studio_events_on_recording_and_idempotency_key", unique: true, where: "(idempotency_key IS NOT NULL)"
     t.index ["recording_id", "occurred_at", "created_at"], name: "index_rs_events_on_recording_and_timeline", order: { occurred_at: :desc, created_at: :desc }
     t.index ["recording_id"], name: "index_recording_studio_events_on_recording_id"
+    t.index ["root_recording_id", "occurred_at", "created_at", "id"], name: "index_rs_events_on_root_and_timeline", order: { occurred_at: :desc, created_at: :desc, id: :desc }
   end
 
   create_table "recording_studio_logs_aggregation_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -464,6 +467,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_130009) do
   add_foreign_key "recording_studio_api_api_credentials", "recording_studio_api_api_clients", column: "api_client_id"
   add_foreign_key "recording_studio_downloadable_download_logs", "recording_studio_recordings", column: "recording_id"
   add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "recording_id"
+  add_foreign_key "recording_studio_events", "recording_studio_recordings", column: "root_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "parent_recording_id"
   add_foreign_key "recording_studio_recordings", "recording_studio_recordings", column: "root_recording_id"
   add_foreign_key "recording_studio_trashable_retention_settings", "recording_studio_recordings", column: "recording_id"

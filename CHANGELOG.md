@@ -7,10 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-11-14
+
 ### Changed
 
-- Development and dummy Gemfiles pin the current Recording Studio ladder by GitHub release tag: FlatPack `v0.1.356`, Accessible `v0.32.0`, Attachable `v0.23.0`, Cache `v0.6.3`, Logs `v0.7.4`, Metrics `v0.8.0`, Trashable `v0.14.0`, API `v0.23.0`, Moveable `v4.1.1`, Icons `v0.2.1`, and Root Switchable `v0.15.0`. Recording Studio stays `v6.7.0`. Admin stays `v2.13.0`.
+- Require `recording_studio` `>= 6.7.1`, `< 7.0`. The open lower bound is the reload fix in Recording Studio `6.7.1`. Development and the dummy pin tag `v6.10.0`.
+- Development and dummy Gemfiles pin the current Recording Studio ladder by GitHub release tag: FlatPack `v0.1.356`, Accessible `v0.32.0`, Attachable `v0.23.0`, Cache `v0.6.3`, Logs `v0.7.4`, Metrics `v0.8.0`, Trashable `v0.14.0`, API `v0.23.0`, Moveable `v4.1.1`, Icons `v0.2.1`, and Root Switchable `v0.15.0`. Admin stays `v2.13.0`.
 - Attachable `0.23` requires Recording Studio API `~> 0.23`, so the root Gemfile pins API, Moveable, and Icons. The test bundle no longer widens sibling `recording_studio` requirements.
+- The dummy app copies Recording Studio `6.9`'s events migration so `recording_studio_events.root_recording_id` is required.
+
+### Upgrade notes
+
+- Bump to `0.13.1`. No Downloadable migration. Requires Recording Studio `>= 6.7.1` and `< 7.0`.
+- Hosts on Recording Studio `6.9` or newer run core's events migration. See [UPGRADING.md](UPGRADING.md).
 
 ## [0.13.0] - 2026-11-13
 
@@ -306,7 +315,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.10.2...v0.11.0
