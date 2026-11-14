@@ -2,6 +2,8 @@
 
 module RecordingStudioDownloadable
   class PackagesController < ApplicationController
+    around_action :memoize_downloadable_checks
+
     def show
       recording = find_recording
       authorize_download!(recording)
@@ -24,7 +26,6 @@ module RecordingStudioDownloadable
       throttle_download!(recording)
 
       enqueue_generation_if_needed!(recording)
-      recording.reload
       session[:recording_studio_downloadable_autostart] = recording.id
       redirect_back_or_to fallback_location, notice: generate_notice(recording)
     end
@@ -33,7 +34,6 @@ module RecordingStudioDownloadable
       recording = find_recording
       authorize_download!(recording)
       enqueue_generation_if_needed!(recording, only_when_idle: true)
-      recording.reload
 
       package = recording.downloadable_package
       render json: {
@@ -57,7 +57,6 @@ module RecordingStudioDownloadable
       end
 
       enqueue_generation_if_needed!(recording)
-      recording.reload
       package = recording.downloadable_package
 
       if serveable_package?(recording, package)
@@ -143,6 +142,14 @@ module RecordingStudioDownloadable
       true
     end
 
+    def memoize_downloadable_checks(&)
+      RecordingStudioDownloadable::RequestMemo.with_request_memo(&)
+    end
+
+    # Show trusts the stored cache key. The job saves the key it read before
+    # collecting files, and it only marks the package ready when that key is
+    # unchanged after the zip is built. A later show compares the stored key
+    # with the current one and does not rebuild the manifest.
     def fingerprint_matches_for_serve?(recording, package)
       return false unless package
       return false unless package.identity_matches?(

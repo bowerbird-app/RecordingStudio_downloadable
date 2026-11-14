@@ -13,6 +13,10 @@ module RecordingStudioDownloadable
 
       def perform
         recording = package.recording
+        key_before = cache_key_for(recording, fresh: true)
+        return success(package) if current_package?(key_before)
+
+        package.mark_processing!
         files = CollectFiles.call(recording: recording).value!
 
         if files.empty?
@@ -23,31 +27,57 @@ module RecordingStudioDownloadable
           return failure(EmptySourceError.new(Copy.t("notices.empty", default: Copy::EMPTY_NOTICE)))
         end
 
-        fingerprint = recording.downloadable_source_fingerprint(
-          action: package.action,
-          export_scope: package.export_scope
-        )
-        package.with_lock do
-          return success(package) if package.ready? && !package.stale_for?(fingerprint) && package.archive.attached?
-        end
-
         blob = upload_archive!(files)
         assert_archive_size!(blob)
-        package.with_lock do
-          package.mark_processing!
-          package.archive.purge if package.archive.attached?
-          package.archive.attach(blob)
-          raise GenerationError, "Failed to store archive" unless package.archive.attached?
-
-          package.mark_ready!(fingerprint: fingerprint)
-          success(package.reload)
-        end
+        key_after = cache_key_for(recording, fresh: true)
+        finish_package!(blob, key_before, key_after)
       rescue EmptySourceError, SourceMissingError, UnsupportedOptionError, GenerationError, ArchiveTooLargeError => e
         fail_package!(e)
         failure(e)
       rescue StandardError => e
         fail_package!(e)
         failure(GenerationError.new(e.message))
+      end
+
+      def cache_key_for(recording, fresh:)
+        recording.downloadable_cache_key(
+          action: package.action,
+          export_scope: package.export_scope,
+          fresh: fresh
+        )
+      end
+
+      def current_package?(key)
+        package.ready? && package.archive.attached? && !package.stale_for?(key)
+      end
+
+      # The key is read before the file list and again after the zip exists.
+      # A change in between means the zip does not match the current key, so
+      # the package stays unready and another build is queued.
+      def finish_package!(blob, key_before, key_after)
+        if key_before != key_after
+          blob.purge
+          package.with_lock do
+            package.update!(state: "pending", source_fingerprint: key_before, failure_message: nil)
+          end
+          GeneratePackageJob.perform_later(package.id)
+          return success(package)
+        end
+
+        package.with_lock do
+          if current_package?(key_before)
+            blob.purge
+            return success(package)
+          end
+
+          package.mark_processing!
+          package.archive.purge if package.archive.attached?
+          package.archive.attach(blob)
+          raise GenerationError, "Failed to store archive" unless package.archive.attached?
+
+          package.mark_ready!(fingerprint: key_before)
+          success(package.reload)
+        end
       end
 
       def upload_archive!(files)

@@ -15,5 +15,14 @@ module RecordingStudioDownloadable
 
       Digest::SHA256.hexdigest(payload.inspect)
     end
+
+    # Mix the host cache key with the package identity. The host value has to
+    # change when any ZIP file changes. Action and export scope are included
+    # here so two packages never share a stored key by accident.
+    def host_cache_key(value, action:, export_scope:)
+      Digest::SHA256.hexdigest(
+        ["downloadable-cache-key", action.to_s, export_scope.to_s, value.to_s].join("\0")
+      )
+    end
   end
 end
