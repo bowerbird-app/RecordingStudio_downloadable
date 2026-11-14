@@ -126,6 +126,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_register_recording_studio_integration_registers_downloadable
+    RecordingStudioDownloadable::Engine.register_recording_studio_integration
     registration = RecordingStudio.registered_capabilities.fetch(:downloadable)
 
     assert_equal RecordingStudio::Capabilities::Downloadable::RecordingMethods, registration[:recording_methods]

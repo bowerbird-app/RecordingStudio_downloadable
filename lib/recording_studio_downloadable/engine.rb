@@ -23,6 +23,7 @@ module RecordingStudioDownloadable
           recording_methods: RecordingStudio::Capabilities::Downloadable::RecordingMethods,
           source: "recording_studio_downloadable"
         )
+        install_recording_extension!
       end
 
       def skip_inherited_host_callbacks!
@@ -34,17 +35,24 @@ module RecordingStudioDownloadable
         end
       end
 
-      def install_download_log_association!
-        return unless defined?(RecordingStudio::Recording)
-        return if RecordingStudio::Recording.reflect_on_association(:downloadable_download_logs)
+      # One Proc. Core reapplies it per Recording class object and does not dedupe a new Proc.
+      def install_recording_extension!
+        return if @downloadable_recording_extension_registered
 
-        RecordingStudio::Recording.class_eval do
+        RecordingStudio.configuration.hooks.extend_model(:recording) do
           # delete_all bypasses DownloadLog append-only guards when the recording is destroyed.
           has_many :downloadable_download_logs,
                    class_name: "RecordingStudioDownloadable::DownloadLog",
                    inverse_of: :recording,
                    dependent: :delete_all
+
+          after_commit :recording_studio_downloadable_after_commit, on: %i[create update destroy]
+
+          def recording_studio_downloadable_after_commit
+            RecordingStudioDownloadable::Invalidation.after_recording_commit(self)
+          end
         end
+        @downloadable_recording_extension_registered = true
       end
 
       def install_view_logs_action!
@@ -53,19 +61,6 @@ module RecordingStudioDownloadable
 
       def register_download_metrics!
         RecordingStudioDownloadable::MetricsRegistration.register!
-      end
-
-      def install_recording_observer!
-        return unless defined?(RecordingStudio::Recording)
-        return if RecordingStudio::Recording.method_defined?(:recording_studio_downloadable_after_commit)
-
-        RecordingStudio::Recording.class_eval do
-          after_commit :recording_studio_downloadable_after_commit, on: %i[create update destroy]
-
-          def recording_studio_downloadable_after_commit
-            RecordingStudioDownloadable::Invalidation.after_recording_commit(self)
-          end
-        end
       end
 
       private
@@ -203,9 +198,7 @@ module RecordingStudioDownloadable
 
     initializer "recording_studio_downloadable.observe_recordings" do
       config.to_prepare do
-        RecordingStudioDownloadable::Engine.install_download_log_association!
         RecordingStudioDownloadable::Engine.install_view_logs_action!
-        RecordingStudioDownloadable::Engine.install_recording_observer!
       end
     end
 

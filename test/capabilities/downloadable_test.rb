@@ -72,7 +72,9 @@ class DownloadableCapabilityTest < Minitest::Test
                  RecordingStudio.configuration.enabled_recordable_types_for(:downloadable)
   end
 
-  def test_installing_the_gem_does_not_enable_it_globally
+  def test_engine_registration_does_not_enable_downloadable_globally
+    RecordingStudioDownloadable::Engine.register_recording_studio_integration
+
     assert RecordingStudio.registered_capabilities.key?(:downloadable)
     assert_equal "recording_studio_downloadable",
                  RecordingStudio.registered_capabilities[:downloadable][:source]
