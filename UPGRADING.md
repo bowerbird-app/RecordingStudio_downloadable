@@ -1,13 +1,15 @@
 # Upgrading Recording Studio Downloadable
 
-## Unreleased
+## 0.13.1
 
-Development and dummy Gemfiles pin the current ladder. The gemspec is unchanged: `recording_studio >= 6.7.0` and `recording_studio_cache ~> 0.5` (Cache `0.6.3` still matches).
+`0.13.1` requires Recording Studio `>= 6.7.1` and `< 7.0`. No Downloadable migration. `recording_studio_cache` stays `~> 0.5` (Cache `0.6.3` still matches).
 
-1. Pin FlatPack `v0.1.356`, Accessible `v0.32.0`, Attachable `v0.23.0`, Cache `v0.6.3`, Logs `v0.7.4`, Metrics `v0.8.0`, Trashable `v0.14.0`, Admin `v2.13.0`, API `v0.23.0`, Moveable `v4.1.1`, Icons `v0.2.1`, and Root Switchable `v0.15.0`. Recording Studio stays `v6.7.0`.
-2. Attachable `0.23` needs Recording Studio API `~> 0.23`. Declare the API, Moveable, and Icons git sources. Sibling gemspecs already allow Recording Studio `6.1` or newer, so do not widen their requirements at Bundler setup.
-3. Trashable `0.14` adds nullable `purge_at` on `recording_studio_recordings`. Install `bin/rails generate recording_studio_trashable:migrations` and migrate when this host uses trash retention.
-4. Root Switchable `0.15` still expects Accessible `:view` on a root before the mounted switch page opens it.
+1. Pin `recording_studio_downloadable` to `0.13.1` and `recording_studio` to `6.7.1` or newer, below `7.0`. Development and the dummy pin tag `v6.10.0`.
+2. Pin FlatPack `v0.1.356`, Accessible `v0.32.0`, Attachable `v0.23.0`, Cache `v0.6.3`, Logs `v0.7.4`, Metrics `v0.8.0`, Trashable `v0.14.0`, Admin `v2.13.0`, API `v0.23.0`, Moveable `v4.1.1`, Icons `v0.2.1`, and Root Switchable `v0.15.0`.
+3. Attachable `0.23` needs Recording Studio API `~> 0.23`. Declare the API, Moveable, and Icons git sources. Sibling gemspecs already allow Recording Studio `6.1` or newer, so do not widen their requirements at Bundler setup.
+4. Recording Studio `6.9` requires `root_recording_id` on `recording_studio_events`. Run `bin/rails generate recording_studio:migrations` and migrate when the host is on `6.9` or newer. The dummy copies that migration.
+5. Trashable `0.14` adds nullable `purge_at` on `recording_studio_recordings`. Install `bin/rails generate recording_studio_trashable:migrations` and migrate when this host uses trash retention.
+6. Root Switchable `0.15` still expects Accessible `:view` on a root before the mounted switch page opens it.
 
 ## 0.13.0
 

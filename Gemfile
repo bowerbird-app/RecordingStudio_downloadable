@@ -8,7 +8,7 @@ gemspec
 # Private Recording Studio gems are not published to RubyGems.
 # flatpack v0.1.356. view_component stays on Flatpack's ">= 4.14", "< 5".
 gem "flat_pack", github: "bowerbird-app/flatpack", tag: "v0.1.356"
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.7.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.10.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.32.0"
 gem "recording_studio_attachable", github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.23.0"
 gem "recording_studio_cache", github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.3"
