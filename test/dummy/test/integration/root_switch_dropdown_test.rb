@@ -27,7 +27,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     sign_in user
 
     workspace = Workspace.create!(name: "Dropdown Workspace")
-    RecordingStudio.root_recording_for(workspace)
+    RecordingStudio.create_root_recording!(workspace, actor: Current.actor)
 
     get root_path
 
@@ -49,7 +49,7 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
     sign_in user
 
     workspace = Workspace.create!(name: "Switch Page Workspace")
-    recording = RecordingStudio.root_recording_for(workspace)
+    recording = RecordingStudio.create_root_recording!(workspace, actor: Current.actor)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: recording, actor: user)
 
     get "/recording_studio_root_switchable/v1/root_switch?scope=all_workspaces"
@@ -69,8 +69,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     source_workspace = Workspace.create!(name: "Source Workspace")
     target_workspace = Workspace.create!(name: "Target Workspace")
-    target_root_recording = RecordingStudio.root_recording_for(target_workspace)
-    source_root_recording = RecordingStudio.root_recording_for(source_workspace)
+    target_root_recording = RecordingStudio.create_root_recording!(target_workspace, actor: Current.actor)
+    source_root_recording = RecordingStudio.create_root_recording!(source_workspace, actor: Current.actor)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: source_root_recording, actor: user)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: target_root_recording, actor: user)
 
@@ -95,8 +95,8 @@ class RootSwitchDropdownTest < ActionDispatch::IntegrationTest
 
     source_workspace = Workspace.create!(name: "Fallback Source Workspace")
     target_workspace = Workspace.create!(name: "Fallback Target Workspace")
-    target_root_recording = RecordingStudio.root_recording_for(target_workspace)
-    source_root_recording = RecordingStudio.root_recording_for(source_workspace)
+    target_root_recording = RecordingStudio.create_root_recording!(target_workspace, actor: Current.actor)
+    source_root_recording = RecordingStudio.create_root_recording!(source_workspace, actor: Current.actor)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: source_root_recording, actor: user)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: target_root_recording, actor: user)
 

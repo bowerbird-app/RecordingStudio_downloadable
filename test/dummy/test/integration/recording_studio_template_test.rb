@@ -41,7 +41,7 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     folder_recording = RecordingStudio::Recording.find_by!(recordable: folder)
     page_recording = RecordingStudio::Recording.find_by!(recordable: page)
     press_kit_recording = RecordingStudio::Recording
-      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .kept
       .find_by!(
         recordable_type: "PressKit",
         parent_recording: root_recording

@@ -11,7 +11,7 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     @user = User.create!(email: "gate-page-#{SecureRandom.hex(4)}@example.com", password: "Password",
                          password_confirmation: "Password")
     @workspace = Workspace.find_or_create_by!(name: WorkspaceDownloadGate::NAME)
-    @recording = RecordingStudio.root_recording_for(@workspace)
+    @recording = RecordingStudio.create_root_recording!(@workspace, actor: Current.actor)
     grant_studio_download_access!(@recording, @user)
     Current.actor = @user if defined?(Current)
     attach_notes! if @recording.downloadable_files.empty?
@@ -50,7 +50,7 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "role=\"progressbar\""
     assert_includes response.body, "data-downloadable-progress"
     assert_includes response.body, "data-downloadable-progress-label"
-    assert_includes response.body, "text-lg"
+    assert_includes response.body, "fp-type-section"
     refute_includes response.body, "data-downloadable-progress-ready"
     refute_includes response.body, "text-sm font-medium"
     refute_includes response.body, "Getting your files together."

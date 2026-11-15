@@ -3,7 +3,7 @@
 class PressKitsController < ApplicationController
   def index
     recordings = RecordingStudio::Recording
-      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .kept
       .where(recordable_type: "PressKit")
       .to_a
     recordings_by_id = recordings.index_by(&:recordable_id)
@@ -38,7 +38,7 @@ class PressKitsController < ApplicationController
   def load_press_kit!
     @press_kit = PressKit.find(params[:id])
     @recording = RecordingStudio::Recording
-      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .kept
       .find_by!(recordable: @press_kit)
   end
 

@@ -52,7 +52,7 @@ class PagesController < ApplicationController
 
   def page_recordings_by_recordable_id(pages)
     RecordingStudio::Recording
-      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .kept
       .where(recordable: pages)
       .index_by(&:recordable_id)
   end
@@ -66,7 +66,7 @@ class PagesController < ApplicationController
   def parent_recording_for_new_page
     folder = Folder.find_by(name: "Product Docs")
     folder_recording = RecordingStudio::Recording
-      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .kept
       .find_by(recordable: folder) if folder
     return folder_recording if folder_recording
 

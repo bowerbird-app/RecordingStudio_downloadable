@@ -15,7 +15,7 @@ class DownloadableWave2I18nRenderTest < ActionDispatch::IntegrationTest
       record.password_confirmation = "Password"
     end
     @workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
-    @recording = RecordingStudio.root_recording_for(@workspace)
+    @recording = RecordingStudio.create_root_recording!(@workspace, actor: Current.actor)
     grant_studio_download_access!(@recording, @user)
     Current.actor = @user if defined?(Current)
     sign_in @user

@@ -10,10 +10,10 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     @user = User.create!(email: "history-page-#{SecureRandom.hex(4)}@example.com", password: "Password",
                          password_confirmation: "Password")
     @workspace = Workspace.create!(name: "Studio Workspace #{SecureRandom.hex(4)}")
-    @recording = RecordingStudio.root_recording_for(@workspace)
+    @recording = RecordingStudio.create_root_recording!(@workspace, actor: Current.actor)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: @recording, actor: @user)
     @locked = Workspace.create!(name: "Locked Workspace #{SecureRandom.hex(4)}")
-    @locked_recording = RecordingStudio.root_recording_for(@locked)
+    @locked_recording = RecordingStudio.create_root_recording!(@locked, actor: Current.actor)
     sign_in @user
   end
 
@@ -23,10 +23,10 @@ class DownloadHistoryPageTest < ActionDispatch::IntegrationTest
     assert_equal DownloadAccessComponent, component
 
     studio = Workspace.find_or_create_by!(name: "Studio Workspace")
-    studio_recording = RecordingStudio.root_recording_for(studio)
+    studio_recording = RecordingStudio.create_root_recording!(studio, actor: Current.actor)
     grant_studio_download_access!(studio_recording, @user)
     locked_workspace = Workspace.find_or_create_by!(name: "Locked Workspace")
-    RecordingStudio.root_recording_for(locked_workspace)
+    RecordingStudio.create_root_recording!(locked_workspace, actor: Current.actor)
 
     get root_path
 

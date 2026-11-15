@@ -38,7 +38,7 @@ class PressKit < ApplicationRecord
 
   def attachment_token
     recording = RecordingStudio::Recording
-      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .kept
       .find_by(recordable: self)
     return "none" unless recording
 
@@ -64,7 +64,7 @@ class PressKit < ApplicationRecord
 
   def stored_download_files
     recording = RecordingStudio::Recording
-      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .kept
       .find_by(recordable: self)
     return [] unless recording
 

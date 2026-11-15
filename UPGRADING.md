@@ -1,5 +1,18 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.15.0
+
+`0.15.0` requires Recording Studio `7.0` or newer, below `8.0`. No Downloadable migration.
+
+1. Pin `recording_studio_downloadable` to `0.15.0` and `recording_studio` to `>= 7.0`, `< 8.0`. Development and the dummy pin tag `v7.0.0`.
+2. Raise the other Recording Studio runtime floors and drop upper caps: Accessible `>= 0.44.0`, Attachable `>= 0.28.0`, Cache `>= 0.5`, Logs `>= 0.8.0`, Metrics `>= 0.9.0`.
+3. Pin the core 7 ladder used here: Accessible `v0.44.0`, Attachable `v0.28.0`, Cache `v0.6.3`, Logs `v0.8.0`, Metrics `v0.9.0`, Trashable `v0.17.0`, API `v0.24.0`, Moveable `v5.0.0`, Icons `v0.2.1`, Root Switchable `v0.16.0`, Admin `v2.16.0`. FlatPack moves to `v0.1.376` because Attachable `0.28` requires `flat_pack >= 0.1.376`. Section titles from that Flatpack render `fp-type-section`.
+4. Create roots with `RecordingStudio.create_root_recording!(recordable, actor:)`. `root_recording_for` returns the existing root or `nil`. A second `create_root_recording!` returns that same root and does not append another event.
+5. Set `config.authorize_write` to a callback that returns true or false. Do not set `allow_unauthorized_writes`. A write still needs an actor (`actor:` or `config.actor`).
+6. Replace `Recording.recording_studio_trashable_kept_sql` with `Recording.kept`. Trashable `0.17` removed `kept_sql`.
+7. Recording Studio `6.9` and `7.0` require `root_recording_id` on `recording_studio_events`. Run `bin/rails generate recording_studio:migrations` and migrate when that column is missing. The dummy already includes that migration.
+8. Development and the dummy pin Puma `8.1.0`. The dummy also requires `msgpack` `>= 1.8.7`.
+
 ## 0.14.1
 
 `0.14.1` allows Recording Studio below `8.0` in the gemspec. The lower bound stays `>= 6.7.1`. No migration. Development and the dummy stay on core 6.x.

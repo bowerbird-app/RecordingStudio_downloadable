@@ -17,7 +17,7 @@ class PressKitCacheKeyTest < ActionDispatch::IntegrationTest
     )
     sign_in @user
     workspace = Workspace.create!(name: "Cache key workspace #{SecureRandom.hex(4)}")
-    root = RecordingStudio.root_recording_for(workspace)
+    root = RecordingStudio.create_root_recording!(workspace, actor: Current.actor)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: root, actor: @user)
     press_kit = PressKit.create!(name: "Cache kit", description: "Hello", credits: "Ada")
     @recording = RecordingStudio.record!(
