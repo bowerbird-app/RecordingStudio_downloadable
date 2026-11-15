@@ -1,5 +1,12 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.14.1
+
+`0.14.1` allows Recording Studio below `8.0` in the gemspec. The lower bound stays `>= 6.7.1`. No migration. Development and the dummy stay on core 6.x.
+
+1. Pin `recording_studio_downloadable` to `0.14.1`. Recording Studio stays `>= 6.7.1` and below `8.0`.
+2. Hosts already on `6.7.1` or newer, below `7.0`, need no other change. This release does not call core 7 APIs.
+
 ## 0.14.0
 
 `0.14.0` makes package status cheap when the host can name a cache key. No migration.
