@@ -11,7 +11,7 @@ require "zip"
 module DownloadableTestHelper
   def create_workspace_recording(name: "Download Workspace #{SecureRandom.hex(4)}")
     workspace = Workspace.create!(name: name)
-    RecordingStudio.root_recording_for(workspace)
+    RecordingStudio.create_root_recording!(workspace, actor: Current.actor)
   end
 
   def grant_download_access!(recording, actor)

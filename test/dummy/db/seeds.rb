@@ -63,9 +63,9 @@ Current.actor = user
 
 begin
   # Create the root recording
-  root_recording = RecordingStudio.root_recording_for(workspace)
-  accessible_root_recording = RecordingStudio.root_recording_for(accessible_workspace)
-  private_root_recording = RecordingStudio.root_recording_for(private_workspace)
+  root_recording = RecordingStudio.create_root_recording!(workspace, actor: user)
+  accessible_root_recording = RecordingStudio.create_root_recording!(accessible_workspace, actor: user)
+  private_root_recording = RecordingStudio.create_root_recording!(private_workspace, actor: user)
 
   folder_recording = find_or_record_child.call(folder, root_recording, root_recording)
 
@@ -87,7 +87,7 @@ begin
   end
 
   locked_workspace = Workspace.find_or_create_by!(name: "Locked Workspace")
-  locked_recording = RecordingStudio.root_recording_for(locked_workspace)
+  locked_recording = RecordingStudio.create_root_recording!(locked_workspace, actor: user)
 
   colleague = User.find_or_create_by!(email: "colleague@example.com") do |record|
     record.password = "Password"
@@ -113,7 +113,7 @@ begin
   end
 
   gated_workspace = Workspace.find_or_create_by!(name: "Gated Download")
-  gated_recording = RecordingStudio.root_recording_for(gated_workspace)
+  gated_recording = RecordingStudio.create_root_recording!(gated_workspace, actor: user)
   RecordingStudioAccessible.bootstrap_owner_access!(recording: gated_recording, actor: user)
   if RecordingStudioDownloadable::Sources::Attachments.call(gated_recording).empty?
     result = AttachableDirectUpload.upload!(

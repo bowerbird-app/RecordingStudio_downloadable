@@ -4,22 +4,24 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.14.1", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.15.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
     assert_kind_of Class, ::RecordingStudioDownloadable::Engine
   end
 
-  def test_gemspec_requires_recording_studio_6_7
+  def test_gemspec_requires_recording_studio_7
     gemspec = File.read(File.expand_path("../recording_studio_downloadable.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.7.1", "< 8.0"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_accessible"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_attachable"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_cache", "~> 0.5"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_logs", ">= 0.4.1", "< 1.0"'
-    assert_includes gemspec, 'spec.add_dependency "recording_studio_metrics", ">= 0.5.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 7.0", "< 8.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_accessible", ">= 0.44.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_attachable", ">= 0.28.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_cache", ">= 0.5"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_logs", ">= 0.8.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio_metrics", ">= 0.9.0"'
+    refute_includes gemspec, '"recording_studio_cache", "~>"'
+    refute_includes gemspec, '"recording_studio_logs", ">= 0.8.0", "<'
     assert_includes gemspec, 'spec.add_dependency "rubyzip"'
   end
 
@@ -50,22 +52,22 @@ class RecordingStudioDownloadableTest < Minitest::Test
   def test_dummy_gemfile_pins_verified_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.10.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
     root_gemfile = File.read(File.expand_path("../Gemfile", __dir__))
-    assert_includes root_gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.10.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.32.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.23.0"'
+    assert_includes root_gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.44.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.28.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.3"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_logs", tag: "v0.7.4"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_logs", tag: "v0.8.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable"'
-    assert_includes gemfile, 'tag: "v0.15.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.8.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.13.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v0.23.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_moveable", tag: "v4.1.1"'
+    assert_includes gemfile, 'tag: "v0.16.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.9.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.16.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v0.24.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_moveable", tag: "v5.0.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_icons", tag: "v0.2.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.14.0", require: false'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.356"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v0.17.0", require: false'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.376"'
     refute_includes gemfile, 'tag: "v6.7.0"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.5.0"'
@@ -81,7 +83,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute_includes gemfile, 'tag: "v0.5.1"'
     refute_includes gemfile, 'tag: "v0.21.4"'
     refute_includes gemfile, 'tag: "v4.1.0"'
-    refute_includes gemfile, 'tag: "v0.1.3"'
+    refute_includes gemfile, 'tag: "v0.1.356"'
     refute_includes gemfile, 'tag: "v0.1.341"'
     refute_includes gemfile, 'tag: "v0.7.1"'
     refute_includes gemfile, 'tag: "v0.9.1"'
@@ -296,6 +298,8 @@ class RecordingStudioDownloadableTest < Minitest::Test
     initializer_source = File.read(initializer_path)
 
     assert_includes initializer_source, "config.require_recordable_declarations = true"
+    assert_includes initializer_source, "config.authorize_write = lambda { |**|"
+    refute_includes initializer_source, "allow_unauthorized_writes"
     assert_includes(
       initializer_source,
       "config.recordable_types = ["
@@ -345,20 +349,20 @@ class RecordingStudioDownloadableTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v6.10.0`"
+    assert_includes readme, "dummy GitHub tag `v7.0.0`"
     assert_includes readme, 'RecordingStudio.register_gate("downloadable.stats"'
     assert_includes readme, "RecordingStudioStripe::Billing.for_recording(recording).unlocked?(:download_stats)"
-    assert_includes readme, "dummy GitHub tag `v0.1.356`"
-    assert_includes readme, "dummy GitHub tag `v0.32.0`"
-    assert_includes readme, "dummy GitHub tag `v0.14.0`"
-    assert_includes readme, "dummy GitHub tag `v0.15.0`"
+    assert_includes readme, "dummy GitHub tag `v0.1.376`"
+    assert_includes readme, "dummy GitHub tag `v0.44.0`"
+    assert_includes readme, "dummy GitHub tag `v0.17.0`"
+    assert_includes readme, "dummy GitHub tag `v0.16.0`"
     assert_includes readme, "dummy GitHub tag `v0.6.3`"
-    assert_includes readme, "Attachable `v0.23.0`"
-    assert_includes readme, "dummy GitHub tag `v0.7.4`"
+    assert_includes readme, "Attachable `v0.28.0`"
     assert_includes readme, "dummy GitHub tag `v0.8.0`"
+    assert_includes readme, "dummy GitHub tag `v0.9.0`"
     assert_includes readme, "Cache to `v0.6.3`"
-    assert_includes readme, "dummy GitHub tag `v0.23.0`"
-    assert_includes readme, "Moveable `v4.1.1`"
+    assert_includes readme, "dummy GitHub tag `v0.24.0`"
+    assert_includes readme, "Moveable `v5.0.0`"
     assert_includes readme, "Icons `v0.2.1`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"
     refute_includes readme, "dummy GitHub tag `v4.4.0`"
@@ -412,8 +416,8 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "[a-z0-9_]{1,40}"
     assert_includes readme, "MetricsRegistration.context_for"
     assert_includes readme, "recording_studio_logs:migrations"
-    assert_includes readme, "Logs dummy GitHub tag `v0.7.4`"
-    assert_includes readme, ">= 0.4.1, < 1.0"
+    assert_includes readme, "Logs dummy GitHub tag `v0.8.0`"
+    assert_includes readme, ">= 0.8.0"
     assert_includes readme, "ImageArchivesController"
     refute_includes readme, "Non-granted actors never enqueue"
   end

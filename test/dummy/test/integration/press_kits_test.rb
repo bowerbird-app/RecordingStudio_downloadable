@@ -17,7 +17,7 @@ class PressKitsTest < ActionDispatch::IntegrationTest
 
     sign_in @user
     @workspace = Workspace.create!(name: "Press Kit Workspace #{SecureRandom.hex(4)}")
-    @root = RecordingStudio.root_recording_for(@workspace)
+    @root = RecordingStudio.create_root_recording!(@workspace, actor: Current.actor)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: @root, actor: @user)
     @press_kit = PressKit.create!(
       name: "Launch Press Kit",

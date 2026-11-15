@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-11-15
+
+### Changed
+
+- Require `recording_studio` `>= 7.0`, `< 8.0`. Development and the dummy pin tag `v7.0.0`.
+- Recording Studio runtime dependencies use open lower bounds and no upper cap: Accessible `>= 0.44.0`, Attachable `>= 0.28.0`, Cache `>= 0.5`, Logs `>= 0.8.0`, Metrics `>= 0.9.0`.
+- Development and the dummy pin the core 7 ladder: Accessible `v0.44.0`, Attachable `v0.28.0`, Cache `v0.6.3`, Logs `v0.8.0`, Metrics `v0.9.0`, Trashable `v0.17.0`, API `v0.24.0`, Moveable `v5.0.0`, Icons `v0.2.1`, Root Switchable `v0.16.0`, Admin `v2.16.0`, and FlatPack `v0.1.376`.
+- Creating a root uses `RecordingStudio.create_root_recording!(recordable, actor:)`. `root_recording_for` only finds an existing root.
+- The dummy authorizes writes with `config.authorize_write` and does not set `allow_unauthorized_writes`.
+- Kept recordings use `Recording.kept`. Trashable 0.17 no longer provides `kept_sql`.
+- Dummy and development pin Puma `8.1.0`. The dummy also requires `msgpack` `>= 1.8.7`.
+
+### Upgrade notes
+
+- Bump to `0.15.0`. No Downloadable migration. Requires Recording Studio `7.0` or newer, below `8.0`.
+- Replace root creation with `create_root_recording!`. Query kept rows with `Recording.kept`. Set `config.authorize_write`. See [UPGRADING.md](UPGRADING.md).
+
 ## [0.14.1] - 2026-11-15
 
 ### Changed
@@ -354,7 +371,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.2...v0.14.0
 [0.13.2]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.1...v0.13.2

@@ -17,7 +17,7 @@ class PagesIndexTest < ActionDispatch::IntegrationTest
 
   test "pages index lists page recordables in a table under the sidebar layout" do
     workspace = Workspace.create!(name: "Pages Workspace")
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    root_recording = RecordingStudio.create_root_recording!(workspace, actor: Current.actor)
     page = Page.create!(title: "Smoke Page", description: "A short description for the table snippet.")
     RecordingStudio.record!(
       action: "created",
@@ -54,10 +54,10 @@ class PagesIndexTest < ActionDispatch::IntegrationTest
 
   test "creating a page records it under the seeded folder and redirects to attachable upload" do
     workspace = Workspace.find_or_create_by!(name: "Studio Workspace")
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    root_recording = RecordingStudio.create_root_recording!(workspace, actor: Current.actor)
     folder = Folder.find_or_create_by!(name: "Product Docs")
     folder_recording = RecordingStudio::Recording
-      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .kept
       .find_by(recordable: folder) ||
       RecordingStudio.record!(
         action: "created",
@@ -76,7 +76,7 @@ class PagesIndexTest < ActionDispatch::IntegrationTest
 
     page = Page.find_by!(title: title)
     recording = RecordingStudio::Recording
-      .where(RecordingStudio::Recording.recording_studio_trashable_kept_sql)
+      .kept
       .find_by!(recordable: page)
 
     assert_equal folder_recording, recording.parent_recording

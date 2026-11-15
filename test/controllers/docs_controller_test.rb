@@ -82,7 +82,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
   test "recordings tree page renders successfully" do
     workspace = Workspace.create!(name: "Tree Workspace")
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    root_recording = RecordingStudio.create_root_recording!(workspace, actor: Current.actor)
     folder = Folder.create!(name: "Reference")
     folder_recording = record_child(folder, root_recording, root_recording)
     page = Page.create!(title: "API")
@@ -162,10 +162,11 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
 
     workspace = Workspace.create!(name: "Counted Workspace")
     2.times do
-      RecordingStudio.root_recording_for(Workspace.create!(name: "Counted Workspace #{SecureRandom.hex(4)}"))
+      extra = Workspace.create!(name: "Counted Workspace #{SecureRandom.hex(4)}")
+      RecordingStudio.create_root_recording!(extra, actor: Current.actor)
     end
 
-    root_recording = RecordingStudio.root_recording_for(workspace)
+    root_recording = RecordingStudio.create_root_recording!(workspace, actor: Current.actor)
     folder = Folder.create!(name: "Counted Folder")
     record_child(folder, root_recording, root_recording)
 

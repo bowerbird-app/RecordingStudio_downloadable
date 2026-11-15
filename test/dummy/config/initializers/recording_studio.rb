@@ -24,8 +24,20 @@ RecordingStudio.configure do |config|
   # Shown in the shared default layout title fallback.
   config.app_name = "Addon Template" if config.respond_to?(:app_name=)
 
-  # Actor resolver for events when no actor is explicitly supplied
-  config.actor = -> { Current.actor }
+  # Actor resolver for events when no actor is explicitly supplied.
+  # Core 7 refuses a write with no actor. Requests set Current.actor from the
+  # signed-in user. Tests that record before a request get a stable user.
+  config.actor = lambda {
+    current = Current.actor
+    if current.present?
+      current
+    elsif Rails.env.test?
+      User.find_or_create_by!(email: "recording-writes@example.com") do |user|
+        user.password = "Password"
+        user.password_confirmation = "Password"
+      end
+    end
+  }
 
   # Emit ActiveSupport::Notifications events
   config.event_notifications_enabled = true
@@ -36,10 +48,8 @@ RecordingStudio.configure do |config|
   # Recordable duplication strategy for revisions
   config.recordable_dup_strategy = :dup
 
-  # Core 6.5+ refuses a write with no authorizer, and a blank actor raises
-  # unless this flag is set. The dummy records before anyone is signed in.
+  # Core refuses a write until an authorizer is set. The dummy allows every write.
   config.authorize_write = lambda { |**|
     true
   }
-  config.allow_unauthorized_writes = true
 end
