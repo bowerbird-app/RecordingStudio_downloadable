@@ -4,11 +4,11 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio 7.0 (`>= 7.0`, `< 8.0` in the gemspec; dummy GitHub tag `v7.3.0`)
-- Accessible dummy tag `v0.45.1`, Attachable dummy tag `v0.31.0`, and Root Switchable dummy tag `v0.16.0`
-- Cache dummy tag `v0.7.0` (gemspec `>= 0.5`), Logs dummy tag `v0.8.0` (gemspec `>= 0.8.0`), and Metrics dummy tag `v0.9.0`
-- Trashable dummy tag `v1.0.1`, Admin dummy tag `v2.18.0`, API dummy tag `v1.2.1`, Moveable dummy tag `v6.0.0`, and Icons dummy tag `v0.4.0`
-- FlatPack tag `v0.1.377`
+- Recording Studio 7.0 (`>= 7.0`, `< 8.0` in the gemspec; dummy GitHub tag `v7.8.0`)
+- Accessible dummy tag `v0.58.0`, Attachable dummy tag `v0.34.0`, and Root Switchable dummy tag `v0.17.0`
+- Cache dummy tag `v0.8.0` (gemspec `>= 0.5`), Logs dummy tag `v0.9.0` (gemspec `>= 0.8.0`), and Metrics dummy tag `v0.10.0`
+- Trashable dummy tag `v1.3.0`, Admin dummy tag `v2.20.0`, API dummy tag `v1.21.2`, Moveable dummy tag `v6.1.0`, and Icons dummy tag `v0.5.0`
+- FlatPack tag `v0.2.0`
 - Public RubyGems and GitHub access for dependency installation
 
 ## Verification

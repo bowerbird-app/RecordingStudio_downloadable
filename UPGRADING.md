@@ -1,5 +1,14 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.16.0
+
+`0.16.0` keeps the same gemspec runtime floors. No Downloadable migration.
+
+1. Pin `recording_studio_downloadable` to `0.16.0`.
+2. Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have not.
+3. flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller registration.
+4. Development and the dummy pin Recording Studio `v7.8.0` (`~> 7.8`), FlatPack `v0.2.0` (`~> 0.2`), Accessible `v0.58.0` (`~> 0.58`), API `v1.21.2` (`~> 1.21`), Attachable `v0.34.0` (`~> 0.34`), Cache `v0.8.0` (`~> 0.8`), Icons `v0.5.0` (`~> 0.5`), Logs `v0.9.0` (`~> 0.9`), Metrics `v0.10.0` (`~> 0.10`), Moveable `v6.1.0` (`~> 6.1`), and Trashable `v1.3.0` (`~> 1.3`). The dummy also pins Admin `v2.20.0` (`~> 2.20`) and Root Switchable `v0.17.0` (`~> 0.17`).
+
 ## 0.15.0
 
 `0.15.0` requires Recording Studio `7.0` or newer, below `8.0`. No Downloadable migration.

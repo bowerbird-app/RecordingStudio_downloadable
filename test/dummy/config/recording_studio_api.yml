@@ -1,0 +1,3 @@
+# Recording Studio API 1.21 raises at boot when this file is missing.
+# Dummy settings stay in config/initializers/recording_studio_api.rb.
+shared: {}

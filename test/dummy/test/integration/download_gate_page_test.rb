@@ -62,8 +62,17 @@ class DownloadGatePageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "role=\"alert\""
     assert_includes response.body, "fp-empty-state"
     assert_includes response.body, "items-center"
-    assert_includes response.body, 'data-flat-pack--icon-name-value="check-circle"'
-    assert_includes response.body, 'data-flat-pack--icon-variant-value="solid"'
+    check_circle = [
+      "M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75",
+      "-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872",
+      "l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
+    ].join
+    assert_includes response.body, %(d="#{check_circle}")
+    assert_includes response.body, 'viewBox="0 0 24 24"'
+    assert_includes response.body, 'fill="currentColor"'
+    assert_includes response.body, 'class="block shrink-0 w-8 h-8 text-[var(--color-success-background-color)]"'
+    refute_includes response.body, "data-flat-pack--icon-name-value"
+    refute_includes response.body, "data-flat-pack--icon-variant-value"
     assert_includes response.body, "text-[var(--color-success-background-color)]"
     assert_includes response.body, "data-downloadable-started"
     assert_includes response.body, "hidden"

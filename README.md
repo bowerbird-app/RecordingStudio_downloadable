@@ -413,7 +413,7 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 6. List each download action in Accessible `config.action_audiences`.
 7. Opt each recordable in with `.to`.
 
-This dummy pins Recording Studio dummy GitHub tag `v7.3.0`, Accessible dummy GitHub tag `v0.45.1`, Trashable dummy GitHub tag `v1.0.1` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.7.0`, Logs dummy GitHub tag `v0.8.0`, Root Switchable dummy GitHub tag `v0.16.0`, Metrics dummy GitHub tag `v0.9.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.18.0` (download history screen), Recording Studio API dummy GitHub tag `v1.2.1` (Moveable `v6.0.0`, Icons `v0.4.0`), FlatPack dummy GitHub tag `v0.1.377`, and Attachable `v0.31.0`.
+This dummy pins Recording Studio dummy GitHub tag `v7.8.0`, Accessible dummy GitHub tag `v0.58.0`, Trashable dummy GitHub tag `v1.3.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.8.0`, Logs dummy GitHub tag `v0.9.0`, Root Switchable dummy GitHub tag `v0.17.0`, Metrics dummy GitHub tag `v0.10.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.20.0` (download history screen), Recording Studio API dummy GitHub tag `v1.21.2` (Moveable `v6.1.0`, Icons `v0.5.0`), FlatPack dummy GitHub tag `v0.2.0`, and Attachable `v0.34.0`.
 
 ## Dummy app
 
@@ -455,7 +455,7 @@ Rate limiting is a thin adapter over `RecordingStudioCache::RateLimiter` (fixed 
 
 Hosts on 0.2.x need a new migration (`action` + `export_scope` on `recording_studio_downloadable_packages`). Existing packages are backfilled to the default action for that recording's type and `public` scope.
 
-Pin Accessible to GitHub tag `v0.45.1`, Trashable to `v1.0.1` (`require: false`; needs Recording Studio `>= 7.0`, `< 8.0`), Cache to `v0.7.0`, and Logs to `v0.8.0` (gemspec `>= 0.8.0`). Attachable `v0.31.0` needs Recording Studio API `>= 1.1`. Create roots with `RecordingStudio.create_root_recording!(recordable, actor:)`. List each download action in `config.action_audiences`. Until an action is configured, Downloadable keeps the previous role mapping (`auth_roles`, default `download: :view`) so existing granted users can still download.
+Pin Accessible to GitHub tag `v0.58.0`, Trashable to `v1.3.0` (`require: false`; needs Recording Studio `>= 7.0`, `< 8.0`), Cache to `v0.8.0`, and Logs to `v0.9.0` (gemspec `>= 0.8.0`). Attachable `v0.34.0` needs Recording Studio API `>= 1.1`. Create roots with `RecordingStudio.create_root_recording!(recordable, actor:)`. List each download action in `config.action_audiences`. Until an action is configured, Downloadable keeps the previous role mapping (`auth_roles`, default `download: :view`) so existing granted users can still download.
 
 Hosts moving to 0.8.0 keep their download log rows. See [UPGRADING.md](UPGRADING.md).
 
