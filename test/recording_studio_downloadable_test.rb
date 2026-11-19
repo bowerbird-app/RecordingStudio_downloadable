@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.15.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.16.0", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -52,22 +52,41 @@ class RecordingStudioDownloadableTest < Minitest::Test
   def test_dummy_gemfile_pins_verified_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"'
     root_gemfile = File.read(File.expand_path("../Gemfile", __dir__))
-    assert_includes root_gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.3.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.45.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_attachable", tag: "v0.31.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.7.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_logs", tag: "v0.8.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable"'
-    assert_includes gemfile, 'tag: "v0.16.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.9.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_admin", tag: "v2.18.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_api", tag: "v1.2.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_moveable", tag: "v6.0.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_icons", tag: "v0.4.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable", tag: "v1.0.1", require: false'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.377"'
+    [
+      ["recording_studio", "~> 7.8", "RecordingStudio", "v7.8.0"],
+      ["recording_studio_accessible", "~> 0.58", "RecordingStudio_accessible", "v0.58.0"],
+      ["recording_studio_attachable", "~> 0.34", "RecordingStudio_attachable", "v0.34.0"],
+      ["recording_studio_cache", "~> 0.8", "RecordingStudio_cache", "v0.8.0"],
+      ["recording_studio_logs", "~> 0.9", "RecordingStudio_logs", "v0.9.0"],
+      ["recording_studio_metrics", "~> 0.10", "RecordingStudio_metrics", "v0.10.0"],
+      ["recording_studio_trashable", "~> 1.3", "RecordingStudio_trashable", "v1.3.0", true],
+      ["recording_studio_api", "~> 1.21", "RecordingStudio_api", "v1.21.2", true],
+      ["recording_studio_icons", "~> 0.5", "RecordingStudio_icons", "v0.5.0", true],
+      ["recording_studio_moveable", "~> 6.1", "RecordingStudio_moveable", "v6.1.0", true],
+      ["flat_pack", "~> 0.2", "flatpack", "v0.2.0"]
+    ].each do |gem_name, constraint, repo, tag, require_false|
+      assert_github_pin(root_gemfile, gem: gem_name, constraint: constraint, repo: repo, tag: tag,
+                                      require_false: require_false)
+    end
+    [
+      ["recording_studio", "~> 7.8", "RecordingStudio", "v7.8.0"],
+      ["recording_studio_accessible", "~> 0.58", "RecordingStudio_accessible", "v0.58.0"],
+      ["recording_studio_attachable", "~> 0.34", "RecordingStudio_attachable", "v0.34.0"],
+      ["recording_studio_cache", "~> 0.8", "RecordingStudio_cache", "v0.8.0"],
+      ["recording_studio_logs", "~> 0.9", "RecordingStudio_logs", "v0.9.0"],
+      ["recording_studio_root_switchable", "~> 0.17", "RecordingStudio_root_switchable", "v0.17.0"],
+      ["recording_studio_metrics", "~> 0.10", "RecordingStudio_metrics", "v0.10.0"],
+      ["recording_studio_admin", "~> 2.20", "RecordingStudio_admin", "v2.20.0"],
+      ["recording_studio_api", "~> 1.21", "RecordingStudio_api", "v1.21.2"],
+      ["recording_studio_moveable", "~> 6.1", "RecordingStudio_moveable", "v6.1.0"],
+      ["recording_studio_icons", "~> 0.5", "RecordingStudio_icons", "v0.5.0"],
+      ["recording_studio_trashable", "~> 1.3", "RecordingStudio_trashable", "v1.3.0", true],
+      ["flat_pack", "~> 0.2", "flatpack", "v0.2.0"]
+    ].each do |gem_name, constraint, repo, tag, require_false|
+      assert_github_pin(gemfile, gem: gem_name, constraint: constraint, repo: repo, tag: tag,
+                                 require_false: require_false)
+    end
     refute_includes gemfile, 'tag: "v6.7.0"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.5.0"'
@@ -87,7 +106,6 @@ class RecordingStudioDownloadableTest < Minitest::Test
     refute_includes gemfile, 'tag: "v0.1.341"'
     refute_includes gemfile, 'tag: "v0.7.1"'
     refute_includes gemfile, 'tag: "v0.9.1"'
-    refute_includes gemfile, 'tag: "v0.5.0"'
     refute_includes gemfile, 'tag: "v0.4.3"'
     refute_includes gemfile, 'tag: "v0.1.198"'
     refute_includes gemfile, 'tag: "v0.1.177"'
@@ -349,21 +367,21 @@ class RecordingStudioDownloadableTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v7.3.0`"
+    assert_includes readme, "dummy GitHub tag `v7.8.0`"
     assert_includes readme, 'RecordingStudio.register_gate("downloadable.stats"'
     assert_includes readme, "RecordingStudioStripe::Billing.for_recording(recording).unlocked?(:download_stats)"
-    assert_includes readme, "dummy GitHub tag `v0.1.377`"
-    assert_includes readme, "dummy GitHub tag `v0.45.1`"
-    assert_includes readme, "dummy GitHub tag `v1.0.1`"
-    assert_includes readme, "dummy GitHub tag `v0.16.0`"
-    assert_includes readme, "dummy GitHub tag `v0.7.0`"
-    assert_includes readme, "Attachable `v0.31.0`"
+    assert_includes readme, "dummy GitHub tag `v0.2.0`"
+    assert_includes readme, "dummy GitHub tag `v0.58.0`"
+    assert_includes readme, "dummy GitHub tag `v1.3.0`"
+    assert_includes readme, "dummy GitHub tag `v0.17.0`"
     assert_includes readme, "dummy GitHub tag `v0.8.0`"
+    assert_includes readme, "Attachable `v0.34.0`"
     assert_includes readme, "dummy GitHub tag `v0.9.0`"
-    assert_includes readme, "Cache to `v0.7.0`"
-    assert_includes readme, "dummy GitHub tag `v1.2.1`"
-    assert_includes readme, "Moveable `v6.0.0`"
-    assert_includes readme, "Icons `v0.4.0`"
+    assert_includes readme, "dummy GitHub tag `v0.10.0`"
+    assert_includes readme, "Cache to `v0.8.0`"
+    assert_includes readme, "dummy GitHub tag `v1.21.2`"
+    assert_includes readme, "Moveable `v6.1.0`"
+    assert_includes readme, "Icons `v0.5.0`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"
     refute_includes readme, "dummy GitHub tag `v4.4.0`"
     refute_includes readme, "dummy GitHub tag `v4.3.0`"
@@ -416,7 +434,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "[a-z0-9_]{1,40}"
     assert_includes readme, "MetricsRegistration.context_for"
     assert_includes readme, "recording_studio_logs:migrations"
-    assert_includes readme, "Logs dummy GitHub tag `v0.8.0`"
+    assert_includes readme, "Logs dummy GitHub tag `v0.9.0`"
     assert_includes readme, ">= 0.8.0"
     assert_includes readme, "ImageArchivesController"
     refute_includes readme, "Non-granted actors never enqueue"
@@ -479,6 +497,19 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes recording_tree_partial, "parent_builder.node"
     refute_includes recordings_tree_view, "Current structure"
     refute_includes recordings_tree_view, "This tree is generated from RecordingStudio::Recording records"
+  end
+
+  def assert_github_pin(source, **pin)
+    pieces = [
+      %(gem "#{pin.fetch(:gem)}",),
+      %("#{pin.fetch(:constraint)}",),
+      %(github: "bowerbird-app/#{pin.fetch(:repo)}",),
+      %(tag: "#{pin.fetch(:tag)}")
+    ]
+    pieces << ", require: false" if pin[:require_false]
+    pattern = pieces.map { |piece| Regexp.escape(piece) }.join('\s*')
+
+    assert_match(/#{pattern}/, source)
   end
 
   def test_engine_does_not_ship_a_home_view

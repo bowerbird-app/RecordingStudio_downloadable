@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-19
+
+### Changed
+
+- Development and the dummy pin Recording Studio `v7.8.0` (`~> 7.8`), FlatPack `v0.2.0` (`~> 0.2`), Accessible `v0.58.0` (`~> 0.58`), API `v1.21.2` (`~> 1.21`), Attachable `v0.34.0` (`~> 0.34`), Cache `v0.8.0` (`~> 0.8`), Icons `v0.5.0` (`~> 0.5`), Logs `v0.9.0` (`~> 0.9`), Metrics `v0.10.0` (`~> 0.10`), Moveable `v6.1.0` (`~> 6.1`), and Trashable `v1.3.0` (`~> 1.3`). The dummy also pins Admin `v2.20.0` (`~> 2.20`) and Root Switchable `v0.17.0` (`~> 0.17`).
+- Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have not.
+- The dummy adds `config/recording_studio_api.yml` so Recording Studio API 1.21 can boot. Settings stay in the initializer.
+
+### Upgrade notes
+
+- Bump to `0.16.0`. No Downloadable migration. Gemspec runtime floors are unchanged.
+- Hosts MUST run the Recording Studio 7.4, 7.5 and 7.7 migrations if they have not.
+- flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller registration.
+
 ## [0.15.0] - 2026-11-15
 
 ### Changed
@@ -371,7 +385,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.13.2...v0.14.0
