@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.16.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.16.1", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -14,7 +14,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
   def test_gemspec_requires_recording_studio_7
     gemspec = File.read(File.expand_path("../recording_studio_downloadable.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 7.0", "< 8.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 7.9.1", "< 8.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_accessible", ">= 0.44.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_attachable", ">= 0.28.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_cache", ">= 0.5"'
@@ -54,14 +54,18 @@ class RecordingStudioDownloadableTest < Minitest::Test
 
     root_gemfile = File.read(File.expand_path("../Gemfile", __dir__))
     [
-      ["recording_studio", "~> 7.8", "RecordingStudio", "v7.8.0"],
+      ["recording_studio", "~> 7.9", "RecordingStudio", "v7.9.1"],
       ["recording_studio_accessible", "~> 0.58", "RecordingStudio_accessible", "v0.58.0"],
       ["recording_studio_attachable", "~> 0.34", "RecordingStudio_attachable", "v0.34.0"],
       ["recording_studio_cache", "~> 0.8", "RecordingStudio_cache", "v0.8.0"],
       ["recording_studio_logs", "~> 0.9", "RecordingStudio_logs", "v0.9.0"],
       ["recording_studio_metrics", "~> 0.10", "RecordingStudio_metrics", "v0.10.0"],
       ["recording_studio_trashable", "~> 1.3", "RecordingStudio_trashable", "v1.3.0", true],
-      ["recording_studio_api", "~> 1.21", "RecordingStudio_api", "v1.21.2", true],
+      ["recording_studio_api", "~> 1.21", "RecordingStudio_api", "v1.21.3", true],
+      ["recording_studio_mcp", ">= 0.45\", \"< 0.46", "RecordingStudio_MCP", "v0.45.2", true],
+      ["recording_studio_oauth", "~> 0.26", "RecordingStudio_Oauth", "v0.26.0", true],
+      ["recording_studio_site_settings", "~> 0.7", "RecordingStudio_site_settings", "v0.7.0", true],
+      ["recording_studio_admin", "~> 2.20", "RecordingStudio_admin", "v2.20.0", true],
       ["recording_studio_icons", "~> 0.5", "RecordingStudio_icons", "v0.5.0", true],
       ["recording_studio_moveable", "~> 6.1", "RecordingStudio_moveable", "v6.1.0", true],
       ["flat_pack", "~> 0.2", "flatpack", "v0.2.0"]
@@ -70,7 +74,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
                                       require_false: require_false)
     end
     [
-      ["recording_studio", "~> 7.8", "RecordingStudio", "v7.8.0"],
+      ["recording_studio", "~> 7.9", "RecordingStudio", "v7.9.1"],
       ["recording_studio_accessible", "~> 0.58", "RecordingStudio_accessible", "v0.58.0"],
       ["recording_studio_attachable", "~> 0.34", "RecordingStudio_attachable", "v0.34.0"],
       ["recording_studio_cache", "~> 0.8", "RecordingStudio_cache", "v0.8.0"],
@@ -78,7 +82,10 @@ class RecordingStudioDownloadableTest < Minitest::Test
       ["recording_studio_root_switchable", "~> 0.17", "RecordingStudio_root_switchable", "v0.17.0"],
       ["recording_studio_metrics", "~> 0.10", "RecordingStudio_metrics", "v0.10.0"],
       ["recording_studio_admin", "~> 2.20", "RecordingStudio_admin", "v2.20.0"],
-      ["recording_studio_api", "~> 1.21", "RecordingStudio_api", "v1.21.2"],
+      ["recording_studio_api", "~> 1.21", "RecordingStudio_api", "v1.21.3"],
+      ["recording_studio_mcp", ">= 0.45\", \"< 0.46", "RecordingStudio_MCP", "v0.45.2"],
+      ["recording_studio_oauth", "~> 0.26", "RecordingStudio_Oauth", "v0.26.0"],
+      ["recording_studio_site_settings", "~> 0.7", "RecordingStudio_site_settings", "v0.7.0"],
       ["recording_studio_moveable", "~> 6.1", "RecordingStudio_moveable", "v6.1.0"],
       ["recording_studio_icons", "~> 0.5", "RecordingStudio_icons", "v0.5.0"],
       ["recording_studio_trashable", "~> 1.3", "RecordingStudio_trashable", "v1.3.0", true],
@@ -367,7 +374,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v7.8.0`"
+    assert_includes readme, "dummy GitHub tag `v7.9.1`"
     assert_includes readme, 'RecordingStudio.register_gate("downloadable.stats"'
     assert_includes readme, "RecordingStudioStripe::Billing.for_recording(recording).unlocked?(:download_stats)"
     assert_includes readme, "dummy GitHub tag `v0.2.0`"
@@ -379,7 +386,10 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "dummy GitHub tag `v0.9.0`"
     assert_includes readme, "dummy GitHub tag `v0.10.0`"
     assert_includes readme, "Cache to `v0.8.0`"
-    assert_includes readme, "dummy GitHub tag `v1.21.2`"
+    assert_includes readme, "dummy GitHub tag `v1.21.3`"
+    assert_includes readme, "dummy GitHub tag `v0.45.2`"
+    assert_includes readme, "download_press_kit"
+    assert_includes readme, ">= 0.45"
     assert_includes readme, "Moveable `v6.1.0`"
     assert_includes readme, "Icons `v0.5.0`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"

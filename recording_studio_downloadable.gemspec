@@ -27,11 +27,13 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", "~> 8.1.0"
-  spec.add_dependency "recording_studio", ">= 7.0", "< 8.0"
+  spec.add_dependency "recording_studio", ">= 7.9.1", "< 8.0"
   spec.add_dependency "recording_studio_accessible", ">= 0.44.0"
   spec.add_dependency "recording_studio_attachable", ">= 0.28.0"
   spec.add_dependency "recording_studio_cache", ">= 0.5"
   spec.add_dependency "recording_studio_logs", ">= 0.8.0"
   spec.add_dependency "recording_studio_metrics", ">= 0.9.0"
   spec.add_dependency "rubyzip", ">= 2.3"
+  # recording_studio_mcp stays optional. Hosts that load it get the named tools
+  # from McpCopy. This gem does not depend on it.
 end

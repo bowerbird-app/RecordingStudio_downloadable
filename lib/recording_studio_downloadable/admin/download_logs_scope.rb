@@ -77,21 +77,13 @@ module RecordingStudioDownloadable
       end
 
       def recordable_declaration(type_name)
-        return unless RecordingStudio.respond_to?(:recordable_declaration_for)
-
         RecordingStudio.recordable_declaration_for(type_name)
       end
 
       def opted_in_types
         return [] unless defined?(RecordingStudio)
 
-        load_recordable_types!
         RecordingStudio.configuration.enabled_recordable_types_for(:downloadable)
-      end
-
-      def load_recordable_types!
-        declarations = RecordingStudio::RecordableDeclarations
-        declarations.ensure_loaded! if declarations.respond_to?(:ensure_loaded!)
       end
     end
   end

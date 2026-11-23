@@ -1,5 +1,16 @@
 # Upgrading Recording Studio Downloadable
 
+## 0.16.1
+
+`0.16.1` registers named MCP tools for the download actions. No Downloadable migration. Recording Studio MCP is not a gemspec dependency.
+
+1. Pin `recording_studio_downloadable` to `0.16.1` and `recording_studio` to `>= 7.9.1`, `< 8.0`. Development and the dummy pin tag `v7.9.1` (`~> 7.9`).
+2. Hosts that do not load Recording Studio MCP need no other change. Named MCP tools use `enabled_recordable_types_for`, which loads configured types.
+3. Hosts that mount MCP include one `download_<public name>` tool per recordable that opted into Downloadable, and `register_type` those recordables. The name is `RecordingStudioMcp.tool_name(type, :download)`. `download_press_kit` calls `:downloadable_download` for a Press kit. The tool returns package status (`state`, `ready`, `stale`, `failed`). Fetch the ZIP through the authorized package route. Do not register a Download type, a generic `download` tool, or `capability_action` for this action.
+4. OpenAPI descriptions for `:downloadable_download` and `:downloadable_package_status` describe the HTTP call, the JSON fields, and the not-found, download-gate, and rate-limit outcomes. MCP wording is separate.
+5. The development dummy pins MCP `v0.45.2` (`>= 0.45`, `< 0.46`), Oauth `v0.26.0` (`~> 0.26`), Site Settings `v0.7.0` (`~> 0.7`), and API `v1.21.3`. MCP `0.45` requires API `>= 1.21.3`. Hosts pin that floor. Downloadable registers the tools when MCP is loaded.
+6. Dummy pins Puma `8.1.2`, Brakeman `8.1.1`, net-ssh `~> 7.3.10`, and Ruby `3.3.14`. Development pins Puma `8.1.2` and Ruby `3.3.14`.
+
 ## 0.16.0
 
 `0.16.0` keeps the same gemspec runtime floors. No Downloadable migration.

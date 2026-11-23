@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.1] - 2026-11-23
+
+### Added
+
+- One named MCP tool per recordable that opted into Downloadable. The name comes from `RecordingStudioMcp.tool_name(type, :download)` (`download_press_kit` for a Press kit). The label comes from `RecordingStudio.recordable_type_label`. The tool requests or builds the ZIP in the background and returns package status (`state`, `ready`, `stale`, `failed`). It does not return ZIP bytes or a URL. The file is fetched through the authorized package route. Types that did not opt in get no tool. There is no generic `download` tool and no Download type. Recording Studio MCP stays optional. Tools register when MCP is loaded. The `>= 0.45`, `< 0.46` floor is the Gemfile pin.
+
+### Changed
+
+- OpenAPI copy for `:downloadable_download` (POST) and `:downloadable_package_status` (GET) is written for an API client. Each description names the HTTP method, the package status fields (`state`, `ready`, `stale`, `failed`, `failure_message`), and the not-found, download-gate, and rate-limit outcomes. MCP tool text stays in `McpCopy`.
+- Require `recording_studio` `>= 7.9.1`, `< 8.0`. Development and the dummy pin tag `v7.9.1` (`~> 7.9`). `enabled_recordable_types_for` loads configured recordable types, so named MCP tools and the admin download history scope no longer preload them.
+
+### Upgrade notes
+
+- Bump to `0.16.1`. No Downloadable migration. Hosts need Recording Studio `7.9.1` or newer, below `8.0`. Development and the dummy pin tag `v7.9.1` (`~> 7.9`).
+- Hosts that mount Recording Studio MCP include each `download_<public name>` tool on the server and `register_type` those recordables. The tool calls `:downloadable_download`. A separate package-status tool is not registered. The generic `capability_action` name is not how this action is registered.
+- Development dummy pins Recording Studio MCP `v0.45.2` (`>= 0.45`, `< 0.46`), Oauth `v0.26.0`, Site Settings `v0.7.0`, and API `v1.21.3`. That pin is the MCP floor. See [UPGRADING.md](UPGRADING.md).
+- Dummy pins Puma `8.1.2`, Brakeman `8.1.1`, net-ssh `~> 7.3.10`, and Ruby `3.3.14`. Development pins Puma `8.1.2` and Ruby `3.3.14`.
+
 ## [0.16.0] - 2026-11-19
 
 ### Changed
@@ -385,7 +403,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.16.1...HEAD
+[0.16.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.0...v0.14.1

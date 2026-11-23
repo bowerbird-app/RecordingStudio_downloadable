@@ -13,19 +13,21 @@ module RecordingStudioDownloadable
       downloadable_download: {
         http_verb: :post,
         handler: DownloadRecording,
-        summary: "Build or queue the authorized ZIP for this recording.",
-        description: "Authorizes with the global download role from Api.download_role " \
-                     "(config.auth_roles :download). Recording Studio API refuses a weaker " \
-                     "per-type auth role before the handler runs. Then builds or queues the " \
-                     "ZIP and returns status, not a URL."
+        summary: "POST builds or queues the ZIP and returns package status.",
+        description: "POST member action. Enqueues a ZIP build when the package is missing or stale, " \
+                     "then returns JSON. The body is state, ready, stale, failed, and failure_message. " \
+                     "It has no ZIP bytes and no URL. The archive is fetched on the package route once " \
+                     "ready is true. An empty file list is not found. A blocking download gate is forbidden. " \
+                     "Over the rate limit is refused."
       },
       downloadable_package_status: {
         http_verb: :get,
         handler: PackageStatus,
-        summary: "Read the current ZIP package for this recording.",
-        description: "Authorizes with the same global download role from Api.download_role. " \
-                     "Recording Studio API refuses a weaker per-type auth role before the " \
-                     "handler runs. Then returns package status, not a download URL."
+        summary: "GET returns the current ZIP package status.",
+        description: "GET member action. Reads the stored ZIP package and returns JSON. The body is " \
+                     "state, ready, stale, failed, and failure_message. This call does not enqueue a build. " \
+                     "It has no ZIP bytes and no URL. The archive is fetched on the package route once " \
+                     "ready is true. A recording outside this API scope is not found."
       }
     }.freeze
 
