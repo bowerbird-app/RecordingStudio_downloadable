@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - One named MCP tool per recordable that opted into Downloadable. The name is `download_` plus the type's public name, with no Ruby namespace (`download_press_kit` for a Press kit). The tool requests or builds the ZIP in the background and returns package status (`state`, `ready`, `stale`, `failed`). It does not return ZIP bytes or a URL. The file is fetched through the authorized package route. Types that did not opt in get no tool. There is no generic `download` tool and no Download type. Recording Studio MCP stays optional.
 
+### Changed
+
+- OpenAPI copy for `:downloadable_download` (POST) and `:downloadable_package_status` (GET) is written for an API client. Each description names the HTTP method, the package status fields (`state`, `ready`, `stale`, `failed`, `failure_message`), and the not-found, download-gate, and rate-limit outcomes. MCP tool text stays in `McpCopy`.
+
 ### Upgrade notes
 
 - Bump to `0.16.1`. No Downloadable migration. Gemspec runtime floors are unchanged.

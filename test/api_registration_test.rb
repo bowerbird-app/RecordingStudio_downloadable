@@ -22,10 +22,29 @@ class ApiRegistrationTest < Minitest::Test
                  RecordingStudioDownloadable::Api::ACTIONS.keys
   end
 
-  def test_openapi_descriptions_name_the_global_download_role
+  def test_openapi_descriptions_are_written_for_api_clients
+    download = RecordingStudioDownloadable::Api::ACTIONS.fetch(:downloadable_download)
+    status = RecordingStudioDownloadable::Api::ACTIONS.fetch(:downloadable_package_status)
+
+    assert_includes download.fetch(:summary), "POST"
+    assert_includes download.fetch(:description), "POST member action"
+    assert_includes download.fetch(:description), "state, ready, stale, failed, and failure_message"
+    assert_includes download.fetch(:description), "not found"
+    assert_includes download.fetch(:description), "download gate"
+    assert_includes download.fetch(:description), "rate limit"
+
+    assert_includes status.fetch(:summary), "GET"
+    assert_includes status.fetch(:description), "GET member action"
+    assert_includes status.fetch(:description), "does not enqueue a build"
+    assert_includes status.fetch(:description), "failure_message"
+    assert_includes status.fetch(:description), "not found"
+
     RecordingStudioDownloadable::Api::ACTIONS.each_value do |spec|
-      assert_includes spec.fetch(:description), "Api.download_role"
-      assert_includes spec.fetch(:description), "weaker per-type auth role"
+      text = "#{spec.fetch(:summary)} #{spec.fetch(:description)}"
+      refute_includes text, "download_role"
+      refute_includes text, "role"
+      refute_includes text, "Request or build"
+      refute_includes text, "authorized package route"
     end
   end
 
