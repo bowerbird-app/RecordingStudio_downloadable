@@ -48,6 +48,28 @@ class DownloadableNamedMcpToolsTest < ActionDispatch::IntegrationTest
     assert_includes download.fetch("description"), "state, ready, stale"
     refute_match(/\b(Access|role|View|Edit|Admin)\b/, download.fetch("description"))
 
+    registered = RecordingStudioMcp.configuration.tool("download_press_kit")
+    assert_equal RecordingStudioMcp.tool_name("PressKit", :download), registered.name
+    assert_equal "PressKit", registered.type
+    assert_equal :action, registered.target.kind
+    assert_equal :downloadable_download, registered.target.value
+    assert_equal({ "id" => { description: "Recording id." } }, registered.input)
+    assert_includes registered.output, "state, ready, stale, and failed"
+    assert_includes registered.title, "press kit"
+    refute_match(/\b(Access|role|View|Edit|Admin)\b/, registered.title)
+
+    opted_in = RecordingStudio.configuration.enabled_recordable_types_for(:downloadable)
+    assert_equal(
+      opted_in.map { |type_name| RecordingStudioMcp.tool_name(type_name, :download) }.sort,
+      RecordingStudioDownloadable::McpCopy.tool_names.sort
+    )
+    %w[download download_folder downloadable_download downloadable_package_status
+       download_recording read_package_status].each do |absent|
+      assert_nil RecordingStudioMcp.configuration.tool(absent)
+    end
+
+    RecordingStudioDownloadable::McpCopy.register!
+
     rejected = rpc(
       "tools/call",
       name: "capability_action",

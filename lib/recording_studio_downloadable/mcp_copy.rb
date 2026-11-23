@@ -19,18 +19,9 @@ module RecordingStudioDownloadable
     end
 
     def tool_names
-      downloadable_types.map { |type_name| tool_name_for(type_name) }
-    end
+      return [] unless mcp_available?
 
-    def tool_name_for(type_name)
-      "download_#{public_type_name(type_name).underscore}"
-    end
-
-    def public_type_name(type_name)
-      from_api = api_public_name(type_name)
-      return from_api if from_api.present?
-
-      type_name.to_s.demodulize
+      downloadable_types.map { |type_name| ::RecordingStudioMcp.tool_name(type_name, :download) }
     end
 
     def downloadable_types
@@ -41,25 +32,13 @@ module RecordingStudioDownloadable
     end
 
     def mcp_available?
-      return false unless defined?(::RecordingStudioMcp)
-      return false unless ::RecordingStudioMcp.respond_to?(:register_tool)
-      return false unless ::RecordingStudioMcp.const_defined?(:VERSION)
-
-      supported_mcp_version?(::RecordingStudioMcp::VERSION)
-    end
-
-    def supported_mcp_version?(version)
-      Gem::Version.new(version) >= Gem::Version.new("0.45")
-    end
-
-    def mcp
-      ::RecordingStudioMcp
+      defined?(::RecordingStudioMcp) && ::RecordingStudioMcp.respond_to?(:register_tool)
     end
 
     def register_download_tool(type_name)
       label = type_label(type_name)
-      mcp.register_tool(
-        name: tool_name_for(type_name),
+      ::RecordingStudioMcp.register_tool(
+        name: ::RecordingStudioMcp.tool_name(type_name, :download),
         type: type_name.to_s,
         action: ACTION,
         title: "Download #{label.downcase}",
@@ -81,30 +60,11 @@ module RecordingStudioDownloadable
     private_class_method :description_for
 
     def type_label(type_name)
-      declaration = recordable_declaration(type_name)
-      label = declaration.label if declaration.respond_to?(:label)
-      return label if label.present?
-
-      public_type_name(type_name).underscore.humanize
+      RecordingStudio.recordable_type_label(type_name)
     end
     private_class_method :type_label
 
-    def recordable_declaration(type_name)
-      return unless defined?(::RecordingStudio)
-      return unless ::RecordingStudio.respond_to?(:recordable_declaration_for)
-
-      ::RecordingStudio.recordable_declaration_for(type_name)
-    end
-    private_class_method :recordable_declaration
-
-    def api_public_name(type_name)
-      return unless defined?(::RecordingStudioApi)
-      return unless ::RecordingStudioApi.respond_to?(:recordable_registration_for)
-
-      ::RecordingStudioApi.recordable_registration_for(type_name)&.public_name
-    end
-    private_class_method :api_public_name
-
+    # Preload stays until enabled_recordable_types_for loads configured types.
     def load_recordable_types!
       declarations = RecordingStudio::RecordableDeclarations
       declarations.ensure_loaded! if declarations.respond_to?(:ensure_loaded!)
