@@ -18,8 +18,8 @@ gem "recording_studio_root_switchable", "~> 0.17", github: "bowerbird-app/Record
 gem "recording_studio_metrics", "~> 0.10", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.10.0"
 gem "recording_studio_admin", "~> 2.20", github: "bowerbird-app/RecordingStudio_admin", tag: "v2.20.0"
 gem "recording_studio_api", "~> 1.21", github: "bowerbird-app/RecordingStudio_api", tag: "v1.21.3"
-# Optional at runtime. MCP 0.45 needs API >= 1.21.3, Oauth, and Site Settings.
-gem "recording_studio_mcp", "~> 0.45", github: "bowerbird-app/RecordingStudio_MCP", tag: "v0.45.2"
+# Optional at runtime. Named tools need Recording Studio MCP >= 0.45, < 0.46.
+gem "recording_studio_mcp", ">= 0.45", "< 0.46", github: "bowerbird-app/RecordingStudio_MCP", tag: "v0.45.2"
 gem "recording_studio_oauth", "~> 0.26", github: "bowerbird-app/RecordingStudio_Oauth", tag: "v0.26.0"
 gem "recording_studio_site_settings", "~> 0.7", github: "bowerbird-app/RecordingStudio_site_settings", tag: "v0.7.0"
 # Required by recording_studio_api (not on RubyGems)
@@ -38,7 +38,9 @@ gem "propshaft"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
 # Use the Puma web server [https://github.com/puma/puma]
-gem "puma", "8.1.0"
+gem "puma", "8.1.2"
+# Kamal depends on net-ssh ~> 7.3. 7.3.8 accepts revoked host keys and skips TLS checks on the HTTPS proxy.
+gem "net-ssh", "~> 7.3.10"
 gem "msgpack", ">= 1.8.7"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
 gem "importmap-rails"
@@ -91,7 +93,7 @@ group :development, :test do
   gem "bundler-audit", require: false
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
-  gem "brakeman", require: false
+  gem "brakeman", "8.1.1", require: false
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false

@@ -42,7 +42,15 @@ module RecordingStudioDownloadable
     end
 
     def mcp_available?
-      defined?(::RecordingStudioMcp) && ::RecordingStudioMcp.respond_to?(:register_tool)
+      return false unless defined?(::RecordingStudioMcp)
+      return false unless ::RecordingStudioMcp.respond_to?(:register_tool)
+      return false unless ::RecordingStudioMcp.const_defined?(:VERSION)
+
+      supported_mcp_version?(::RecordingStudioMcp::VERSION)
+    end
+
+    def supported_mcp_version?(version)
+      Gem::Version.new(version) >= Gem::Version.new("0.45")
     end
 
     def mcp

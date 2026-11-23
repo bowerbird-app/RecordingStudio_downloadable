@@ -7,7 +7,8 @@
 1. Pin `recording_studio_downloadable` to `0.16.1`.
 2. Hosts that do not load Recording Studio MCP need no other change.
 3. Hosts that mount MCP include `download_recording` and `read_package_status` on the server. `download_recording` calls `:downloadable_download`. `read_package_status` calls `:downloadable_package_status`. Both return package status (`state`, `ready`, `stale`, `failed`). Fetch the ZIP through the authorized package route. Do not call the generic `capability_action` tool for these actions.
-4. The development dummy pins MCP `v0.45.2` (`~> 0.45`), Oauth `v0.26.0` (`~> 0.26`), Site Settings `v0.7.0` (`~> 0.7`), and API `v1.21.3`. MCP `0.45` requires API `>= 1.21.3`.
+4. The development dummy pins MCP `v0.45.2` (`>= 0.45`, `< 0.46`), Oauth `v0.26.0` (`~> 0.26`), Site Settings `v0.7.0` (`~> 0.7`), and API `v1.21.3`. MCP `0.45` requires API `>= 1.21.3`. A loaded MCP older than `0.45` does not register these tools.
+5. Dummy pins Puma `8.1.2`, Brakeman `8.1.1`, net-ssh `~> 7.3.10`, and Ruby `3.3.14`. Development pins Puma `8.1.2` and Ruby `3.3.14`.
 
 ## 0.16.0
 

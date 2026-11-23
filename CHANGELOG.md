@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump to `0.16.1`. No Downloadable migration. Gemspec runtime floors are unchanged.
 - Hosts that mount Recording Studio MCP include `download_recording` and `read_package_status` on the server. The old generic `capability_action` name is not how these actions are registered.
-- Development dummy pins Recording Studio MCP `v0.45.2` (`~> 0.45`), Oauth `v0.26.0`, Site Settings `v0.7.0`, and API `v1.21.3`. See [UPGRADING.md](UPGRADING.md).
+- Development dummy pins Recording Studio MCP `v0.45.2` (`>= 0.45`, `< 0.46`), Oauth `v0.26.0`, Site Settings `v0.7.0`, and API `v1.21.3`. Named tools register only when MCP is `0.45` or newer. See [UPGRADING.md](UPGRADING.md).
+- Dummy pins Puma `8.1.2`, Brakeman `8.1.1`, net-ssh `~> 7.3.10`, and Ruby `3.3.14`. Development pins Puma `8.1.2` and Ruby `3.3.14`.
 
 ## [0.16.0] - 2026-11-19
 

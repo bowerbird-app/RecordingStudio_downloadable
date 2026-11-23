@@ -16,6 +16,12 @@ class McpCopyTest < Minitest::Test
     end
   end
 
+  def test_mcp_version_floor_is_0_45
+    assert RecordingStudioDownloadable::McpCopy.supported_mcp_version?("0.45")
+    assert RecordingStudioDownloadable::McpCopy.supported_mcp_version?("0.45.2")
+    refute RecordingStudioDownloadable::McpCopy.supported_mcp_version?("0.44.9")
+  end
+
   def test_register_is_a_no_op_when_mcp_is_not_loaded
     refute defined?(::RecordingStudioMcp)
     assert_nil RecordingStudioDownloadable::McpCopy.register!
