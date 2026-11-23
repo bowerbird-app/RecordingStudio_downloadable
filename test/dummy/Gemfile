@@ -17,7 +17,11 @@ gem "recording_studio_root_switchable", "~> 0.17", github: "bowerbird-app/Record
 # Required by root_switchable >= 0.7 (not on RubyGems)
 gem "recording_studio_metrics", "~> 0.10", github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.10.0"
 gem "recording_studio_admin", "~> 2.20", github: "bowerbird-app/RecordingStudio_admin", tag: "v2.20.0"
-gem "recording_studio_api", "~> 1.21", github: "bowerbird-app/RecordingStudio_api", tag: "v1.21.2"
+gem "recording_studio_api", "~> 1.21", github: "bowerbird-app/RecordingStudio_api", tag: "v1.21.3"
+# Optional at runtime. MCP 0.45 needs API >= 1.21.3, Oauth, and Site Settings.
+gem "recording_studio_mcp", "~> 0.45", github: "bowerbird-app/RecordingStudio_MCP", tag: "v0.45.2"
+gem "recording_studio_oauth", "~> 0.26", github: "bowerbird-app/RecordingStudio_Oauth", tag: "v0.26.0"
+gem "recording_studio_site_settings", "~> 0.7", github: "bowerbird-app/RecordingStudio_site_settings", tag: "v0.7.0"
 # Required by recording_studio_api (not on RubyGems)
 gem "recording_studio_moveable", "~> 6.1", github: "bowerbird-app/RecordingStudio_moveable", tag: "v6.1.0"
 # Required by recording_studio_moveable (not on RubyGems)

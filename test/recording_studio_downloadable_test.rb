@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioDownloadableTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.16.0", ::RecordingStudioDownloadable::VERSION
+    assert_equal "0.16.1", ::RecordingStudioDownloadable::VERSION
   end
 
   def test_engine_exists
@@ -78,7 +78,10 @@ class RecordingStudioDownloadableTest < Minitest::Test
       ["recording_studio_root_switchable", "~> 0.17", "RecordingStudio_root_switchable", "v0.17.0"],
       ["recording_studio_metrics", "~> 0.10", "RecordingStudio_metrics", "v0.10.0"],
       ["recording_studio_admin", "~> 2.20", "RecordingStudio_admin", "v2.20.0"],
-      ["recording_studio_api", "~> 1.21", "RecordingStudio_api", "v1.21.2"],
+      ["recording_studio_api", "~> 1.21", "RecordingStudio_api", "v1.21.3"],
+      ["recording_studio_mcp", "~> 0.45", "RecordingStudio_MCP", "v0.45.2"],
+      ["recording_studio_oauth", "~> 0.26", "RecordingStudio_Oauth", "v0.26.0"],
+      ["recording_studio_site_settings", "~> 0.7", "RecordingStudio_site_settings", "v0.7.0"],
       ["recording_studio_moveable", "~> 6.1", "RecordingStudio_moveable", "v6.1.0"],
       ["recording_studio_icons", "~> 0.5", "RecordingStudio_icons", "v0.5.0"],
       ["recording_studio_trashable", "~> 1.3", "RecordingStudio_trashable", "v1.3.0", true],
@@ -379,7 +382,10 @@ class RecordingStudioDownloadableTest < Minitest::Test
     assert_includes readme, "dummy GitHub tag `v0.9.0`"
     assert_includes readme, "dummy GitHub tag `v0.10.0`"
     assert_includes readme, "Cache to `v0.8.0`"
-    assert_includes readme, "dummy GitHub tag `v1.21.2`"
+    assert_includes readme, "dummy GitHub tag `v1.21.3`"
+    assert_includes readme, "dummy GitHub tag `v0.45.2`"
+    assert_includes readme, "download_recording"
+    assert_includes readme, "read_package_status"
     assert_includes readme, "Moveable `v6.1.0`"
     assert_includes readme, "Icons `v0.5.0`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"

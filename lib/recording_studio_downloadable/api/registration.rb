@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "../mcp_copy"
+
 module RecordingStudioDownloadable
   module Api
     module Registration
@@ -10,6 +12,7 @@ module RecordingStudioDownloadable
           RecordingStudioApi.configuration.each_api do |api_definition|
             ACTIONS.each_key { |name| register_action(name, api_definition.name) }
           end
+          McpCopy.register!
         end
 
         private

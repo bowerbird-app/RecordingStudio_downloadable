@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.1] - 2026-11-23
+
+### Added
+
+- Named MCP tools `download_recording` and `read_package_status` for the existing capability actions. `download_recording` requests or builds the ZIP in the background and returns package status (`state`, `ready`, `stale`, `failed`). `read_package_status` reads that same status and does not start a build. Neither tool returns ZIP bytes or a URL. The file is fetched through the authorized package route. Recording Studio MCP stays optional.
+
+### Upgrade notes
+
+- Bump to `0.16.1`. No Downloadable migration. Gemspec runtime floors are unchanged.
+- Hosts that mount Recording Studio MCP include `download_recording` and `read_package_status` on the server. The old generic `capability_action` name is not how these actions are registered.
+- Development dummy pins Recording Studio MCP `v0.45.2` (`~> 0.45`), Oauth `v0.26.0`, Site Settings `v0.7.0`, and API `v1.21.3`. See [UPGRADING.md](UPGRADING.md).
+
 ## [0.16.0] - 2026-11-19
 
 ### Changed
@@ -385,7 +397,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct Attachable file discovery, ZIP generation via Active Job, package persistence, and an authorized download route.
 - Authorization maps action `:download` to an Accessible role (default `:view`) the same way Attachable does.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.16.1...HEAD
+[0.16.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/bowerbird-app/RecordingStudio_downloadable/compare/v0.14.0...v0.14.1
