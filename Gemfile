@@ -22,17 +22,18 @@ gem "recording_studio_trashable", "~> 1.3",
 gem "recording_studio_api", "~> 1.21",
     github: "bowerbird-app/RecordingStudio_api", tag: "v1.21.3", require: false
 # Optional at runtime. Named tools need Recording Studio MCP >= 0.45, < 0.46.
+# MCP needs Admin, Oauth, and Site Settings. None of these are required to boot the gem.
+gem "recording_studio_admin", "~> 2.20",
+    github: "bowerbird-app/RecordingStudio_admin", tag: "v2.20.0", require: false
+gem "recording_studio_icons", "~> 0.5", github: "bowerbird-app/RecordingStudio_icons", tag: "v0.5.0", require: false
 gem "recording_studio_mcp", ">= 0.45", "< 0.46",
     github: "bowerbird-app/RecordingStudio_MCP", tag: "v0.45.2", require: false
+gem "recording_studio_moveable", "~> 6.1",
+    github: "bowerbird-app/RecordingStudio_moveable", tag: "v6.1.0", require: false
 gem "recording_studio_oauth", "~> 0.26",
     github: "bowerbird-app/RecordingStudio_Oauth", tag: "v0.26.0", require: false
 gem "recording_studio_site_settings", "~> 0.7",
     github: "bowerbird-app/RecordingStudio_site_settings", tag: "v0.7.0", require: false
-gem "recording_studio_admin", "~> 2.20",
-    github: "bowerbird-app/RecordingStudio_admin", tag: "v2.20.0", require: false
-gem "recording_studio_icons", "~> 0.5", github: "bowerbird-app/RecordingStudio_icons", tag: "v0.5.0", require: false
-gem "recording_studio_moveable", "~> 6.1",
-    github: "bowerbird-app/RecordingStudio_moveable", tag: "v6.1.0", require: false
 gem "redis", "~> 5.3", require: false
 
 gem "devise"
