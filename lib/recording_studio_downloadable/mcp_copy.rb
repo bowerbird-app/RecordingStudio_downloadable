@@ -27,7 +27,6 @@ module RecordingStudioDownloadable
     def downloadable_types
       return [] unless defined?(::RecordingStudio)
 
-      load_recordable_types!
       RecordingStudio.configuration.enabled_recordable_types_for(:downloadable)
     end
 
@@ -63,12 +62,5 @@ module RecordingStudioDownloadable
       RecordingStudio.recordable_type_label(type_name)
     end
     private_class_method :type_label
-
-    # Preload stays until enabled_recordable_types_for loads configured types.
-    def load_recordable_types!
-      declarations = RecordingStudio::RecordableDeclarations
-      declarations.ensure_loaded! if declarations.respond_to?(:ensure_loaded!)
-    end
-    private_class_method :load_recordable_types!
   end
 end

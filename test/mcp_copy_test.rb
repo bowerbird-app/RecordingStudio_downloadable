@@ -27,5 +27,7 @@ class McpCopyTest < Minitest::Test
     refute_match(/add_dependency\s+"recording_studio_mcp"/, gemspec)
     refute_includes entry, 'require "recording_studio_mcp"'
     refute_includes copy, "Gem::Version"
+    refute_includes copy, "load_recordable_types!"
+    refute_includes copy, "ensure_loaded!"
   end
 end

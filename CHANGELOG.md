@@ -16,10 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - OpenAPI copy for `:downloadable_download` (POST) and `:downloadable_package_status` (GET) is written for an API client. Each description names the HTTP method, the package status fields (`state`, `ready`, `stale`, `failed`, `failure_message`), and the not-found, download-gate, and rate-limit outcomes. MCP tool text stays in `McpCopy`.
+- Require `recording_studio` `>= 7.9.1`, `< 8.0`. Development and the dummy pin tag `v7.9.1` (`~> 7.9`). `enabled_recordable_types_for` loads configured recordable types, so named MCP tools no longer preload them.
 
 ### Upgrade notes
 
-- Bump to `0.16.1`. No Downloadable migration. Gemspec runtime floors are unchanged.
+- Bump to `0.16.1`. No Downloadable migration. Hosts need Recording Studio `7.9.1` or newer, below `8.0`. Development and the dummy pin tag `v7.9.1` (`~> 7.9`).
 - Hosts that mount Recording Studio MCP include each `download_<public name>` tool on the server and `register_type` those recordables. The tool calls `:downloadable_download`. A separate package-status tool is not registered. The generic `capability_action` name is not how this action is registered.
 - Development dummy pins Recording Studio MCP `v0.45.2` (`>= 0.45`, `< 0.46`), Oauth `v0.26.0`, Site Settings `v0.7.0`, and API `v1.21.3`. That pin is the MCP floor. See [UPGRADING.md](UPGRADING.md).
 - Dummy pins Puma `8.1.2`, Brakeman `8.1.1`, net-ssh `~> 7.3.10`, and Ruby `3.3.14`. Development pins Puma `8.1.2` and Ruby `3.3.14`.

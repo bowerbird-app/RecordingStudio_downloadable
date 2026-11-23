@@ -49,6 +49,7 @@ class DownloadableNamedMcpToolsTest < ActionDispatch::IntegrationTest
     refute_match(/\b(Access|role|View|Edit|Admin)\b/, download.fetch("description"))
 
     registered = RecordingStudioMcp.configuration.tool("download_press_kit")
+    assert registered, "download_press_kit is registered when the dummy boots"
     assert_equal RecordingStudioMcp.tool_name("PressKit", :download), registered.name
     assert_equal "PressKit", registered.type
     assert_equal :action, registered.target.kind

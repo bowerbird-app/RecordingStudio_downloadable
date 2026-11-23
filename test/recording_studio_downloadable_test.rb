@@ -14,7 +14,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
   def test_gemspec_requires_recording_studio_7
     gemspec = File.read(File.expand_path("../recording_studio_downloadable.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 7.0", "< 8.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 7.9.1", "< 8.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_accessible", ">= 0.44.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_attachable", ">= 0.28.0"'
     assert_includes gemspec, 'spec.add_dependency "recording_studio_cache", ">= 0.5"'
@@ -54,7 +54,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
 
     root_gemfile = File.read(File.expand_path("../Gemfile", __dir__))
     [
-      ["recording_studio", "~> 7.8", "RecordingStudio", "v7.8.0"],
+      ["recording_studio", "~> 7.9", "RecordingStudio", "v7.9.1"],
       ["recording_studio_accessible", "~> 0.58", "RecordingStudio_accessible", "v0.58.0"],
       ["recording_studio_attachable", "~> 0.34", "RecordingStudio_attachable", "v0.34.0"],
       ["recording_studio_cache", "~> 0.8", "RecordingStudio_cache", "v0.8.0"],
@@ -74,7 +74,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
                                       require_false: require_false)
     end
     [
-      ["recording_studio", "~> 7.8", "RecordingStudio", "v7.8.0"],
+      ["recording_studio", "~> 7.9", "RecordingStudio", "v7.9.1"],
       ["recording_studio_accessible", "~> 0.58", "RecordingStudio_accessible", "v0.58.0"],
       ["recording_studio_attachable", "~> 0.34", "RecordingStudio_attachable", "v0.34.0"],
       ["recording_studio_cache", "~> 0.8", "RecordingStudio_cache", "v0.8.0"],
@@ -374,7 +374,7 @@ class RecordingStudioDownloadableTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v7.8.0`"
+    assert_includes readme, "dummy GitHub tag `v7.9.1`"
     assert_includes readme, 'RecordingStudio.register_gate("downloadable.stats"'
     assert_includes readme, "RecordingStudioStripe::Billing.for_recording(recording).unlocked?(:download_stats)"
     assert_includes readme, "dummy GitHub tag `v0.2.0`"

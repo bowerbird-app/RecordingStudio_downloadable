@@ -417,7 +417,7 @@ Example only — RecordingStudio_publishable v0.7.0 emits `published.recording_s
 6. List each download action in Accessible `config.action_audiences`.
 7. Opt each recordable in with `.to`.
 
-This dummy pins Recording Studio dummy GitHub tag `v7.8.0`, Accessible dummy GitHub tag `v0.58.0`, Trashable dummy GitHub tag `v1.3.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.8.0`, Logs dummy GitHub tag `v0.9.0`, Root Switchable dummy GitHub tag `v0.17.0`, Metrics dummy GitHub tag `v0.10.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.20.0` (download history screen), Recording Studio API dummy GitHub tag `v1.21.3` (Moveable `v6.1.0`, Icons `v0.5.0`), Recording Studio MCP dummy GitHub tag `v0.45.2` (`>= 0.45`, `< 0.46`, optional at runtime), Oauth dummy GitHub tag `v0.26.0`, Site Settings dummy GitHub tag `v0.7.0`, FlatPack dummy GitHub tag `v0.2.0`, and Attachable `v0.34.0`.
+This dummy pins Recording Studio dummy GitHub tag `v7.9.1`, Accessible dummy GitHub tag `v0.58.0`, Trashable dummy GitHub tag `v1.3.0` (query-only; required by Accessible `>= 0.17`), Cache dummy GitHub tag `v0.8.0`, Logs dummy GitHub tag `v0.9.0`, Root Switchable dummy GitHub tag `v0.17.0`, Metrics dummy GitHub tag `v0.10.0` (required by Root Switchable `>= 0.7` and Attachable `>= 0.14`), Admin dummy GitHub tag `v2.20.0` (download history screen), Recording Studio API dummy GitHub tag `v1.21.3` (Moveable `v6.1.0`, Icons `v0.5.0`), Recording Studio MCP dummy GitHub tag `v0.45.2` (`>= 0.45`, `< 0.46`, optional at runtime), Oauth dummy GitHub tag `v0.26.0`, Site Settings dummy GitHub tag `v0.7.0`, FlatPack dummy GitHub tag `v0.2.0`, and Attachable `v0.34.0`.
 
 ## Dummy app
 

@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/bowerbird-app/RecordingStudio.git
-  revision: 65ce2d0198b37d14429d4189772d29a9ab0b39cf
-  tag: v7.8.0
+  revision: 089de87c6790b9f40db1011a9f43f393017af9c4
+  tag: v7.9.1
   specs:
-    recording_studio (7.8.0)
+    recording_studio (7.9.1)
       flat_pack (>= 0.1.315)
       rails (>= 8.1.4.1)
 
@@ -181,7 +181,7 @@ PATH
   specs:
     recording_studio_downloadable (0.16.1)
       rails (~> 8.1.0)
-      recording_studio (>= 7.0, < 8.0)
+      recording_studio (>= 7.9.1, < 8.0)
       recording_studio_accessible (>= 0.44.0)
       recording_studio_attachable (>= 0.28.0)
       recording_studio_cache (>= 0.5)
@@ -487,7 +487,7 @@ DEPENDENCIES
   flat_pack (~> 0.2)!
   minitest-mock
   puma (= 8.1.2)
-  recording_studio (~> 7.8)!
+  recording_studio (~> 7.9)!
   recording_studio_accessible (~> 0.58)!
   recording_studio_admin (~> 2.20)!
   recording_studio_api (~> 1.21)!
@@ -584,7 +584,7 @@ CHECKSUMS
   rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
   rbs (4.2.0) sha256=51f7b886dcc05bc09e10b901daa6a81829f6adc03101d6ca9ea4aac6103e0674
   rdoc (8.1.0) sha256=befc37880a5cfd36dcb176c748b5fd5ee39dd3536a75e81824e4972ce230f60a
-  recording_studio (7.8.0)
+  recording_studio (7.9.1)
   recording_studio_accessible (0.58.0)
   recording_studio_admin (2.20.0)
   recording_studio_api (1.21.3)
