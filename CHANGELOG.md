@@ -11,12 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Named MCP tools `download_recording` and `read_package_status` for the existing capability actions. `download_recording` requests or builds the ZIP in the background and returns package status (`state`, `ready`, `stale`, `failed`). `read_package_status` reads that same status and does not start a build. Neither tool returns ZIP bytes or a URL. The file is fetched through the authorized package route. Recording Studio MCP stays optional.
+- One named MCP tool per recordable that opted into Downloadable. The name is `download_` plus the type's public name, with no Ruby namespace (`download_press_kit` for a Press kit). The tool requests or builds the ZIP in the background and returns package status (`state`, `ready`, `stale`, `failed`). It does not return ZIP bytes or a URL. The file is fetched through the authorized package route. Types that did not opt in get no tool. There is no generic `download` tool and no Download type. Recording Studio MCP stays optional.
 
 ### Upgrade notes
 
 - Bump to `0.16.1`. No Downloadable migration. Gemspec runtime floors are unchanged.
-- Hosts that mount Recording Studio MCP include `download_recording` and `read_package_status` on the server. The old generic `capability_action` name is not how these actions are registered.
+- Hosts that mount Recording Studio MCP include each `download_<public name>` tool on the server and `register_type` those recordables. The tool calls `:downloadable_download`. A separate package-status tool is not registered. The generic `capability_action` name is not how this action is registered.
 - Development dummy pins Recording Studio MCP `v0.45.2` (`>= 0.45`, `< 0.46`), Oauth `v0.26.0`, Site Settings `v0.7.0`, and API `v1.21.3`. Named tools register only when MCP is `0.45` or newer. See [UPGRADING.md](UPGRADING.md).
 - Dummy pins Puma `8.1.2`, Brakeman `8.1.1`, net-ssh `~> 7.3.10`, and Ruby `3.3.14`. Development pins Puma `8.1.2` and Ruby `3.3.14`.
 

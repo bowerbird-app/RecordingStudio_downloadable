@@ -1,31 +1,12 @@
 # frozen_string_literal: true
 
 module RecordingStudioDownloadable
-  # Named MCP tools for the download capability actions.
+  # One named MCP tool per recordable that opted into Downloadable.
   # Hosts that do not load Recording Studio MCP keep the API and the package route.
   module McpCopy
-    TOOLS = {
-      "download_recording" => {
-        action: :downloadable_download,
-        title: "Download recording",
-        description: "Request or build a ZIP of this recording's files. The ZIP is built in the " \
-                     "background when it is not ready. Returns state, ready, stale, and failed. " \
-                     "Does not return ZIP bytes or a URL. Fetch the file through the authorized " \
-                     "package route when it is ready. The recording needs files. An empty source " \
-                     "is not found. A download gate or a rate limit can refuse the request.",
-        output: "Package status with state, ready, stale, and failed."
-      },
-      "read_package_status" => {
-        action: :downloadable_package_status,
-        title: "Read package status",
-        description: "Read whether this recording's ZIP is ready. Returns state, ready, stale, " \
-                     "and failed. Does not start a build. Does not return ZIP bytes or a URL. " \
-                     "Fetch the file through the authorized package route when it is ready.",
-        output: "Package status with state, ready, stale, and failed."
-      }
-    }.freeze
+    ACTION = :downloadable_download
+    OUTPUT = "Package status with state, ready, stale, and failed."
     INPUT = {
-      "type" => { description: "Public name of the recordable type for this recording." },
       "id" => { description: "Recording id." }
     }.freeze
 
@@ -34,11 +15,29 @@ module RecordingStudioDownloadable
     def register!
       return unless mcp_available?
 
-      TOOLS.each_key { |name| register_tool(name) }
+      downloadable_types.each { |type_name| register_download_tool(type_name) }
     end
 
     def tool_names
-      TOOLS.keys
+      downloadable_types.map { |type_name| tool_name_for(type_name) }
+    end
+
+    def tool_name_for(type_name)
+      "download_#{public_type_name(type_name).underscore}"
+    end
+
+    def public_type_name(type_name)
+      from_api = api_public_name(type_name)
+      return from_api if from_api.present?
+
+      type_name.to_s.demodulize
+    end
+
+    def downloadable_types
+      return [] unless defined?(::RecordingStudio)
+
+      load_recordable_types!
+      RecordingStudio.configuration.enabled_recordable_types_for(:downloadable)
     end
 
     def mcp_available?
@@ -57,17 +56,59 @@ module RecordingStudioDownloadable
       ::RecordingStudioMcp
     end
 
-    def register_tool(name)
-      spec = TOOLS.fetch(name)
+    def register_download_tool(type_name)
+      label = type_label(type_name)
       mcp.register_tool(
-        name: name,
-        action: spec.fetch(:action),
-        title: spec.fetch(:title),
-        description: spec.fetch(:description),
+        name: tool_name_for(type_name),
+        type: type_name.to_s,
+        action: ACTION,
+        title: "Download #{label.downcase}",
+        description: description_for(label),
         input: INPUT,
-        output: spec.fetch(:output)
+        output: OUTPUT
       )
     end
-    private_class_method :register_tool
+    private_class_method :register_download_tool
+
+    def description_for(label)
+      name = label.downcase
+      "Request or build a ZIP of this #{name}. The ZIP is built in the background when it is not ready. " \
+        "Returns state, ready, stale, and failed. Does not return ZIP bytes or a URL. " \
+        "Fetch the file through the authorized package route when it is ready. " \
+        "This #{name} needs files. An empty source is not found. " \
+        "A download gate or a rate limit can refuse the request."
+    end
+    private_class_method :description_for
+
+    def type_label(type_name)
+      declaration = recordable_declaration(type_name)
+      label = declaration.label if declaration.respond_to?(:label)
+      return label if label.present?
+
+      public_type_name(type_name).underscore.humanize
+    end
+    private_class_method :type_label
+
+    def recordable_declaration(type_name)
+      return unless defined?(::RecordingStudio)
+      return unless ::RecordingStudio.respond_to?(:recordable_declaration_for)
+
+      ::RecordingStudio.recordable_declaration_for(type_name)
+    end
+    private_class_method :recordable_declaration
+
+    def api_public_name(type_name)
+      return unless defined?(::RecordingStudioApi)
+      return unless ::RecordingStudioApi.respond_to?(:recordable_registration_for)
+
+      ::RecordingStudioApi.recordable_registration_for(type_name)&.public_name
+    end
+    private_class_method :api_public_name
+
+    def load_recordable_types!
+      declarations = RecordingStudio::RecordableDeclarations
+      declarations.ensure_loaded! if declarations.respond_to?(:ensure_loaded!)
+    end
+    private_class_method :load_recordable_types!
   end
 end

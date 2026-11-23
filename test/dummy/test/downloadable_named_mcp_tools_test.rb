@@ -31,21 +31,22 @@ class DownloadableNamedMcpToolsTest < ActionDispatch::IntegrationTest
     flunk listed.to_json if tools.nil?
 
     names = tools.map { |tool| tool.fetch("name") }
-    RecordingStudioDownloadable::McpCopy.tool_names.each do |name|
-      assert_includes names, name
-    end
+    assert_includes names, "download_workspace"
+    assert_includes names, "download_page"
+    assert_includes names, "download_press_kit"
+    refute_includes names, "download_folder"
+    refute_includes names, "download"
     refute_includes names, "capability_action"
     refute_includes names, "downloadable_download"
     refute_includes names, "downloadable_package_status"
+    refute_includes names, "download_recording"
+    refute_includes names, "read_package_status"
 
-    download = tools.find { |tool| tool.fetch("name") == "download_recording" }
-    status = tools.find { |tool| tool.fetch("name") == "read_package_status" }
+    download = tools.find { |tool| tool.fetch("name") == "download_press_kit" }
+    assert_includes download.fetch("description"), "press kit"
     assert_includes download.fetch("description"), "background"
     assert_includes download.fetch("description"), "state, ready, stale"
-    assert_includes status.fetch("description"), "Does not start a build"
-    [download, status].each do |tool|
-      refute_match(/\b(Access|role|View|Edit|Admin)\b/, tool.fetch("description"))
-    end
+    refute_match(/\b(Access|role|View|Edit|Admin)\b/, download.fetch("description"))
 
     rejected = rpc(
       "tools/call",
@@ -55,11 +56,11 @@ class DownloadableNamedMcpToolsTest < ActionDispatch::IntegrationTest
     assert rejected.dig("result", "isError") || rejected["error"], rejected.to_json
   end
 
-  test "download_recording returns package status and not a url" do
+  test "download_workspace returns package status and not a url" do
     called = rpc(
       "tools/call",
-      name: "download_recording",
-      arguments: { type: "Workspace", id: @recording.id.to_s }
+      name: "download_workspace",
+      arguments: { id: @recording.id.to_s }
     )
     refute called.dig("result", "isError"), called.to_json
     payload = tool_payload(called)

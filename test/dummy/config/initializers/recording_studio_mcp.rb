@@ -12,6 +12,14 @@ RecordingStudioMcp.register_type(
   type: "Workspace",
   description: "A workspace whose files can be packaged into a ZIP."
 )
+RecordingStudioMcp.register_type(
+  type: "Page",
+  description: "A page in a workspace."
+)
+RecordingStudioMcp.register_type(
+  type: "PressKit",
+  description: "A press kit."
+)
 
 Rails.application.config.to_prepare do
   RecordingStudioMcp.register_server(:public, api: :public) do

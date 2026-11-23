@@ -6,13 +6,27 @@ class McpCopyTest < Minitest::Test
   FORBIDDEN = [
     "RecordingStudio", "Access", "Accessible", ":edit", ":view", "permission", "role", "Admin"
   ].freeze
+  ENABLED = %w[PressKit Workspace].freeze
 
-  def test_tool_names_are_verb_type_public_names
-    assert_equal %w[download_recording read_package_status], RecordingStudioDownloadable::McpCopy.tool_names
-    RecordingStudioDownloadable::McpCopy.tool_names.each do |name|
-      assert_match(/\A[a-z][a-z0-9_]*\z/, name)
-      refute_includes name, "RecordingStudio"
-      refute_includes name, "downloadable_"
+  def test_tool_names_use_the_public_name
+    assert_equal "download_press_kit", RecordingStudioDownloadable::McpCopy.tool_name_for("PressKit")
+    assert_equal "download_press_kit", RecordingStudioDownloadable::McpCopy.tool_name_for("FeaturedIn::PressKit")
+    assert_equal "PressKit", RecordingStudioDownloadable::McpCopy.public_type_name("FeaturedIn::PressKit")
+    assert_equal "download_workspace", RecordingStudioDownloadable::McpCopy.tool_name_for("Workspace")
+
+    with_enabled_types(ENABLED) do
+      names = RecordingStudioDownloadable::McpCopy.tool_names
+      assert_includes names, "download_press_kit"
+      assert_includes names, "download_workspace"
+      refute_includes names, "download"
+      refute_includes names, "download_folder"
+      refute_includes names, "download_recording"
+      refute_includes names, "read_package_status"
+      names.each do |name|
+        assert_match(/\A[a-z][a-z0-9_]*\z/, name)
+        refute_includes name, "RecordingStudio"
+        refute_includes name, "FeaturedIn"
+      end
     end
   end
 
@@ -44,42 +58,49 @@ class McpCopyTest < Minitest::Test
     refute_includes entry, 'require "recording_studio_mcp"'
   end
 
-  def test_register_lists_named_tools_and_rejects_generic_names
+  def test_register_lists_one_download_tool_per_opted_in_type
     fake = RecordingMcp.new
 
-    RecordingStudioDownloadable::McpCopy.stub(:mcp_available?, true) do
-      RecordingStudioDownloadable::McpCopy.stub(:mcp, fake) do
-        RecordingStudioDownloadable::McpCopy.register!
-        RecordingStudioDownloadable::McpCopy.register!
+    with_enabled_types(%w[PressKit Workspace]) do
+      RecordingStudioDownloadable::McpCopy.stub(:mcp_available?, true) do
+        RecordingStudioDownloadable::McpCopy.stub(:mcp, fake) do
+          RecordingStudioDownloadable::McpCopy.register!
+          RecordingStudioDownloadable::McpCopy.register!
+        end
       end
     end
 
-    assert_equal %w[download_recording read_package_status], fake.tools.keys
+    assert_equal %w[download_press_kit download_workspace], fake.tools.keys.sort
+    refute fake.tools.key?("download")
+    refute fake.tools.key?("download_folder")
     refute fake.tools.key?("capability_action")
     refute fake.tools.key?("downloadable_download")
     refute fake.tools.key?("downloadable_package_status")
+    refute fake.tools.key?("download_recording")
+    refute fake.tools.key?("read_package_status")
 
-    download = fake.tools.fetch("download_recording")
-    status = fake.tools.fetch("read_package_status")
-    assert_equal :downloadable_download, download[:action]
-    assert_equal :downloadable_package_status, status[:action]
-    refute download.key?(:type)
-    refute status.key?(:type)
-    refute download.key?(:operation)
-    assert_equal RecordingStudioDownloadable::McpCopy::INPUT, download[:input]
-
-    [download, status].each do |tool|
-      assert_includes tool[:description], "state, ready, stale"
-      assert_includes tool[:description], "authorized package route"
-      assert_includes tool[:output], "state, ready, stale, and failed"
-      FORBIDDEN.each do |phrase|
-        refute_includes tool[:description], phrase
-        refute_includes tool[:title], phrase
-      end
+    press_kit = fake.tools.fetch("download_press_kit")
+    assert_equal :downloadable_download, press_kit[:action]
+    assert_equal "PressKit", press_kit[:type]
+    refute_equal "Download", press_kit[:type]
+    refute press_kit.key?(:operation)
+    assert_equal({ "id" => { description: "Recording id." } }, press_kit[:input])
+    assert_includes press_kit[:description], "press kit"
+    assert_includes press_kit[:description], "state, ready, stale"
+    assert_includes press_kit[:description], "authorized package route"
+    assert_includes press_kit[:description], "background"
+    assert_includes press_kit[:description], "needs files"
+    assert_includes press_kit[:output], "state, ready, stale, and failed"
+    FORBIDDEN.each do |phrase|
+      refute_includes press_kit[:description], phrase
+      refute_includes press_kit[:title], phrase
     end
-    assert_includes download[:description], "background"
-    assert_includes download[:description], "needs files"
-    assert_includes status[:description], "Does not start a build"
+  end
+
+  private
+
+  def with_enabled_types(types, &)
+    RecordingStudioDownloadable::McpCopy.stub(:downloadable_types, types, &)
   end
 
   class RecordingMcp

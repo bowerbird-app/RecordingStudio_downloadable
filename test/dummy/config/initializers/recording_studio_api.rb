@@ -20,3 +20,20 @@ RecordingStudioApi.register_recordable_type_api(
   serializer: ->(workspace, **) { { name: workspace.name } },
   output_keys: %i[name]
 )
+
+# Page and Press kit opted into Downloadable. The named tools need them on the API.
+# Folder did not opt in, so it stays off this list.
+RecordingStudioApi.register_recordable_type_api(
+  "Page",
+  operations: [],
+  capability_actions: %i[downloadable_download downloadable_package_status],
+  serializer: ->(page, **) { { title: page.title } },
+  output_keys: %i[title]
+)
+RecordingStudioApi.register_recordable_type_api(
+  "PressKit",
+  operations: [],
+  capability_actions: %i[downloadable_download downloadable_package_status],
+  serializer: ->(press_kit, **) { { name: press_kit.name } },
+  output_keys: %i[name]
+)
